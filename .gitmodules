@@ -1,0 +1,9 @@
+[submodule "assets"]
+	path = assets
+	url = https://github.com/ankiviewer/assets
+[submodule "av_umbrella"]
+	path = av_umbrella
+	url = https://github.com/ankiviewer/av_umbrella
+[submodule "nodeapp"]
+	path = nodeapp
+	url = https://github.com/ankiviewer/nodeapp
