@@ -17,16 +17,19 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 + crt :: integer # created at
 + mod :: integer # last modified at 
 + tags :: {:array, :string} # array of strings of tags
+
 ##### Model
 + mid :: integer # model id
 + did :: integer # deck id
 + flds :: {:array, :string} # {"Front", "Back"}
 + mod :: integer # last modified at
 + name :: string # model name
+
 ##### Deck
 + did :: integer # deck id
 + name :: string # deck name
 + mod :: last modified at
+
 ##### Note
 + cid :: integer # card id
 + nid :: integer # note id
@@ -43,14 +46,20 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 + due :: integer # integer day relative to collections creation time
 + reps :: integer # no of reviews
 + lapses :: integer # no of times card went from answered correctly to not
+
 ##### Rule
 + id :: integer
 + name :: string
 + code :: text # elixir code to run to determine if note passes rule
+
 ##### NoteRule
 + nid :: integer # note id
 + rid :: integer # rule id
 + fails :: boolean # if rule fails
++ comment :: string # optional comment explaining why the rule failed
++ url :: string # optional url to external api/page scrape
++ ignore :: bool # ignore failure default false
++ solution :: string # explaining a solution to be implemented for rule failure
 
 ### Api
 
@@ -111,18 +120,72 @@ GET :: /api/collection
 ]
 ```
 
-#### GET :: /api/rules/:id
+#### GET :: /api/rules/:id?onlyfailures=bool&solution=bool
+
+```bash
 [
   {
-
-  }
+    "front": "front",
+    "back": "back",
+    "comment": "comment"
+  },
+  {
+  ...
 ]
+```
+
+#### POST :: /api/rules
+
+##### body
+
+```bash
+{
+  ignore: bool
+}
+```
+
+```bash
+{
+  solution: string
+}
+```
+
+##### response
+
+```bash
+{}
+```
+
+### Channels
+
+##### load database
+
+```bash
+{
+  ttype: string, # "collection"|"note"
+  number: integer,
+  total: integer
+}
+```
+
+##### load rule
+
+```bash
+{
+  name: string,
+  number: integer,
+  total: integer,
+  message: string
+}
+```
 
 ### Sqlite
 
 This app simply runs the squlite commands using the `sqlite3` exectuable
 
 Locate your anki sqlite executable
+
+(This may help: `find ~ -type f | grep \.anki2`)
 
 Mine was found here:  `~/Library/Application\ Support/Anki2/sam/colletion.anki2`
 
