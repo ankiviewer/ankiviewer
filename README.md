@@ -62,7 +62,6 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 + solution :: string # explaining a solution to be implemented for rule failure
 
 ### Api
-
 GET :: /api/collection
 ```bash
 {
@@ -80,12 +79,17 @@ GET :: /api/collection
     did: integer,
     name: string,
     mod: integer
+  },
+  rules: []{
+    id: integer,
+    name: string,
+    failures: integer
   }
 }
 ```
 
-#### GET :: /api/notes?search=""&model=[]mid&deck=[]did&tags=[]tags&modelorder=[]{mid:ord}
-(example: /api/notes?search=hello&model=123,456&deck=123&tags=leech&modelorder=123:0,456:1
+#### GET :: /api/notes?search=""&model=[]mid&deck=[]did&tags=[]tags&modelorder=[]{mid:ord}&rule=id
+(example: /api/notes?search=hello&model=123,456&deck=123&tags=leech&modelorder=123:0,456:1)
 
 (state follows the conventions described in the notes schema above in type and queue)
 
@@ -103,20 +107,6 @@ GET :: /api/collection
     "front": "hello",
     "back": "hallo"
   }
-]
-```
-
-#### GET :: /api/rules
-
-```bash
-[
-  {
-    "id": 1,
-    "name": "rule name",
-    "failures": 44
-  },
-  {
-  ...
 ]
 ```
 
@@ -226,3 +216,50 @@ There is a thorough breakdown of the anki database structure [here](https://gith
 
 What is useful for us is the following:
 
+#### collection
+
+```bash
+sqlite3 $ANKI_SQLITE_PATH 'select models, decks, tags, mod, crt from col'
+```
+
+#### notes
+```bash
+sqlite3 $ANKI_SQLITE_PATH 'SELECT
+  cards.id AS cid,
+  notes.id AS nid,
+  cards.mod AS cmod,
+  notes.mod AS nmod,
+  notes.mid AS mid,
+  notes.tags AS tags,
+  notes.flds AS flds,
+  notes.sfld AS sfld,
+  cards.did AS did,
+  cards.ord AS ord,
+  cards.type AS type,
+  cards.queue AS queue,
+  cards.due AS due,
+  cards.reps AS reps,
+  cards.lapses AS lapses
+  FROM
+  notes
+  INNER JOIN cards
+  ON
+  notes.id = cards.nid'
+```
+
+### Views
+
+#### Home
+
++ Upload sqlite3 file
++ Load database
++ Rules management
++ General stats/graphs
+
+#### Search
+
++ search
++ filter by model, deck, tags
++ filter by rule
++ add comment to note
++ note list
