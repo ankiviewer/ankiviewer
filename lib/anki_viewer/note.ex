@@ -24,10 +24,10 @@ defmodule AnkiViewer.Note do
     timestamps()
   end
 
-  @doc false
-  def changeset(%Note{} = note, attrs) do
+  @attrs ~w(cid, nid, cmod, nmod, mid, tags, flds, sfld, did, ord, type, queue, due, reps, lapses)a
+  def changeset(%Note{} = note, attrs \\ %{}) do
     note
-    |> cast(attrs, [:cid, :nid, :cmod, :nmod, :mid, :tags, :flds, :sfld, :did, :ord, :type, :queue, :due, :reps, :lapses])
-    |> validate_required([:cid, :nid, :cmod, :nmod, :mid, :tags, :flds, :sfld, :did, :ord, :type, :queue, :due, :reps, :lapses])
+    |> cast(attrs, @attrs)
+    |> validate_required(@attrs)
   end
 end

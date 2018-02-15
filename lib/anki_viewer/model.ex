@@ -14,10 +14,10 @@ defmodule AnkiViewer.Model do
     timestamps()
   end
 
-  @doc false
-  def changeset(%Model{} = model, attrs) do
+  @attrs ~w(mid, did, flds, mod, name)a
+  def changeset(%Model{} = model, attrs \\ %{}) do
     model
-    |> cast(attrs, [:mid, :did, :flds, :mod, :name])
-    |> validate_required([:mid, :did, :flds, :mod, :name])
+    |> cast(attrs, @attrs)
+    |> validate_required(@attrs)
   end
 end
