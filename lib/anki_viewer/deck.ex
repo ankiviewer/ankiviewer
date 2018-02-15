@@ -12,10 +12,10 @@ defmodule AnkiViewer.Deck do
     timestamps()
   end
 
-  @doc false
-  def changeset(%Deck{} = deck, attrs) do
+  @attrs ~w(did name mod)a
+  def changeset(%Deck{} = deck, attrs \\ %{}) do
     deck
-    |> cast(attrs, [:did, :name, :mod])
-    |> validate_required([:did, :name, :mod])
+    |> cast(attrs, @attrs)
+    |> validate_required(@attrs)
   end
 end

@@ -16,10 +16,11 @@ defmodule AnkiViewer.NoteRule do
     timestamps()
   end
 
-  @doc false
+  @required_params ~w(fails nid rid)a
+  @optional_params ~w(comment solution url ignore)a
   def changeset(%NoteRule{} = note_rule, attrs) do
     note_rule
-    |> cast(attrs, [:nid, :rid, :fails, :comment, :url, :ignore, :solution])
-    |> validate_required([:nid, :rid, :fails, :comment, :url, :ignore, :solution])
+    |> cast(attrs, @required_params ++ @optional_params)
+    |> validate_required(@required_params)
   end
 end

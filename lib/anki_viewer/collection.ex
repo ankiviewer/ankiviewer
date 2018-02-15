@@ -3,7 +3,6 @@ defmodule AnkiViewer.Collection do
   import Ecto.Changeset
   alias AnkiViewer.Collection
 
-
   schema "collection" do
     field :crt, :integer
     field :mod, :integer
@@ -12,10 +11,10 @@ defmodule AnkiViewer.Collection do
     timestamps()
   end
 
-  @doc false
-  def changeset(%Collection{} = collection, attrs) do
+  @attrs ~w(crt, mod, tags)a
+  def changeset(%Collection{} = collection, attrs \\ %{}) do
     collection
-    |> cast(attrs, [:crt, :mod, :tags])
-    |> validate_required([:crt, :mod, :tags])
+    |> cast(attrs, @attrs)
+    |> validate_required(@attrs)
   end
 end

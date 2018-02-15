@@ -12,10 +12,10 @@ defmodule AnkiViewer.Rule do
     timestamps()
   end
 
-  @doc false
-  def changeset(%Rule{} = rule, attrs) do
+  @attrs ~w(code name rid)a
+  def changeset(%Rule{} = rule, attrs \\ %{}) do
     rule
-    |> cast(attrs, [:rid, :name, :code])
-    |> validate_required([:rid, :name, :code])
+    |> cast(attrs, @attrs)
+    |> validate_required(@attrs)
   end
 end
