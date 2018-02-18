@@ -255,7 +255,9 @@ sqlite3 $ANKI_SQLITE_PATH 'SELECT
 + Load database
   + from local (button to load data from the local s3 file)
   + from s3 (button to load into the database, the current sqlite3 file)
-(separate socket for each of these)
+  + soft reload (perform diffs on the current database which should be a lot faster).
+  + hard reload (delete entire notes from database and reload them in entirely from scratch).
+(separate socket for each of these operations)
 + Show last sqlite3 upload time and database load time from each s3 and local as well as local change time
 + Rules management (a list of all rules with current stats for each rule with ability to run a rule through the database)
 (socket connection here)
@@ -282,3 +284,6 @@ I would like to perform the following operations:
 + add a note
 + remove a note
 + edit a notes fields
+
+Findings documented here: [!findings](./db_edit_findings.md)
+
