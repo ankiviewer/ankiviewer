@@ -251,10 +251,14 @@ sqlite3 $ANKI_SQLITE_PATH 'SELECT
 
 #### Home
 
-+ Upload sqlite3 file
++ Upload sqlite3 file (button to upload sqlite3 file to s3)
 + Load database
-+ Rules management
-+ General stats/graphs
+  + from local (button to load data from the local s3 file)
+  + from s3 (button to load into the database, the current sqlite3 file)
+(separate socket for each of these)
++ Show last sqlite3 upload time and database load time from each s3 and local as well as local change time
++ Rules management (a list of all rules with current stats for each rule with ability to run a rule through the database)
+(socket connection here)
 
 #### Search
 
@@ -263,3 +267,18 @@ sqlite3 $ANKI_SQLITE_PATH 'SELECT
 + filter by rule
 + add comment to note
 + note list
++ edit note
+
+#### Database edits
+
+I would also like to edit my Anki database from changing words from within the av app.
+This will require doing a diff on all the tables from before making the edit to after making the edit from within the Anki desktop app.
+I will document the diff from the output of:
+```bash
+for t in $(sqlite3 $ANKI_SQLITE_PATH '.tables');do;sqlite3 $ANKI_SQLITE_PATH "select * from $t";done
+```
+I would like to perform the following operations:
++ edit a notes tag
++ add a note
++ remove a note
++ edit a notes fields
