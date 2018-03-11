@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/ankiviewer/ankiviewer.svg?branch=master)](https://travis-ci.org/ankiviewer/ankiviewer)
+[![codecov](https://codecov.io/gh/ankiviewer/ankiviewer/branch/master/graph/badge.svg)](https://codecov.io/gh/ankiviewer/ankiviewer)
+
 # AnkiViewer
 
 ### Quick Start
