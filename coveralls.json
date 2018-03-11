@@ -1,0 +1,17 @@
+{
+  "skip_files": [
+    "lib/anki_viewer/application.ex",
+    "lib/anki_viewer_web.ex",
+    "lib/anki_viewer_web/endpoint.ex",
+    "lib/anki_viewer_web/router.ex",
+    "lib/anki_viewer_web/views/error_helpers.ex",
+    "lib/anki_viewer_web/views/error_view.ex",
+    "test/support"
+  ],
+  "custom_stop_words": [
+    "schema"
+  ],
+  "coverage_options": {
+    "minimum_coverage": 10
+  }
+}
