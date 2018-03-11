@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ankiviewer/ankiviewer.svg?branch=master)](https://travis-ci.org/ankiviewer/ankiviewer)
+
 # AnkiViewer
 
 ### Quick Start
