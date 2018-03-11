@@ -148,7 +148,7 @@ GET :: /api/collection
 
 ### Channels
 
-##### load database
+##### sync database
 
 ```bash
 {
@@ -158,7 +158,7 @@ GET :: /api/collection
 }
 ```
 
-##### load rule
+##### sync rule
 
 ```bash
 {
