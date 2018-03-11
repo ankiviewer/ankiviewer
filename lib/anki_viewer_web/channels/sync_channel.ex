@@ -1,22 +1,15 @@
 defmodule AnkiViewerWeb.SyncChannel do
   use AnkiViewerWeb, :channel
 
-  def join("sync:lobby", payload, socket) do
-    if authorized?(payload) do
-      {:ok, socket}
-    else
-      {:error, %{reason: "unauthorized"}}
-    end
+  def join("sync:database", _payload, socket) do
+    {:ok, socket}
   end
 
-  # Channels can be used in a request/response fashion
-  # by sending replies to requests from the client
+  def join("sync:rule", _payload, socket) do
+    {:ok, socket}
+  end
+
   def handle_in("ping", payload, socket) do
     {:reply, {:ok, payload}, socket}
-  end
-
-  # Add authorization logic here as required.
-  defp authorized?(_payload) do
-    true
   end
 end
