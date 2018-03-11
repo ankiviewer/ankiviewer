@@ -1,0 +1,22 @@
+sudo: false
+language: elixir
+elixir:
+  - 1.6
+addons:
+  postgresql: 9.6
+cache:
+  directories:
+    - _build
+    - deps
+    - assets/node_modules
+env:
+  - MIX_ENV=test
+install:
+  - mix do local.hex --force, local.rebar --force
+  - mix do deps.get, compile, ecto.create, ecto.migrate
+  - . $HOME/.nvm/nvm.sh
+  - nvm install stable
+  - nvm use stable
+  - cd assets && npm install && cd -
+script:
+  - mix test
