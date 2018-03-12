@@ -9,6 +9,7 @@ cache:
     - _build
     - deps
     - assets/node_modules
+    - ~/.npm
 env:
   - MIX_ENV=test
 install:
@@ -21,5 +22,6 @@ install:
 script:
   - mix format --check-formatted
   - mix coveralls.json
+  - cd assets && $(npm bin)/cypress run && cd -
 after_success:
   - bash <(curl -s https://codecov.io/bash)
