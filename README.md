@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/ankiviewer/ankiviewer.svg?branch=master)](https://travis-ci.org/ankiviewer/ankiviewer)
 [![codecov](https://codecov.io/gh/ankiviewer/ankiviewer/branch/master/graph/badge.svg)](https://codecov.io/gh/ankiviewer/ankiviewer)
 [![Deps Status](https://beta.hexfaktor.org/badge/all/github/ankiviewer/ankiviewer.svg)](https://beta.hexfaktor.org/github/ankiviewer/ankiviewer)
+[![Cypress.io tests](https://img.shields.io/badge/cypress.io-tests-green.svg)](https://cypress.io)
 
 # AnkiViewer
 
