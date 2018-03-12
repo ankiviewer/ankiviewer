@@ -1,3 +1,0 @@
-- [ ] build spike on phoenix elm channel with tests
-- [ ] set up a channel to populate the collection
-- [ ] set up a channel to populate the notes and collection
