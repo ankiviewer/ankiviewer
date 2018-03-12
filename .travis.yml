@@ -19,6 +19,7 @@ install:
   - nvm use stable
   - cd assets && npm install && cd -
 script:
+  - mix format --check-formatted
   - mix coveralls.json
 after_success:
   - bash <(curl -s https://codecov.io/bash)
