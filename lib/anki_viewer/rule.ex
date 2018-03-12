@@ -3,11 +3,10 @@ defmodule AnkiViewer.Rule do
   import Ecto.Changeset
   alias AnkiViewer.Rule
 
-
   schema "rules" do
-    field :code, :string
-    field :name, :string
-    field :rid, :integer
+    field(:code, :string)
+    field(:name, :string)
+    field(:rid, :integer)
 
     timestamps()
   end

@@ -25,13 +25,13 @@ defmodule AnkiViewerWeb.ChannelCase do
     end
   end
 
-
   setup tags do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(AnkiViewer.Repo)
+
     unless tags[:async] do
       Ecto.Adapters.SQL.Sandbox.mode(AnkiViewer.Repo, {:shared, self()})
     end
+
     :ok
   end
-
 end

@@ -11,7 +11,7 @@ defmodule AnkiViewer.Application do
       # Start the Ecto repository
       supervisor(AnkiViewer.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(AnkiViewerWeb.Endpoint, []),
+      supervisor(AnkiViewerWeb.Endpoint, [])
       # Start your own worker by calling: AnkiViewer.Worker.start_link(arg1, arg2, arg3)
       # worker(AnkiViewer.Worker, [arg1, arg2, arg3]),
     ]

@@ -3,11 +3,10 @@ defmodule AnkiViewer.Deck do
   import Ecto.Changeset
   alias AnkiViewer.Deck
 
-
   schema "decks" do
-    field :did, :integer
-    field :mod, :integer
-    field :name, :string
+    field(:did, :integer)
+    field(:mod, :integer)
+    field(:name, :string)
 
     timestamps()
   end

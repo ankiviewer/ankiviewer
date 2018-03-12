@@ -4,9 +4,9 @@ defmodule AnkiViewer.Collection do
   alias AnkiViewer.Collection
 
   schema "collection" do
-    field :crt, :integer
-    field :mod, :integer
-    field :tags, {:array, :string}
+    field(:crt, :integer)
+    field(:mod, :integer)
+    field(:tags, {:array, :string})
 
     timestamps()
   end

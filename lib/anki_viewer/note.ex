@@ -3,23 +3,22 @@ defmodule AnkiViewer.Note do
   import Ecto.Changeset
   alias AnkiViewer.Note
 
-
   schema "notes" do
-    field :cid, :integer
-    field :cmod, :integer
-    field :did, :integer
-    field :due, :integer
-    field :flds, :string
-    field :lapses, :integer
-    field :mid, :integer
-    field :nid, :integer
-    field :nmod, :integer
-    field :ord, :integer
-    field :queue, :integer
-    field :reps, :integer
-    field :sfld, :string
-    field :tags, {:array, :string}
-    field :type, :integer
+    field(:cid, :integer)
+    field(:cmod, :integer)
+    field(:did, :integer)
+    field(:due, :integer)
+    field(:flds, :string)
+    field(:lapses, :integer)
+    field(:mid, :integer)
+    field(:nid, :integer)
+    field(:nmod, :integer)
+    field(:ord, :integer)
+    field(:queue, :integer)
+    field(:reps, :integer)
+    field(:sfld, :string)
+    field(:tags, {:array, :string})
+    field(:type, :integer)
 
     timestamps()
   end

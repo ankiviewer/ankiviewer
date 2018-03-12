@@ -3,15 +3,14 @@ defmodule AnkiViewer.NoteRule do
   import Ecto.Changeset
   alias AnkiViewer.NoteRule
 
-
   schema "note_rules" do
-    field :comment, :string
-    field :fails, :boolean, default: false
-    field :ignore, :boolean, default: false
-    field :nid, :integer
-    field :rid, :integer
-    field :solution, :string
-    field :url, :string
+    field(:comment, :string)
+    field(:fails, :boolean, default: false)
+    field(:ignore, :boolean, default: false)
+    field(:nid, :integer)
+    field(:rid, :integer)
+    field(:solution, :string)
+    field(:url, :string)
 
     timestamps()
   end

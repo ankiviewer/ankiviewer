@@ -3,13 +3,12 @@ defmodule AnkiViewer.Model do
   import Ecto.Changeset
   alias AnkiViewer.Model
 
-
   schema "models" do
-    field :did, :integer
-    field :flds, {:array, :string}
-    field :mid, :integer
-    field :mod, :integer
-    field :name, :string
+    field(:did, :integer)
+    field(:flds, {:array, :string})
+    field(:mid, :integer)
+    field(:mod, :integer)
+    field(:name, :string)
 
     timestamps()
   end
