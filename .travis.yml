@@ -20,14 +20,13 @@ install:
   - nvm use stable
   - cd assets && npm install && cd -
 before_script:
+  - elixir --detached -e "File.write! 'pid', :os.getpid" -S mix phx.server
   - echo "starting phx server"
-  - until $(curl --output /dev/null --silent --head --fail http://localhost:4001);do\
-    printf '.'\
-    sleep 3\ # wait 3 seconds
-    done
+  - until $(curl --output /dev/null --silent --head --fail http://localhost:4001);do;printf '.';sleep 3;done
 script:
   - mix format --check-formatted
   - mix coveralls.json
   - cd assets && $(npm bin)/cypress run && cd -
 after_success:
+  - if [ -f ./pid ];then;kill -9 "$(cat pid)";rm pid;fi
   - bash <(curl -s https://codecov.io/bash)
