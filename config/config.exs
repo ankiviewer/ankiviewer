@@ -6,16 +6,14 @@
 use Mix.Config
 
 # General application configuration
-config :anki_viewer,
-  ecto_repos: [AnkiViewer.Repo]
+config :anki_viewer, ecto_repos: [AnkiViewer.Repo]
 
 # Configures the endpoint
 config :anki_viewer, AnkiViewerWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "Z7/urn31WtUJZWm56YFBW6V3OyqqxAPvTdyoBqI+wk7mvtI1qxER3fNu7poP55dM",
   render_errors: [view: AnkiViewerWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: AnkiViewer.PubSub,
-           adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: AnkiViewer.PubSub, adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -24,4 +22,4 @@ config :logger, :console,
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env}.exs"
+import_config "#{Mix.env()}.exs"
