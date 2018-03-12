@@ -19,6 +19,12 @@ install:
   - nvm install stable
   - nvm use stable
   - cd assets && npm install && cd -
+before_script:
+  - echo "starting phx server"
+  - until $(curl --output /dev/null --silent --head --fail http://localhost:4001);do\
+    printf '.'\
+    sleep 3\ # wait 3 seconds
+    done
 script:
   - mix format --check-formatted
   - mix coveralls.json
