@@ -22,7 +22,11 @@ install:
 before_script:
   - elixir --detached -e "File.write! 'pid', :os.getpid" -S mix phx.server
   - echo "starting phx server"
-  - ./wait_script.sh # Should be one command instead, see here: https://stackoverflow.com/questions/49263953/why-is-bash-c-behaving-strangely
+  - |
+    until $(curl --output /dev/null --silent --fail http://localhost:4001);do
+      printf '.'
+      sleep 5
+    done
 script:
   - mix format --check-formatted
   - mix coveralls.json
