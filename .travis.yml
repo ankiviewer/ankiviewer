@@ -19,7 +19,9 @@ install:
   - nvm install stable
   - nvm use stable
   - cd assets && npm install && cd -
-before_script:
+script:
+  - mix format --check-formatted
+  - mix coveralls.json
   - elixir --detached -e "File.write! 'pid', :os.getpid" -S mix phx.server
   - echo "starting phx server"
   - |
@@ -27,10 +29,8 @@ before_script:
       printf '.'
       sleep 5
     done
-script:
-  - mix format --check-formatted
-  - mix coveralls.json
   - cd assets && $(npm bin)/cypress run && cd -
+  - kill -9 "$(cat pid)"
 after_success:
   - if [ -f ./pid ];then;kill -9 "$(cat pid)";rm pid;fi
   - bash <(curl -s https://codecov.io/bash)
