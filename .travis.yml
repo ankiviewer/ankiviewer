@@ -13,7 +13,9 @@ cache:
     - sysconfcpus
     - ~/.npm
 env:
-  - MIX_ENV=test ELM_VERSION=0.18.0
+  global:
+    - MIX_ENV=test
+    - ELM_VERSION=0.18.0
 before_install:
   - # See: https://github.com/rtfeldman/node-test-runner/blob/master/.travis.yml
     if [ ! -d sysconfcpus/bin ];
@@ -30,7 +32,7 @@ install:
   - . $HOME/.nvm/nvm.sh
   - nvm install stable
   - nvm use stable
-  - npm install -g elm@ELM_VERSION
+  - npm install -g elm@$ELM_VERSION
   - mv $(npm config get prefix)/bin/elm-make $(npm config get prefix)/bin/elm-make-old
   - echo -e "#\!/bin/bash\\n\\necho \"Running elm-make with sysconfcpus -n 2\"\\n\\n$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make-old \"\$@\"" > $(npm config get prefix)/bin/elm-make
   - chmod +x $(npm config get prefix)/bin/elm-make
