@@ -11,7 +11,7 @@ defmodule AnkiViewerWeb.SyncChannel do
   end
 
   def handle_in("ping", payload, socket) do
-    IO.puts "hi"
+    IO.puts("hi")
     {:reply, {:ok, payload}, socket}
   end
 end
