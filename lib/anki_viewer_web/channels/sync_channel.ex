@@ -2,6 +2,7 @@ defmodule AnkiViewerWeb.SyncChannel do
   use AnkiViewerWeb, :channel
 
   def join("sync:database", _payload, socket) do
+    Process.sleep(500)
     {:ok, socket}
   end
 
@@ -10,6 +11,7 @@ defmodule AnkiViewerWeb.SyncChannel do
   end
 
   def handle_in("ping", payload, socket) do
+    IO.puts("hi")
     {:reply, {:ok, payload}, socket}
   end
 end
