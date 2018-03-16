@@ -3,8 +3,11 @@ defmodule AnkiViewerWeb.SyncChannelTest do
 
   alias AnkiViewerWeb.SyncChannel
 
+  @tmp System.get_env("TMP_DIR") || "/tmp"
+
   describe "sync:database" do
     setup do
+      System.cmd("sqlite3", ["#{@tmp}/anki_test.db", "'.read #{:code.priv_dir(:anki_viewer)}/anki_test_dump.sql'"])
       {:ok, _, socket} = subscribe_and_join(socket(), SyncChannel, "sync:database")
 
       {:ok, socket: socket}
