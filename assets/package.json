@@ -7,14 +7,17 @@
     "cypress:run": "cypress run"
   },
   "dependencies": {
+    "elm": "^0.18.0",
+    "elm-brunch": "^0.10.0",
     "phoenix": "file:../deps/phoenix",
-    "phoenix_html": "file:../deps/phoenix_html"
-  },
-  "devDependencies": {
     "babel-brunch": "6.1.1",
     "brunch": "2.10.9",
     "clean-css-brunch": "2.10.0",
-    "cypress": "^2.1.0",
+    "phoenix_html": "file:../deps/phoenix_html",
     "uglify-js-brunch": "2.10.0"
+  },
+  "devDependencies": {
+    "elm-format": "^0.6.1-alpha",
+    "cypress": "^2.1.0"
   }
 }
