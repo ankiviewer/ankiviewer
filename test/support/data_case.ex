@@ -16,7 +16,7 @@ defmodule AnkiViewer.DataCase do
 
   using do
     quote do
-      alias AnkiViewer.Repo
+      alias AnkiViewer.{Collection, Deck, Model, Repo}
 
       import Ecto
       import Ecto.Changeset
