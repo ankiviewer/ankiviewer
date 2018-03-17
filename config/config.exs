@@ -6,7 +6,9 @@
 use Mix.Config
 
 # General application configuration
-config :anki_viewer, ecto_repos: [AnkiViewer.Repo]
+config :anki_viewer,
+  ecto_repos: [AnkiViewer.Repo],
+  anki_db_path: System.get_env("ANKI_DB_PATH")
 
 # Configures the endpoint
 config :anki_viewer, AnkiViewerWeb.Endpoint,
