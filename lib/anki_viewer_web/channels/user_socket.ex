@@ -2,10 +2,10 @@ defmodule AnkiViewerWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  channel("sync:lobby", AnkiViewerWeb.SyncChannel)
+  channel("sync:*", AnkiViewerWeb.SyncChannel)
 
   ## Transports
-  transport(:websocket, Phoenix.Transports.WebSocket)
+  transport(:websocket, Phoenix.Transports.WebSocket, timeout: 45000)
   # transport :longpoll, Phoenix.Transports.LongPoll
 
   # Socket params are passed from the client and can

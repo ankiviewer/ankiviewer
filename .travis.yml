@@ -49,6 +49,7 @@ script:
     done
   - cd assets && $(npm bin)/cypress run && cd -
   - kill -9 "$(cat pid)"
+  - mix ecto.rollback --all
 after_success:
   - if [ -f ./pid ];then;kill -9 "$(cat pid)";rm pid;fi
   - bash <(curl -s https://codecov.io/bash)

@@ -10,20 +10,10 @@ defmodule AnkiViewerWeb.SyncChannelTest do
       {:ok, socket: socket}
     end
 
-    test "ping replies with status ok", %{socket: _socket} do
-      assert true
-    end
-  end
-
-  describe "sync:rule" do
-    setup do
-      {:ok, _, socket} = subscribe_and_join(socket(), SyncChannel, "sync:rule", %{id: 1})
-
-      {:ok, socket: socket}
-    end
-
-    test "hello:world" do
-      assert true
+    test "socket pushes 3 messages", %{socket: _socket} do
+      assert_push("one", %{})
+      assert_push("two", %{})
+      assert_push("three", %{})
     end
   end
 end
