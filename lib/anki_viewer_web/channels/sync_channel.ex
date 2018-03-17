@@ -2,7 +2,9 @@ defmodule AnkiViewerWeb.SyncChannel do
   use AnkiViewerWeb, :channel
 
   def join("sync:database", _payload, socket) do
-    send(self(), {:sync, :database})
+    # hack to extend the socket timeout, see:
+    # https://stackoverflow.com/questions/49331141/configure-channel-test-timeout-phoenix/49335536
+    Process.send_after(self(), {:sync, :database}, 0)
 
     {:ok, socket}
   end
