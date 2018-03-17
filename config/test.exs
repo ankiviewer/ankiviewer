@@ -15,4 +15,5 @@ config :anki_viewer, AnkiViewer.Repo,
   password: "postgres",
   database: "anki_viewer_test",
   hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+  pool: Ecto.Adapters.SQL.Sandbox,
+  ownership_timeout: 10 * 60 * 60 # 10 mins

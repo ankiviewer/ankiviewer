@@ -12,8 +12,10 @@ defmodule AnkiViewerWeb.SyncChannel do
   end
 
   def handle_info({:sync, :database}, socket) do
-    {x, 0} = System.cmd("sqlite3", [@anki_db_path, "select * from col"])
-    IO.inspect x
+    {_x, 0} = System.cmd("sqlite3", [@anki_db_path, "select * from col"])
+    {_y, 0} = System.cmd("sqlite3", [@anki_db_path, "select c.id as cid, c.mod as cmod, c.did as did, c.due as due, n.flds as flds, c.lapses as lapses, n.mid as mid, n.id as nid, n.mod as nmod, c.ord as ord, c.queue as queue, c.reps as reps, n.sfld as sfld, n.tags as tags, c.type as type from notes as n inner join cards as c on n.id = c.nid"])
+    # IO.inspect x
+    # IO.inspect y
     push(socket, "one", %{})
     Process.sleep(100)
     push(socket, "two", %{})
