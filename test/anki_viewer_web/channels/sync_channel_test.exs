@@ -11,9 +11,9 @@ defmodule AnkiViewerWeb.SyncChannelTest do
     end
 
     test "socket pushes 3 messages", %{socket: _socket} do
-      assert_push("one", %{})
-      assert_push("two", %{})
-      assert_push("three", %{})
+      assert_push("one", %{}, 10000)
+      assert_push("two", %{}, 10000)
+      assert_push("three", %{}, 10000)
     end
   end
 end
