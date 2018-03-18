@@ -1,8 +1,7 @@
 defmodule AnkiViewer.Collection do
-  use Ecto.Schema
-  import Ecto.Changeset
-  alias AnkiViewer.Collection
+  use AnkiViewer.SingleEntry
 
+  @primary_key false
   schema "collection" do
     field(:crt, :integer)
     field(:mod, :integer)
@@ -11,7 +10,7 @@ defmodule AnkiViewer.Collection do
     timestamps()
   end
 
-  @attrs ~w(crt, mod, tags)a
+  @attrs ~w(crt mod tags)a
   def changeset(%Collection{} = collection, attrs \\ %{}) do
     collection
     |> cast(attrs, @attrs)
