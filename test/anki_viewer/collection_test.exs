@@ -3,6 +3,7 @@ defmodule AnkiViewer.CollectionTest do
 
   test "insert_or_update a new collection" do
     attrs = %{crt: 123, mod: 123, tags: []}
+
     %Collection{}
     |> Collection.insert_or_update!(attrs)
 
@@ -15,7 +16,7 @@ defmodule AnkiViewer.CollectionTest do
 
     %Collection{}
     |> Collection.changeset(attrs1)
-    |> Repo.insert!
+    |> Repo.insert!()
 
     [%Collection{crt: 123, mod: 123, tags: []}] = Repo.all(Collection)
 
@@ -25,7 +26,7 @@ defmodule AnkiViewer.CollectionTest do
     [%Collection{crt: 456, mod: 456, tags: ["one"]}] = Repo.all(Collection)
 
     %Collection{crt: 789, mod: 789, tags: ["one", "two"]}
-    |> Collection.insert_or_update!
+    |> Collection.insert_or_update!()
 
     [%Collection{crt: 789, mod: 789, tags: ["one", "two"]}] = Repo.all(Collection)
   end
@@ -36,7 +37,7 @@ defmodule AnkiViewer.CollectionTest do
 
     %Deck{}
     |> Deck.changeset(attrs1)
-    |> Repo.insert!
+    |> Repo.insert!()
 
     [%Deck{did: 123, mod: 123, name: "name1"}] = Repo.all(Deck)
 
@@ -46,7 +47,7 @@ defmodule AnkiViewer.CollectionTest do
     [%Deck{did: 456, mod: 456, name: "name2"}] = Repo.all(Deck)
 
     %Deck{did: 789, mod: 789, name: "name3"}
-    |> Deck.insert_or_update!
+    |> Deck.insert_or_update!()
 
     [%Deck{did: 789, mod: 789, name: "name3"}] = Repo.all(Deck)
   end
@@ -57,18 +58,45 @@ defmodule AnkiViewer.CollectionTest do
 
     %Model{}
     |> Model.changeset(attrs1)
-    |> Repo.insert!
+    |> Repo.insert!()
 
-    [%Model{did: 123, flds: ["Front1", "Back1"], mid: 123, mod: 123, name: "name1"}] = Repo.all(Model)
+    [%Model{did: 123, flds: ["Front1", "Back1"], mid: 123, mod: 123, name: "name1"}] =
+      Repo.all(Model)
 
     %Model{}
     |> Model.insert_or_update!(attrs2)
 
-    [%Model{did: 456, flds: ["Front2", "Back2"], mid: 456, mod: 456, name: "name2"}] = Repo.all(Model)
+    [%Model{did: 456, flds: ["Front2", "Back2"], mid: 456, mod: 456, name: "name2"}] =
+      Repo.all(Model)
 
     %Model{did: 789, flds: ["Front3", "Back3"], mid: 789, mod: 789, name: "name3"}
-    |> Model.insert_or_update!
+    |> Model.insert_or_update!()
 
-    [%Model{did: 789, flds: ["Front3", "Back3"], mid: 789, mod: 789, name: "name3"}] = Repo.all(Model)
+    [%Model{did: 789, flds: ["Front3", "Back3"], mid: 789, mod: 789, name: "name3"}] =
+      Repo.all(Model)
+  end
+
+  test "insert_or_update list of models" do
+    attrs = [
+      %{
+        did: 1,
+        flds: ["Text", "Extra"],
+        mid: 1_502_629_924,
+        mod: 1_502_629_944,
+        name: "Cloze"
+      },
+      %{
+        did: 1,
+        flds: ["Front", "Back"],
+        mid: 1_507_832_105,
+        mod: 1_507_832_120,
+        name: "Basic (and reversed card)"
+      }
+    ]
+
+    %Model{}
+    |> Model.insert_or_update!(attrs)
+
+    assert length(Repo.all(Model)) == 2
   end
 end

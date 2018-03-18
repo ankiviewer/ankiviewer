@@ -1,5 +1,5 @@
 defmodule AnkiViewer.Collection do
-  use AnkiViewer.SingleRow
+  use AnkiViewer.SingleEntry
 
   @primary_key false
   schema "collection" do

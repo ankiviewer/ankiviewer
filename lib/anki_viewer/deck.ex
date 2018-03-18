@@ -1,5 +1,5 @@
 defmodule AnkiViewer.Deck do
-  use AnkiViewer.SingleRow
+  use AnkiViewer.SingleEntry
 
   @primary_key false
   schema "decks" do
