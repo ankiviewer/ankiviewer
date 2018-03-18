@@ -2,7 +2,7 @@ defmodule AnkiViewer.Repo.Migrations.CreateNotes do
   use Ecto.Migration
 
   def change do
-    create table(:notes) do
+    create table(:notes, primary_key: false) do
       add :cid, :integer
       add :nid, :integer
       add :cmod, :integer

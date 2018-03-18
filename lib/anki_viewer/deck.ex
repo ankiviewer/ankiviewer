@@ -1,8 +1,7 @@
 defmodule AnkiViewer.Deck do
-  use Ecto.Schema
-  import Ecto.Changeset
-  alias AnkiViewer.Deck
+  use AnkiViewer.SingleEntry
 
+  @primary_key false
   schema "decks" do
     field(:did, :integer)
     field(:mod, :integer)

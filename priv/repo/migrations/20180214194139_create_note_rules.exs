@@ -2,7 +2,7 @@ defmodule AnkiViewer.Repo.Migrations.CreateNoteRules do
   use Ecto.Migration
 
   def change do
-    create table(:note_rules) do
+    create table(:note_rules, primary_key: false) do
       add :nid, :integer
       add :rid, :integer
       add :fails, :boolean, default: false, null: false
