@@ -1,5 +1,6 @@
 defmodule AnkiViewerWeb.SyncChannelTest do
   use AnkiViewerWeb.ChannelCase, async: false
+  doctest AnkiViewerWeb.SyncChannel, import: true
 
   alias AnkiViewerWeb.SyncChannel
 
@@ -11,16 +12,9 @@ defmodule AnkiViewerWeb.SyncChannelTest do
     end
 
     test "socket pushes 3 messages", %{socket: _socket} do
-      assert Collection |> Repo.all() |> length == 0
-
       assert_push("updating collection", %{}, 1000)
 
-      assert Collection |> Repo.all() |> length == 0
-
-      assert_push("updated collection", %{}, 10000)
-
       coll = Collection |> Repo.all()
-      assert length(coll) == 1
       [%Collection{crt: crt, mod: mod, tags: tags}] = coll
 
       assert [

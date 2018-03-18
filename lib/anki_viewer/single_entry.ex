@@ -5,31 +5,31 @@ defmodule AnkiViewer.SingleEntry do
       import Ecto.Changeset
       alias AnkiViewer.{Collection, Deck, Model, Repo}
 
-      def insert_or_update!(struct, attrs \\ %{})
-
-      def insert_or_update!(struct, attrs) when is_list(attrs) do
+      def insert_or_update!(attrs) do
         if Repo.one(__MODULE__) do
           Repo.delete_all(__MODULE__)
         end
 
-        for a <- attrs do
-          struct
-          |> changeset(a)
-          |> Repo.insert!()
+        cond do
+          is_list(attrs) ->
+            for a <- attrs do
+              __MODULE__
+              |> struct()
+              |> changeset(a)
+              |> Repo.insert!()
+            end
+
+          Map.has_key?(attrs, :__struct__) ->
+            attrs
+            |> changeset()
+            |> Repo.insert!()
+
+          true ->
+            __MODULE__ |> struct() |> Map.merge(attrs) |> insert_or_update!
         end
       end
 
-      def insert_or_update!(struct, attrs) do
-        if Repo.one(__MODULE__) do
-          Repo.delete_all(__MODULE__)
-        end
-
-        struct
-        |> changeset(attrs)
-        |> Repo.insert!()
-      end
-
-      defoverridable insert_or_update!: 1, insert_or_update!: 2
+      defoverridable insert_or_update!: 1
     end
   end
 end
