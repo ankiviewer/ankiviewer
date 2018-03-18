@@ -37,7 +37,7 @@ defmodule AnkiViewerWeb.SyncChannel do
     %Collection{
       crt: String.to_integer(crt),
       mod: mod |> String.to_integer() |> Kernel./(1000) |> trunc,
-      tags: []
+      tags: tags |> Jason.decode!() |> Map.keys()
     }
     |> Collection.insert_or_update!()
 

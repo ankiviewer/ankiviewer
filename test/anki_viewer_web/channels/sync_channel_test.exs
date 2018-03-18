@@ -22,7 +22,12 @@ defmodule AnkiViewerWeb.SyncChannelTest do
       coll = Collection |> Repo.all()
       assert length(coll) == 1
       [%Collection{crt: crt, mod: mod, tags: tags}] = coll
-      assert [1_480_996_800, 1_514_655_628, []] = [crt, mod, tags]
+
+      assert [
+               1_480_996_800,
+               1_514_655_628,
+               ~w(duplicate leech marked sentence to-restructure verb verified-by-vanessa)
+             ] == [crt, mod, tags]
 
       models = Model |> Repo.all()
       assert length(models) == 6
