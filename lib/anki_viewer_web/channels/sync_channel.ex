@@ -11,16 +11,19 @@ defmodule AnkiViewerWeb.SyncChannel do
     {:ok, socket}
   end
 
-  defp sanitize_integer(i) when is_integer(i) do
-    case i |> Integer.digits() |> length do
-      1 -> i
-      10 -> i
-      13 -> trunc(i / 1000)
-      _ -> raise "wrong sized integer given"
-    end
+  @doc """
+  Ensures integer is the right size to be inserted into our psql database
+  (for when milliseconds are given instead of seconds)
+  iex>sanitize_integer(1234567890111)
+  1234567890
+  iex>sanitize_integer(123)
+  123
+  """
+  def sanitize_integer(i) do
+    if is_integer(i) and i |> Integer.digits() |> length > 10,
+      do: i |> Kernel./(1000) |> trunc |> sanitize_integer,
+      else: i
   end
-
-  defp sanitize_integer(i), do: i
 
   def handle_info({:sync, :database}, socket) do
     {x, 0} = System.cmd("sqlite3", [@anki_db_path, "select * from col"])
@@ -31,12 +34,11 @@ defmodule AnkiViewerWeb.SyncChannel do
         "select c.id as cid, c.mod as cmod, c.did as did, c.due as due, n.flds as flds, c.lapses as lapses, n.mid as mid, n.id as nid, n.mod as nmod, c.ord as ord, c.queue as queue, c.reps as reps, n.sfld as sfld, n.tags as tags, c.type as type from notes as n inner join cards as c on n.id = c.nid"
       ])
 
-    push(socket, "updating collection", %{})
     [crt, mod, models, decks, tags] = String.split(x, "|")
 
     %Collection{
       crt: String.to_integer(crt),
-      mod: mod |> String.to_integer() |> Kernel./(1000) |> trunc,
+      mod: mod |> String.to_integer() |> sanitize_integer(),
       tags: tags |> Jason.decode!() |> Map.keys()
     }
     |> Collection.insert_or_update!()
@@ -47,20 +49,17 @@ defmodule AnkiViewerWeb.SyncChannel do
       |> Map.values()
       |> Enum.map(fn m ->
         m
-        |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
+        |> Map.new(fn {k, v} -> {String.to_atom(k), sanitize_integer(v)} end)
         |> Map.new(fn {k, v} ->
-          if k == :id do
-            {:mid, v}
-          else
-            {k, v}
+          case k do
+            :id -> {:mid, v}
+            :flds -> {:flds, Enum.map(v, &Map.get(&1, "name"))}
+            _ -> {k, v}
           end
         end)
-        |> Map.new(fn {k, v} -> {k, sanitize_integer(v)} end)
-        |> Map.update!(:flds, fn f -> Enum.map(f, fn k -> Map.get(k, "name") end) end)
       end)
 
-    %Model{}
-    |> Model.insert_or_update!(model_attrs)
+    Model.insert_or_update!(model_attrs)
 
     deck_attrs =
       decks
@@ -68,21 +67,19 @@ defmodule AnkiViewerWeb.SyncChannel do
       |> Map.values()
       |> Enum.map(fn d ->
         d
-        |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
+        |> Map.new(fn {k, v} -> {String.to_atom(k), sanitize_integer(v)} end)
         |> Map.new(fn {k, v} ->
-          {if k == :id do
-             :did
-           else
-             k
-           end, v}
+          if k == :id do
+            {:did, v}
+          else
+            {k, v}
+          end
         end)
-        |> Map.new(fn {k, v} -> {k, sanitize_integer(v)} end)
       end)
 
-    %Deck{}
-    |> Deck.insert_or_update!(deck_attrs)
+    Deck.insert_or_update!(deck_attrs)
 
-    push(socket, "updated collection", %{})
+    push(socket, "updating collection", %{})
 
     {:noreply, socket}
   end

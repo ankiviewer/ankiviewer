@@ -4,10 +4,10 @@ defmodule AnkiViewer.CollectionTest do
   test "insert_or_update a new collection" do
     attrs = %{crt: 123, mod: 123, tags: []}
 
-    %Collection{}
-    |> Collection.insert_or_update!(attrs)
+    Collection.insert_or_update!(attrs)
 
-    [%Collection{crt: 123, mod: 123, tags: []}] = Repo.all(Collection)
+    [%Collection{crt: crt, mod: mod, tags: tags}] = Repo.all(Collection)
+    assert [crt, mod, tags] == [123, 123, []]
   end
 
   test "insert_or_update a pre existing collection" do
@@ -18,12 +18,13 @@ defmodule AnkiViewer.CollectionTest do
     |> Collection.changeset(attrs1)
     |> Repo.insert!()
 
-    [%Collection{crt: 123, mod: 123, tags: []}] = Repo.all(Collection)
+    [%Collection{crt: crt, mod: mod, tags: tags}] = Repo.all(Collection)
+    assert [crt, mod, tags] == [123, 123, []]
 
-    %Collection{}
-    |> Collection.insert_or_update!(attrs2)
+    Collection.insert_or_update!(attrs2)
 
-    [%Collection{crt: 456, mod: 456, tags: ["one"]}] = Repo.all(Collection)
+    [%Collection{crt: crt, mod: mod, tags: tags}] = Repo.all(Collection)
+    assert [crt, mod, tags] == [456, 456, ["one"]]
 
     %Collection{crt: 789, mod: 789, tags: ["one", "two"]}
     |> Collection.insert_or_update!()
@@ -41,8 +42,7 @@ defmodule AnkiViewer.CollectionTest do
 
     [%Deck{did: 123, mod: 123, name: "name1"}] = Repo.all(Deck)
 
-    %Deck{}
-    |> Deck.insert_or_update!(attrs2)
+    Deck.insert_or_update!(attrs2)
 
     [%Deck{did: 456, mod: 456, name: "name2"}] = Repo.all(Deck)
 
@@ -63,8 +63,7 @@ defmodule AnkiViewer.CollectionTest do
     [%Model{did: 123, flds: ["Front1", "Back1"], mid: 123, mod: 123, name: "name1"}] =
       Repo.all(Model)
 
-    %Model{}
-    |> Model.insert_or_update!(attrs2)
+    Model.insert_or_update!(attrs2)
 
     [%Model{did: 456, flds: ["Front2", "Back2"], mid: 456, mod: 456, name: "name2"}] =
       Repo.all(Model)
@@ -94,8 +93,7 @@ defmodule AnkiViewer.CollectionTest do
       }
     ]
 
-    %Model{}
-    |> Model.insert_or_update!(attrs)
+    Model.insert_or_update!(attrs)
 
     assert length(Repo.all(Model)) == 2
   end
