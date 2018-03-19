@@ -28,6 +28,8 @@ defmodule AnkiViewerWeb.ConnCase do
   end
 
   setup tags do
+    AnkiViewer.TestHelpers.configure_sqlite!()
+
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(AnkiViewer.Repo)
 
     unless tags[:async] do
