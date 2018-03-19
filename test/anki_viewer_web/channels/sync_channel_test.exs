@@ -1,7 +1,5 @@
 defmodule AnkiViewerWeb.SyncChannelTest do
   use AnkiViewerWeb.ChannelCase, async: false
-  doctest AnkiViewerWeb.SyncChannel, import: true
-
   alias AnkiViewerWeb.SyncChannel
 
   describe "sync:database" do

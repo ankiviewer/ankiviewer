@@ -11,20 +11,6 @@ defmodule AnkiViewerWeb.SyncChannel do
     {:ok, socket}
   end
 
-  @doc """
-  Ensures integer is the right size to be inserted into our psql database
-  (for when milliseconds are given instead of seconds)
-  iex>sanitize_integer(1234567890111)
-  1234567890
-  iex>sanitize_integer(123)
-  123
-  """
-  def sanitize_integer(i) do
-    if is_integer(i) and i |> Integer.digits() |> length > 10,
-      do: i |> Kernel./(1000) |> trunc |> sanitize_integer,
-      else: i
-  end
-
   def handle_info({:sync, :database}, socket) do
     {x, 0} = System.cmd("sqlite3", [@anki_db_path, "select * from col"])
 
@@ -38,7 +24,7 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     %Collection{
       crt: String.to_integer(crt),
-      mod: mod |> String.to_integer() |> sanitize_integer(),
+      mod: mod |> String.to_integer() |> Utils.sanitize_integer(),
       tags: tags |> Jason.decode!() |> Map.keys()
     }
     |> Collection.insert_or_update!()
@@ -49,7 +35,7 @@ defmodule AnkiViewerWeb.SyncChannel do
       |> Map.values()
       |> Enum.map(fn m ->
         m
-        |> Map.new(fn {k, v} -> {String.to_atom(k), sanitize_integer(v)} end)
+        |> Map.new(fn {k, v} -> {String.to_atom(k), Utils.sanitize_integer(v)} end)
         |> Map.new(fn {k, v} ->
           case k do
             :id -> {:mid, v}
@@ -67,7 +53,7 @@ defmodule AnkiViewerWeb.SyncChannel do
       |> Map.values()
       |> Enum.map(fn d ->
         d
-        |> Map.new(fn {k, v} -> {String.to_atom(k), sanitize_integer(v)} end)
+        |> Map.new(fn {k, v} -> {String.to_atom(k), Utils.sanitize_integer(v)} end)
         |> Map.new(fn {k, v} ->
           case k do
             :id -> {:did, v}

@@ -29,6 +29,11 @@ defmodule AnkiViewer.NoteTest do
     assert cid == 123
   end
 
-  test "insert notes" do
+  test "update all" do
+    Note.update_all()
+
+    notes = [%Note{cid: cid, cmod: cmod, did: did} | _] = Note |> Repo.all()
+    assert length(notes) == 10
+    assert [cid, cmod, did] == [1_506_600_429, 1_510_927_123, 1_482_060_876]
   end
 end
