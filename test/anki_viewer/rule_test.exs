@@ -32,6 +32,9 @@ defmodule AnkiViewer.RuleTest do
       ]"
     }
 
-    IO.inspect(attrs)
+    Rule.insert!(attrs)
+
+    [%Rule{name: name}] = Repo.all(Rule)
+    assert name == "duplicate front"
   end
 end
