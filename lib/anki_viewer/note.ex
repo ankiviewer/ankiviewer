@@ -55,15 +55,11 @@ defmodule AnkiViewer.Note do
 
     {notes_string, 0} = System.cmd("sqlite3", [@anki_db_path, sql])
 
-    for note_string <- notes_string |> String.split("\n") |> Enum.filter(&(&1 != "")) do
+    for note_string <- notes_string |> String.split("\n", trim: true) do
       [cid, cmod, did, due, flds, lapses, mid, nid, nmod, ord, queue, reps, sfld, tags, type] =
         String.split(note_string, "|")
 
-      tags =
-        tags
-        |> String.split(" ")
-        |> Enum.map(&String.trim/1)
-        |> Enum.filter(&(&1 != ""))
+      tags = String.split(tags, " ", trim: true)
 
       attrs = %{
         cid: sanitize_integer(cid),
