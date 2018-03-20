@@ -1,5 +1,6 @@
 defmodule AnkiViewerWeb.SyncChannel do
   use AnkiViewerWeb, :channel
+  import Utils
 
   @anki_db_path Application.get_env(:anki_viewer, :anki_db_path)
 
@@ -24,7 +25,7 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     %Collection{
       crt: String.to_integer(crt),
-      mod: mod |> String.to_integer() |> Utils.sanitize_integer(),
+      mod: mod |> String.to_integer() |> sanitize_integer(),
       tags: tags |> Jason.decode!() |> Map.keys()
     }
     |> Collection.insert_or_update!()
@@ -35,7 +36,7 @@ defmodule AnkiViewerWeb.SyncChannel do
       |> Map.values()
       |> Enum.map(fn m ->
         m
-        |> Map.new(fn {k, v} -> {String.to_atom(k), Utils.sanitize_integer(v)} end)
+        |> Map.new(fn {k, v} -> {String.to_atom(k), sanitize_integer(v)} end)
         |> Map.new(fn {k, v} ->
           case k do
             :id -> {:mid, v}
@@ -53,7 +54,7 @@ defmodule AnkiViewerWeb.SyncChannel do
       |> Map.values()
       |> Enum.map(fn d ->
         d
-        |> Map.new(fn {k, v} -> {String.to_atom(k), Utils.sanitize_integer(v)} end)
+        |> Map.new(fn {k, v} -> {String.to_atom(k), sanitize_integer(v)} end)
         |> Map.new(fn {k, v} ->
           case k do
             :id -> {:did, v}
