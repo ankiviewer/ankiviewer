@@ -16,16 +16,17 @@ defmodule AnkiViewer.DataCase do
 
   using do
     quote do
-      alias AnkiViewer.{Collection, Deck, Model, Repo}
-
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
       import AnkiViewer.DataCase
+      alias AnkiViewer.{Collection, Deck, Model, Repo, Note, NoteRule, Rule}
     end
   end
 
   setup tags do
+    AnkiViewer.TestHelpers.configure_sqlite!()
+
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(AnkiViewer.Repo)
 
     unless tags[:async] do

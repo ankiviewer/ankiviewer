@@ -3,7 +3,7 @@ defmodule AnkiViewer.SingleEntry do
     quote do
       use Ecto.Schema
       import Ecto.Changeset
-      alias AnkiViewer.{Collection, Deck, Model, Repo}
+      alias AnkiViewer.{Collection, Model, Deck, Repo, Note, NoteRule, Rule}
 
       def insert_or_update!(attrs) do
         if Repo.one(__MODULE__) do

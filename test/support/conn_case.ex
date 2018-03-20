@@ -20,6 +20,7 @@ defmodule AnkiViewerWeb.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
       import AnkiViewerWeb.Router.Helpers
+      alias AnkiViewer.{Collection, Deck, Model, Repo, Note, NoteRule, Rule}
 
       # The default endpoint for testing
       @endpoint AnkiViewerWeb.Endpoint
@@ -27,6 +28,8 @@ defmodule AnkiViewerWeb.ConnCase do
   end
 
   setup tags do
+    AnkiViewer.TestHelpers.configure_sqlite!()
+
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(AnkiViewer.Repo)
 
     unless tags[:async] do
