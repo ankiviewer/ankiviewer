@@ -1,5 +1,6 @@
 defmodule AnkiViewerWeb.SyncChannel do
   use AnkiViewerWeb, :channel
+  import Utils
 
   @anki_db_path Application.get_env(:anki_viewer, :anki_db_path)
 
@@ -9,20 +10,6 @@ defmodule AnkiViewerWeb.SyncChannel do
     Process.send_after(self(), {:sync, :database}, 0)
 
     {:ok, socket}
-  end
-
-  @doc """
-  Ensures integer is the right size to be inserted into our psql database
-  (for when milliseconds are given instead of seconds)
-  iex>sanitize_integer(1234567890111)
-  1234567890
-  iex>sanitize_integer(123)
-  123
-  """
-  def sanitize_integer(i) do
-    if is_integer(i) and i |> Integer.digits() |> length > 10,
-      do: i |> Kernel./(1000) |> trunc |> sanitize_integer,
-      else: i
   end
 
   def handle_info({:sync, :database}, socket) do
