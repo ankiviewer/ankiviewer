@@ -3,15 +3,16 @@ defmodule AnkiViewer.Rule do
   import Ecto.Changeset
   alias AnkiViewer.Rule
 
+  @primary_key {:rid, :id, autoincrement: true}
   schema "rules" do
     field(:code, :string)
+    field(:tests, :string)
     field(:name, :string)
-    field(:rid, :integer)
 
     timestamps()
   end
 
-  @attrs ~w(code name rid)a
+  @attrs ~w(code name tests)a
   def changeset(%Rule{} = rule, attrs \\ %{}) do
     rule
     |> cast(attrs, @attrs)
