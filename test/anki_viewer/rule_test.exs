@@ -1,6 +1,28 @@
 defmodule AnkiViewer.RuleTest do
   use AnkiViewer.DataCase, async: false
 
+  test "insert rule struct" do
+    attrs = %{
+      name: "no blank fields",
+      code: """
+      (_deck, note) => note.sfld !== ""
+      """,
+      tests: [
+        %{
+          note: %{sfld: "h"},
+          fine: true
+        },
+        %{
+          note: %{sfld: ""},
+          fine: false
+        }
+      ] |> Jason.encode!
+    }
+    %Rule{}
+    |> Map.merge(attrs)
+    |> Rule.insert!
+  end
+
   describe "rule" do
     setup do
       attrs = [
@@ -9,7 +31,7 @@ defmodule AnkiViewer.RuleTest do
           code: """
           (deck, note) => {
             var fine = true;
-            for (var i=0;i<=deck.length;i++) {
+            for (var i=0;i<deck.length;i++) {
               if (deck[i].sfld == note.sfld && deck[i].nid != note.nid) {
                 fine = false;
                 break;
@@ -31,7 +53,7 @@ defmodule AnkiViewer.RuleTest do
             {
               "deck": [
                 {"nid": 0, "sfld": "h"},
-                {"nid": 1, "sfld": "h"},
+                {"nid": 1, "sfld": "h"}
               ],
               "note": {"nid": 0, "sfld": "h"},
               "fine": true
@@ -80,7 +102,7 @@ defmodule AnkiViewer.RuleTest do
     test "run tests through code" do
       ok_rule = Repo.get_by(Rule, name: "nouns start with 'the'")
 
-      {:ok, ""} = Rule.run_tests(ok_rule)
+      :ok = Rule.run_tests(ok_rule)
 
       error_rule = Repo.get_by(Rule, name: "no duplicate front")
 
