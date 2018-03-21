@@ -43,54 +43,48 @@ defmodule AnkiViewer.RuleTest do
             return fine;
           }
           """,
-          tests: """
-          [
-            {
-              "deck": [
-                {"nid": 0, "sfld": "h"},
-                {"nid": 1, "sfld": "hi"}
-              ],
-              "note": {"nid": 0, "sfld": "h"},
-              "fine": true
-            },
-            {
-              "deck": [
-                {"nid": 0, "sfld": "h"},
-                {"nid": 1, "sfld": "h"}
-              ],
-              "note": {"nid": 0, "sfld": "h"},
-              "fine": true
-            }
-          ]
-          """
+          tests:
+            [
+              %{
+                deck: [
+                  %{nid: 0, sfld: "h"},
+                  %{nid: 1, sfld: "hi"}
+                ],
+                note: %{nid: 0, sfld: "h"},
+                fine: true
+              },
+              %{
+                deck: [
+                  %{nid: 0, sfld: "h"},
+                  %{nid: 1, sfld: "h"}
+                ],
+                note: %{nid: 0, sfld: "h"},
+                fine: true
+              }
+            ]
+            |> Jason.encode!()
         },
         %{
           name: "nouns start with 'the'",
           code: """
-          (_deck, note) => {
-            if (note.tags.includes('noun')) {
-              return note.sfld.startsWith('the ')
-            } else {
-              return true;
-            }
-          }
+          (_deck, note) => note.tags.includes('noun') ? note.sfld.startsWith('the ') : true;
           """,
-          tests: """
-          [
-            {
-              "note": {"tags": ["noun"], "sfld": "h"},
-              "fine": false
-            },
-            {
-            "note": {"tags": [], "sfld": "h"},
-            "fine": true
-            },
-            {
-            "note": {"tags": ["noun"], "sfld": "the h"},
-            "fine": true
-            }
-          ]
-          """
+          tests:
+            [
+              %{
+                note: %{tags: ["noun"], sfld: "h"},
+                fine: false
+              },
+              %{
+                note: %{tags: [], sfld: "h"},
+                fine: true
+              },
+              %{
+                note: %{tags: ["noun"], sfld: "the h"},
+                fine: true
+              }
+            ]
+            |> Jason.encode!()
         }
       ]
 
@@ -99,16 +93,16 @@ defmodule AnkiViewer.RuleTest do
 
     test "insert" do
       [%Rule{name: name} | _] = Repo.all(Rule)
+
       assert name == "no duplicate front"
     end
 
     test "run tests through code" do
       ok_rule = Repo.get_by(Rule, name: "nouns start with 'the'")
 
-      :ok = Rule.run_tests(ok_rule)
+      assert Rule.run_tests(ok_rule) == :ok
 
       error_rule = Repo.get_by(Rule, name: "no duplicate front")
-
       {:error, error} = Rule.run_tests(error_rule)
 
       assert error == ""
