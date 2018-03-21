@@ -7,20 +7,23 @@ defmodule AnkiViewer.RuleTest do
       code: """
       (_deck, note) => note.sfld !== ""
       """,
-      tests: [
-        %{
-          note: %{sfld: "h"},
-          fine: true
-        },
-        %{
-          note: %{sfld: ""},
-          fine: false
-        }
-      ] |> Jason.encode!
+      tests:
+        [
+          %{
+            note: %{sfld: "h"},
+            fine: true
+          },
+          %{
+            note: %{sfld: ""},
+            fine: false
+          }
+        ]
+        |> Jason.encode!()
     }
+
     %Rule{}
     |> Map.merge(attrs)
-    |> Rule.insert!
+    |> Rule.insert!()
   end
 
   describe "rule" do
