@@ -31,4 +31,22 @@ defmodule AnkiViewer.Rule do
   end
 
   def insert!(list) when is_list(list), do: list |> Enum.each(&insert!/1)
+
+  def run_tests(%Rule{} = rule) do
+    Jason.decode!(rule.tests)
+
+    node = """
+    const ruleFunc = #{rule.code};
+    JSON.parse(process.argv[1]).forEach(({deck, note, fine}) => {
+      if (ruleFunc(deck, note) !== fine) {
+        process.exit(1);
+      }
+    });
+    """
+
+    case System.cmd("node", ["-e", node, rule.tests]) do
+      {"", 0} -> :ok
+      {error, 1} -> {:error, error}
+    end
+  end
 end
