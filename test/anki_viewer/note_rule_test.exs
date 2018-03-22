@@ -40,16 +40,13 @@ defmodule AnkiViewer.NoteRuleTest do
   end
 
   test "insert a NoteRule" do
-    [
-      %{
-        fails: true,
-        nid: 1,
-        rid: 1
-      }
-    ]
-    |> NoteRule.insert!()
+    attrs = %{fails: true, nid: 1, rid: 1}
+    [attrs] |> NoteRule.insert!()
+    %NoteRule{} |> Map.merge(attrs) |> NoteRule.insert!()
 
-    [%NoteRule{fails: fails, nid: nid, rid: rid}] = Repo.all(NoteRule)
+    [%NoteRule{fails: fails, nid: nid, rid: rid}, %NoteRule{fails: fails, nid: nid, rid: rid}] =
+      Repo.all(NoteRule)
+
     assert [fails, nid, rid] == [true, 1, 1]
   end
 end

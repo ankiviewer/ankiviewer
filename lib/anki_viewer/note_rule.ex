@@ -35,8 +35,8 @@ defmodule AnkiViewer.NoteRule do
     });
     """
 
-    notes = notes |> Utils.parseable_fields() |> Jason.encode!()
-    note = note |> Utils.parseable_fields() |> Jason.encode!()
+    [notes, note] =
+      [notes, note] |> Enum.map(&(&1 |> Utils.parseable_fields() |> Jason.encode!()))
 
     case System.cmd("node", ["-e", rule_func, notes, note]) do
       {"", 0} -> :ok

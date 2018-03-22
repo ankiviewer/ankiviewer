@@ -3,12 +3,11 @@ defmodule AnkiViewer.Repo.Migrations.CreateCollection do
 
   def change do
     create table(:collection, primary_key: false) do
-      add :crt, :integer
-      add :mod, :integer
-      add :tags, {:array, :string}
+      add(:crt, :integer)
+      add(:mod, :integer)
+      add(:tags, {:array, :string})
 
       timestamps()
     end
-
   end
 end
