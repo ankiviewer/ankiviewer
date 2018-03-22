@@ -38,6 +38,7 @@ install:
   - chmod +x $(npm config get prefix)/bin/elm-make
   - cd assets && npm install && cd -
 script:
+  - cd assets && npm test && cd -
   - mix format --check-formatted
   - mix coveralls.json
   - elixir --detached -e "File.write! 'pid', :os.getpid" -S mix phx.server
