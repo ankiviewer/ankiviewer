@@ -35,7 +35,7 @@ defmodule AnkiViewer.Rule do
   def run_tests(%Rule{} = rule) do
     Jason.decode!(rule.tests)
 
-    node = """
+    rule_func = """
     const ruleFunc = #{rule.code};
     JSON.parse(process.argv[1]).forEach(({deck, note, fine}) => {
       if (ruleFunc(deck, note) !== fine) {
@@ -44,7 +44,7 @@ defmodule AnkiViewer.Rule do
     });
     """
 
-    case System.cmd("node", ["-e", node, rule.tests]) do
+    case System.cmd("node", ["-e", rule_func, rule.tests]) do
       {"", 0} -> :ok
       {error, 1} -> {:error, error}
     end

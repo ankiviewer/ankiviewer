@@ -21,4 +21,24 @@ defmodule Utils do
   end
 
   def sanitize_integer(i), do: i
+
+  def parseable_fields(map) when is_map(map) do
+    map
+    |> Map.drop([:__struct__, :__meta__])
+    |> Enum.filter(fn {_k, v} ->
+      ~w(is_integer is_binary is_boolean is_map is_list)a
+      |> Enum.map(&apply(Kernel, &1, [v]))
+      |> Enum.any?()
+    end)
+    |> Map.new(fn {k, v} ->
+      cond do
+        is_map(v) or is_list(v) -> {k, parseable_fields(v)}
+        true -> {k, v}
+      end
+    end)
+  end
+
+  def parseable_fields(list) when is_list(list) do
+    Enum.map(list, &parseable_fields/1)
+  end
 end
