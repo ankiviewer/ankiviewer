@@ -5,7 +5,10 @@
   "scripts": {
     "deploy": "brunch build --production",
     "watch": "brunch watch --stdin",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "format": "elm-format elm --yes",
+    "checkformat": "elm-format elm --validate",
+    "test": "npm run checkformat"
   },
   "dependencies": {
     "elm": "^0.18.0",
