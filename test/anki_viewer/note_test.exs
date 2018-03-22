@@ -1,6 +1,5 @@
 defmodule AnkiViewer.NoteTest do
   use AnkiViewer.DataCase, async: false
-  alias AnkiViewer.{Note, Repo}
 
   test "insert note" do
     attrs = %{

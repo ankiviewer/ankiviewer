@@ -3,12 +3,11 @@ defmodule AnkiViewer.Repo.Migrations.CreateDecks do
 
   def change do
     create table(:decks, primary_key: false) do
-      add :did, :integer
-      add :name, :string
-      add :mod, :integer
+      add(:did, :integer)
+      add(:name, :string)
+      add(:mod, :integer)
 
       timestamps()
     end
-
   end
 end
