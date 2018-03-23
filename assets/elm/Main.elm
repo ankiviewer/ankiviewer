@@ -25,7 +25,7 @@ type Msg
 
 
 type alias Model =
-    { phxSocket : Maybe (Phoenix.Socket.Socket Msg) }
+    { phxSocket : Phoenix.Socket.Socket Msg }
 
 
 socketServer : String
@@ -38,40 +38,45 @@ init =
     ( initialModel, Cmd.none )
 
 
+initialPhxSocket : Phoenix.Socket.Socket Msg
+initialPhxSocket =
+    Phoenix.Socket.init socketServer
+        |> Phoenix.Socket.withDebug
+        |> Phoenix.Socket.on "hello" "sync:database" ReceiveDatabaseMsg
+
+
 initialModel : Model
 initialModel =
-    { phxSocket = Nothing }
+    { phxSocket = initialPhxSocket }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PhoenixMsg msg ->
-            case model.phxSocket of
-                Just oldPhxSocket ->
-                    let
-                        (phxSocket, phxCmd) = Phoenix.Socket.update msg oldPhxSocket
-                    in
-                       { model | phxSocket = Just phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
-                Nothing ->
-                    model ! []
+            let
+                ( phxSocket, phxCmd ) =
+                    Phoenix.Socket.update msg model.phxSocket
+            in
+                { model | phxSocket = phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
+
         LoadDatabase ->
             let
-                initialPhxSocket = Phoenix.Socket.init socketServer
-                    |> Phoenix.Socket.withDebug
-                    |> Phoenix.Socket.on "hello" "sync:database" ReceiveDatabaseMsg
+                channel =
+                    Phoenix.Channel.init "sync:database"
 
-                channel = Phoenix.Channel.init "sync:database"
                 ( phxSocket, phxCmd ) =
                     Phoenix.Socket.join channel initialPhxSocket
             in
-                { model | phxSocket = Just phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
+                { model | phxSocket = phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
 
         ReceiveDatabaseMsg m ->
             let
-                _ = Debug.log "ReceiveDatabaseMsg" m
+                _ =
+                    Debug.log "ReceiveDatabaseMsg" m
             in
-               model ! []
+                model ! []
+
         NoOp ->
             model ! []
 
@@ -85,8 +90,4 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.phxSocket of
-        Just phxSocket ->
-            Phoenix.Socket.listen phxSocket PhoenixMsg
-        Nothing ->
-            Sub.none
+    Phoenix.Socket.listen model.phxSocket PhoenixMsg

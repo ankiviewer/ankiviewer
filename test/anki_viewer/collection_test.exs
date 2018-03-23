@@ -32,7 +32,7 @@ defmodule AnkiViewer.CollectionTest do
     [%Collection{crt: 789, mod: 789, tags: ["one", "two"]}] = Repo.all(Collection)
   end
 
-  test "insert_or_update deck" do
+  test "insert_or_update a single deck" do
     attrs1 = %{did: 123, mod: 123, name: "name1"}
     attrs2 = %{did: 456, mod: 456, name: "name2"}
 
@@ -50,6 +50,34 @@ defmodule AnkiViewer.CollectionTest do
     |> Deck.insert_or_update!()
 
     [%Deck{did: 789, mod: 789, name: "name3"}] = Repo.all(Deck)
+  end
+
+  test "insert_or_update multiple decks" do
+    attrs1 = [
+      %{did: 1, mod: 1, name: "name1"},
+      %{did: 2, mod: 2, name: "name2"}
+    ]
+
+    attrs2 = [
+      %{did: 3, mod: 3, name: "name3"},
+      %{did: 4, mod: 4, name: "name4"}
+    ]
+
+    for a <- attrs1 do
+      %Deck{} |> Deck.changeset(a) |> Repo.insert!()
+    end
+
+    [
+      %Deck{did: 1, mod: 1, name: "name1"},
+      %Deck{did: 2, mod: 2, name: "name2"}
+    ] = Repo.all(Deck)
+
+    Deck.insert_or_update!(attrs2)
+
+    [
+      %Deck{did: 3, mod: 3, name: "name3"},
+      %Deck{did: 4, mod: 4, name: "name4"}
+    ] = Repo.all(Deck)
   end
 
   test "insert_or_update model" do
