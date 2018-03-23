@@ -5,15 +5,16 @@ defmodule AnkiViewerWeb.SyncChannel do
   @anki_db_path Application.get_env(:anki_viewer, :anki_db_path)
 
   def join("sync:database", _payload, socket) do
-    # A hack to extend the socket timeout, see:
-    # https://stackoverflow.com/questions/49331141/configure-channel-test-timeout-phoenix/49335536
-    Process.send_after(self(), {:sync, :database}, 0)
+    send(self(), {:sync, :database})
 
     {:ok, socket}
   end
 
   def handle_info({:sync, :database}, socket) do
-    {x, 0} = System.cmd("sqlite3", [@anki_db_path, "select * from col"])
+    push(socket, "sync:msg", %{msg: "starting sync"})
+
+    {x, 0} =
+      System.cmd("sqlite3", [@anki_db_path, "select crt, mod, models, decks, tags from col"])
 
     {_y, 0} =
       System.cmd("sqlite3", [
@@ -65,7 +66,8 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     Deck.insert_or_update!(deck_attrs)
 
-    push(socket, "updating collection", %{})
+    push(socket, "sync:msg", %{msg: "updated collection"})
+    push(socket, "done", %{})
 
     {:noreply, socket}
   end
