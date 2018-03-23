@@ -11,7 +11,6 @@ defmodule AnkiViewerWeb.SyncChannelTest do
 
     test "socket pushes 3 messages", %{socket: _socket} do
       assert_push("sync:msg", %{msg: "updated collection"})
-      assert_push("done", %{})
 
       coll = Collection |> Repo.all()
       [%Collection{crt: crt, mod: mod, tags: tags}] = coll
@@ -38,6 +37,13 @@ defmodule AnkiViewerWeb.SyncChannelTest do
       assert length(decks) == 3
       [%Deck{did: did, mod: mod, name: name} | _] = decks
       assert [1, 1_482_840_611, "Default"] == [did, mod, name]
+
+      assert_push("sync:msg", %{msg: "updated notes"})
+      assert_push("done", %{})
+
+      notes = Note |> Repo.all()
+
+      assert length(notes) == 10
     end
   end
 end
