@@ -20,7 +20,8 @@ main =
 type Msg
     = PhoenixMsg (Phoenix.Socket.Msg Msg)
     | LoadDatabase
-    | ReceiveDatabaseMsg Json.Encode.Value
+    | SyncDatabaseLeave Json.Encode.Value
+    | SyncDatabaseMsg Json.Encode.Value
     | NoOp
 
 
@@ -41,8 +42,9 @@ init =
 initialPhxSocket : Phoenix.Socket.Socket Msg
 initialPhxSocket =
     Phoenix.Socket.init socketServer
-        |> Phoenix.Socket.withDebug
-        |> Phoenix.Socket.on "hello" "sync:database" ReceiveDatabaseMsg
+        -- |> Phoenix.Socket.withDebug
+        |> Phoenix.Socket.on "sync:msg" "sync:database" SyncDatabaseMsg
+        |> Phoenix.Socket.on "done" "sync:database" SyncDatabaseLeave
 
 
 initialModel : Model
@@ -70,12 +72,19 @@ update msg model =
             in
                 { model | phxSocket = phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
 
-        ReceiveDatabaseMsg m ->
+        SyncDatabaseMsg m ->
             let
                 _ =
-                    Debug.log "ReceiveDatabaseMsg" m
+                    Debug.log "SyncDatabaseMsg" m
             in
                 model ! []
+
+        SyncDatabaseLeave _ ->
+            let
+                ( phxSocket, phxCmd ) =
+                    Phoenix.Socket.leave "sync:database" model.phxSocket
+            in
+                { model | phxSocket = phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
 
         NoOp ->
             model ! []
