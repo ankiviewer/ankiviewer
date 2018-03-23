@@ -2,6 +2,10 @@ module Main exposing (..)
 
 import Html exposing (Html, program, text, div, button)
 import Html.Events exposing (onClick)
+import Phoenix.Socket
+import Phoenix.Channel
+import Phoenix.Push
+import Json.Encode
 
 
 main =
@@ -9,16 +13,24 @@ main =
         { init = init
         , update = update
         , view = view
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
 type Msg
-    = NoOp
+    = PhoenixMsg (Phoenix.Socket.Msg Msg)
+    | LoadDatabase
+    | ReceiveDatabaseMsg Json.Encode.Value
+    | NoOp
 
 
 type alias Model =
-    { txt : String }
+    { phxSocket : Maybe (Phoenix.Socket.Socket Msg) }
+
+
+socketServer : String
+socketServer =
+    "ws://localhost:4000/socket/websocket"
 
 
 init : ( Model, Cmd Msg )
@@ -28,12 +40,38 @@ init =
 
 initialModel : Model
 initialModel =
-    { txt = "hello world" }
+    { phxSocket = Nothing }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        PhoenixMsg msg ->
+            case model.phxSocket of
+                Just oldPhxSocket ->
+                    let
+                        (phxSocket, phxCmd) = Phoenix.Socket.update msg oldPhxSocket
+                    in
+                       { model | phxSocket = Just phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
+                Nothing ->
+                    model ! []
+        LoadDatabase ->
+            let
+                initialPhxSocket = Phoenix.Socket.init socketServer
+                    |> Phoenix.Socket.withDebug
+                    |> Phoenix.Socket.on "hello" "sync:database" ReceiveDatabaseMsg
+
+                channel = Phoenix.Channel.init "sync:database"
+                ( phxSocket, phxCmd ) =
+                    Phoenix.Socket.join channel initialPhxSocket
+            in
+                { model | phxSocket = Just phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
+
+        ReceiveDatabaseMsg m ->
+            let
+                _ = Debug.log "ReceiveDatabaseMsg" m
+            in
+               model ! []
         NoOp ->
             model ! []
 
@@ -41,5 +79,14 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ button [ onClick NoOp ] [ text "Load Database" ]
+        [ button [ onClick LoadDatabase ] [ text "Load Database" ]
         ]
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    case model.phxSocket of
+        Just phxSocket ->
+            Phoenix.Socket.listen phxSocket PhoenixMsg
+        Nothing ->
+            Sub.none
