@@ -10,7 +10,8 @@ defmodule AnkiViewerWeb.SyncChannelTest do
     end
 
     test "socket pushes 3 messages", %{socket: _socket} do
-      assert_push("updating collection", %{}, 1000)
+      assert_push("sync:msg", %{msg: "updated collection"})
+      assert_push("done", %{})
 
       coll = Collection |> Repo.all()
       [%Collection{crt: crt, mod: mod, tags: tags}] = coll
