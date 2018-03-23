@@ -6,7 +6,7 @@ defmodule AnkiViewer.SingleEntry do
       alias AnkiViewer.{Collection, Model, Deck, Repo, Note, NoteRule, Rule}
 
       def insert_or_update!(attrs) do
-        if Repo.one(__MODULE__) do
+        if Repo.all(__MODULE__) != [] do
           Repo.delete_all(__MODULE__)
         end
 
