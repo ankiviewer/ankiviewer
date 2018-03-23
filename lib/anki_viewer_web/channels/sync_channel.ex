@@ -11,6 +11,8 @@ defmodule AnkiViewerWeb.SyncChannel do
   end
 
   def handle_info({:sync, :database}, socket) do
+    push(socket, "sync:msg", %{msg: "starting sync"})
+
     {x, 0} =
       System.cmd("sqlite3", [@anki_db_path, "select crt, mod, models, decks, tags from col"])
 
