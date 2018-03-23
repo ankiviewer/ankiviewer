@@ -13,7 +13,8 @@ defmodule AnkiViewerWeb.SyncChannel do
   end
 
   def handle_info({:sync, :database}, socket) do
-    {x, 0} = System.cmd("sqlite3", [@anki_db_path, "select * from col"])
+    {x, 0} =
+      System.cmd("sqlite3", [@anki_db_path, "select crt, mod, models, decks, tags from col"])
 
     {_y, 0} =
       System.cmd("sqlite3", [
@@ -65,7 +66,7 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     Deck.insert_or_update!(deck_attrs)
 
-    push(socket, "updating collection", %{})
+    push(socket, "updated collection", %{})
 
     {:noreply, socket}
   end
