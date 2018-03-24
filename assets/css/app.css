@@ -1,4 +1,4 @@
-.load-button {
+.sync-button {
 	position:relative;
 	border:0;
 	margin:0;
@@ -13,9 +13,9 @@
   -webkit-touch-callout: none;
 }
 
-.load-button,
-.load-button:after,
-.load-button:before {
+.sync-button,
+.sync-button:after,
+.sync-button:before {
 	padding:.6875rem 2rem;
 	-webkit-transition:-webkit-transform 0.75s,background-color .125s;
 	-moz-transition:-moz-transform 0.75s,background-color .125s;
@@ -27,8 +27,8 @@
 	transform-style:preserve-3d;
 }
 
-.load-button:after,
-.load-button:before {
+.sync-button:after,
+.sync-button:before {
 	position:absolute;
 	top:0;
 	bottom:0;
@@ -42,14 +42,14 @@
 
 }
 
-.load-button:before {
+.sync-button:before {
 	z-index:2;
 	color:#fff;
 	background-color:#3e87ec;
 	content:attr(data-label);
 }
 
-.load-button:after {
+.sync-button:after {
 	z-index:1;
 	background-color:#999;
 	background-repeat:no-repeat;
@@ -62,14 +62,15 @@
 	content:'';
 }
 
-.load-button:active:before {
+.sync-button:active:before {
 	background-color:#3571c8;
 }
 
-.load-button.loading {
+.sync-button.syncing {
 	-webkit-transform:rotateX(180deg);
 	-moz-transform:rotateX(180deg);
 	-ms-transform:rotateX(180deg);
 	transform:rotateX(180deg);
 }
 .dn {display: none;}
+.red {color: red;}
