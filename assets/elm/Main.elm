@@ -7,10 +7,11 @@ import Phoenix.Socket as Socket exposing (Socket)
 import Phoenix.Channel as Channel
 import Phoenix.Push as Push
 import Json.Encode exposing (Value, null)
-import Json.Decode exposing (Decoder, string, decodeValue)
+import Json.Decode exposing (Decoder, string, int, decodeValue)
 import Json.Decode.Pipeline exposing (decode, required)
 import Task
 import Process
+import Http
 
 
 main =
@@ -28,11 +29,14 @@ type Msg
     | StopSpinner
     | SyncDatabaseLeave Value
     | SyncDatabaseMsg Value
+    | GetCollection
+    | NewCollection (Result Http.Error Collection)
     | NoOp
 
 
 type alias Model =
     { phxSocket : Socket Msg
+    , collection : Collection
     , error : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
@@ -42,6 +46,7 @@ type alias Model =
 initialModel : Model
 initialModel =
     { phxSocket = initialPhxSocket
+    , collection = { lastModifiedDate = 0, numberNotes = 0 }
     , error = False
     , syncingDatabase = False
     , syncingDatabaseMsg = ""
@@ -55,7 +60,7 @@ socketServer =
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialModel, Cmd.none )
+    ( initialModel, getCollection )
 
 
 initialPhxSocket : Socket Msg
@@ -73,6 +78,24 @@ type alias SyncMsg =
 syncDatabaseMsgDecoder : Decoder SyncMsg
 syncDatabaseMsgDecoder =
     required "msg" string <| decode SyncMsg
+
+
+getCollection : Cmd Msg
+getCollection =
+    Http.send NewCollection <| Http.get "/api/collection" collectionResdecoder
+
+
+type alias Collection =
+    { lastModifiedDate : Int
+    , numberNotes : Int
+    }
+
+
+collectionResdecoder : Decoder Collection
+collectionResdecoder =
+    decode Collection
+        |> required "last_modified_date" int
+        |> required "number_notes" int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -116,15 +139,33 @@ update msg model =
             in
                 { model | phxSocket = phxSocket }
                     ! [ Cmd.map PhxMsg phxCmd
+                      , getCollection
                       , Process.sleep 600 |> Task.perform (always StopSpinner)
                       ]
+
+        NewCollection (Ok collection) ->
+            let
+                _ =
+                    Debug.log "x" collection
+            in
+                { model | collection = collection } ! []
+
+        NewCollection (Err e) ->
+            let
+                _ =
+                    Debug.log "e" e
+            in
+                model ! []
+
+        GetCollection ->
+            model ! [ getCollection ]
 
         NoOp ->
             model ! []
 
 
 view : Model -> Html Msg
-view { syncingDatabase, syncingDatabaseMsg, error } =
+view { syncingDatabase, syncingDatabaseMsg, error, collection } =
     div []
         [ button
             [ onClick SyncDatabase
@@ -144,6 +185,11 @@ view { syncingDatabase, syncingDatabaseMsg, error } =
                 ]
             ]
             [ text syncingDatabaseMsg ]
+        , div
+            []
+            [ div [] [ text <| "last modified: " ++ toString collection.lastModifiedDate ]
+            , div [] [ text <| "number notes: " ++ toString collection.numberNotes ]
+            ]
         ]
 
 
