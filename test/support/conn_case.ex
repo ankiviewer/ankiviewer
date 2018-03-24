@@ -20,6 +20,7 @@ defmodule AnkiViewerWeb.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
       import AnkiViewerWeb.Router.Helpers
+      import AnkiViewer.TestHelpers
       alias AnkiViewer.{Collection, Deck, Model, Repo, Note, NoteRule, Rule}
 
       # The default endpoint for testing
