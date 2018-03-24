@@ -23,7 +23,7 @@ main =
 
 type Msg
     = PhoenixMsg (Phoenix.Socket.Msg Msg)
-    | LoadDatabase
+    | SyncDatabase
     | StopSpinner
     | SyncDatabaseLeave Json.Encode.Value
     | SyncDatabaseMsg Json.Encode.Value
@@ -32,16 +32,18 @@ type Msg
 
 type alias Model =
     { phxSocket : Phoenix.Socket.Socket Msg
-    , loadingDatabase : Bool
-    , loadingDatabaseMsg : String
+    , error : Bool
+    , syncingDatabase : Bool
+    , syncingDatabaseMsg : String
     }
 
 
 initialModel : Model
 initialModel =
     { phxSocket = initialPhxSocket
-    , loadingDatabase = False
-    , loadingDatabaseMsg = ""
+    , error = False
+    , syncingDatabase = False
+    , syncingDatabaseMsg = ""
     }
 
 
@@ -83,7 +85,7 @@ update msg model =
             in
                 { model | phxSocket = phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
 
-        LoadDatabase ->
+        SyncDatabase ->
             let
                 channel =
                     Phoenix.Channel.init "sync:database"
@@ -91,22 +93,21 @@ update msg model =
                 ( phxSocket, phxCmd ) =
                     Phoenix.Socket.join channel initialPhxSocket
             in
-                { model | phxSocket = phxSocket, loadingDatabase = True } ! [ Cmd.map PhoenixMsg phxCmd ]
+                { model | phxSocket = phxSocket, syncingDatabase = True } ! [ Cmd.map PhoenixMsg phxCmd ]
 
         SyncDatabaseMsg raw ->
-            case Json.Decode.decodeValue syncDatabaseMsgDecoder raw of
-                Ok { syncMsg } ->
-                    { model | loadingDatabaseMsg = syncMsg } ! []
+            if model.error then
+                model ! []
+            else
+                case Json.Decode.decodeValue syncDatabaseMsgDecoder raw of
+                    Ok { syncMsg } ->
+                        { model | syncingDatabaseMsg = syncMsg } ! []
 
-                Err err ->
-                    let
-                        _ =
-                            Debug.log "SyncDatabaseMsg" err
-                    in
-                        model ! []
+                    Err err ->
+                        update (SyncDatabaseLeave Json.Encode.null) { model | syncingDatabaseMsg = err, error = True }
 
         StopSpinner ->
-            { model | loadingDatabase = False } ! []
+            { model | syncingDatabase = False } ! []
 
         SyncDatabaseLeave _ ->
             let
@@ -123,23 +124,26 @@ update msg model =
 
 
 view : Model -> Html Msg
-view { loadingDatabase, loadingDatabaseMsg } =
+view { syncingDatabase, syncingDatabaseMsg, error } =
     div []
         [ button
-            [ onClick LoadDatabase
-            , disabled loadingDatabase
-            , attribute "data-label" "Load Database"
+            [ onClick SyncDatabase
+            , disabled syncingDatabase
+            , attribute "data-label" "Sync Database"
             , classList
-                [ ( "load-button", True )
-                , ( "loading", loadingDatabase )
+                [ ( "sync-button", True )
+                , ( "syncing", syncingDatabase )
                 ]
             , id "load-button"
             ]
-            [ text "Load Database" ]
+            [ text "Sync Database" ]
         , div
-            [ classList [ ( "dn", not loadingDatabase ) ]
+            [ classList
+                [ ( "dn", (not (syncingDatabase || error)) )
+                , ( "red", error )
+                ]
             ]
-            [ text loadingDatabaseMsg ]
+            [ text syncingDatabaseMsg ]
         ]
 
 
