@@ -3,9 +3,9 @@ module Main exposing (..)
 import Html exposing (Html, program, text, div, button)
 import Html.Attributes exposing (classList, attribute, disabled, id)
 import Html.Events exposing (onClick)
-import Phoenix.Socket
-import Phoenix.Channel
-import Phoenix.Push
+import Phoenix.Socket as Socket
+import Phoenix.Channel as Channel
+import Phoenix.Push as Push
 import Json.Encode
 import Json.Decode
 import Task
@@ -22,7 +22,7 @@ main =
 
 
 type Msg
-    = PhoenixMsg (Phoenix.Socket.Msg Msg)
+    = PhoenixMsg (Socket.Msg Msg)
     | SyncDatabase
     | StopSpinner
     | SyncDatabaseLeave Json.Encode.Value
@@ -31,7 +31,7 @@ type Msg
 
 
 type alias Model =
-    { phxSocket : Phoenix.Socket.Socket Msg
+    { phxSocket : Socket.Socket Msg
     , error : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
@@ -57,11 +57,11 @@ init =
     ( initialModel, Cmd.none )
 
 
-initialPhxSocket : Phoenix.Socket.Socket Msg
+initialPhxSocket : Socket.Socket Msg
 initialPhxSocket =
-    Phoenix.Socket.init socketServer
-        |> Phoenix.Socket.on "sync:msg" "sync:database" SyncDatabaseMsg
-        |> Phoenix.Socket.on "done" "sync:database" SyncDatabaseLeave
+    Socket.init socketServer
+        |> Socket.on "sync:msg" "sync:database" SyncDatabaseMsg
+        |> Socket.on "done" "sync:database" SyncDatabaseLeave
 
 
 type alias SyncMsg =
@@ -81,17 +81,17 @@ update msg model =
         PhoenixMsg msg ->
             let
                 ( phxSocket, phxCmd ) =
-                    Phoenix.Socket.update msg model.phxSocket
+                    Socket.update msg model.phxSocket
             in
                 { model | phxSocket = phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
 
         SyncDatabase ->
             let
                 channel =
-                    Phoenix.Channel.init "sync:database"
+                    Channel.init "sync:database"
 
                 ( phxSocket, phxCmd ) =
-                    Phoenix.Socket.join channel initialPhxSocket
+                    Socket.join channel initialPhxSocket
             in
                 { model | phxSocket = phxSocket, syncingDatabase = True } ! [ Cmd.map PhoenixMsg phxCmd ]
 
@@ -112,7 +112,7 @@ update msg model =
         SyncDatabaseLeave _ ->
             let
                 ( phxSocket, phxCmd ) =
-                    Phoenix.Socket.leave "sync:database" model.phxSocket
+                    Socket.leave "sync:database" model.phxSocket
             in
                 { model | phxSocket = phxSocket }
                     ! [ Cmd.map PhoenixMsg phxCmd
@@ -149,4 +149,4 @@ view { syncingDatabase, syncingDatabaseMsg, error } =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Phoenix.Socket.listen model.phxSocket PhoenixMsg
+    Socket.listen model.phxSocket PhoenixMsg
