@@ -3,11 +3,12 @@ module Main exposing (..)
 import Html exposing (Html, program, text, div, button)
 import Html.Attributes exposing (classList, attribute, disabled, id)
 import Html.Events exposing (onClick)
-import Phoenix.Socket as Socket
+import Phoenix.Socket as Socket exposing (Socket)
 import Phoenix.Channel as Channel
 import Phoenix.Push as Push
-import Json.Encode
-import Json.Decode
+import Json.Encode exposing (Value, null)
+import Json.Decode exposing (Decoder, string, decodeValue)
+import Json.Decode.Pipeline exposing (decode, required)
 import Task
 import Process
 
@@ -22,16 +23,16 @@ main =
 
 
 type Msg
-    = PhoenixMsg (Socket.Msg Msg)
+    = PhxMsg (Socket.Msg Msg)
     | SyncDatabase
     | StopSpinner
-    | SyncDatabaseLeave Json.Encode.Value
-    | SyncDatabaseMsg Json.Encode.Value
+    | SyncDatabaseLeave Value
+    | SyncDatabaseMsg Value
     | NoOp
 
 
 type alias Model =
-    { phxSocket : Socket.Socket Msg
+    { phxSocket : Socket Msg
     , error : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
@@ -57,7 +58,7 @@ init =
     ( initialModel, Cmd.none )
 
 
-initialPhxSocket : Socket.Socket Msg
+initialPhxSocket : Socket Msg
 initialPhxSocket =
     Socket.init socketServer
         |> Socket.on "sync:msg" "sync:database" SyncDatabaseMsg
@@ -69,21 +70,20 @@ type alias SyncMsg =
     }
 
 
-syncDatabaseMsgDecoder : Json.Decode.Decoder SyncMsg
+syncDatabaseMsgDecoder : Decoder SyncMsg
 syncDatabaseMsgDecoder =
-    Json.Decode.map SyncMsg
-        (Json.Decode.field "msg" Json.Decode.string)
+    required "msg" string <| decode SyncMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        PhoenixMsg msg ->
+        PhxMsg msg ->
             let
                 ( phxSocket, phxCmd ) =
                     Socket.update msg model.phxSocket
             in
-                { model | phxSocket = phxSocket } ! [ Cmd.map PhoenixMsg phxCmd ]
+                { model | phxSocket = phxSocket } ! [ Cmd.map PhxMsg phxCmd ]
 
         SyncDatabase ->
             let
@@ -93,18 +93,18 @@ update msg model =
                 ( phxSocket, phxCmd ) =
                     Socket.join channel initialPhxSocket
             in
-                { model | phxSocket = phxSocket, syncingDatabase = True } ! [ Cmd.map PhoenixMsg phxCmd ]
+                { model | phxSocket = phxSocket, syncingDatabase = True } ! [ Cmd.map PhxMsg phxCmd ]
 
         SyncDatabaseMsg raw ->
             if model.error then
                 model ! []
             else
-                case Json.Decode.decodeValue syncDatabaseMsgDecoder raw of
+                case decodeValue syncDatabaseMsgDecoder raw of
                     Ok { syncMsg } ->
                         { model | syncingDatabaseMsg = syncMsg } ! []
 
                     Err err ->
-                        update (SyncDatabaseLeave Json.Encode.null) { model | syncingDatabaseMsg = err, error = True }
+                        update (SyncDatabaseLeave null) { model | syncingDatabaseMsg = err, error = True }
 
         StopSpinner ->
             { model | syncingDatabase = False } ! []
@@ -115,7 +115,7 @@ update msg model =
                     Socket.leave "sync:database" model.phxSocket
             in
                 { model | phxSocket = phxSocket }
-                    ! [ Cmd.map PhoenixMsg phxCmd
+                    ! [ Cmd.map PhxMsg phxCmd
                       , Process.sleep 600 |> Task.perform (always StopSpinner)
                       ]
 
@@ -149,4 +149,4 @@ view { syncingDatabase, syncingDatabaseMsg, error } =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Socket.listen model.phxSocket PhoenixMsg
+    Socket.listen model.phxSocket PhxMsg
