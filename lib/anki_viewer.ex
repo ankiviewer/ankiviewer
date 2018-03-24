@@ -4,8 +4,10 @@ defmodule AnkiViewer do
   @anki_db_path Application.get_env(:anki_viewer, :anki_db_path)
 
   defp sqlite_cmd!(sql, header \\ [header: false])
+
   defp sqlite_cmd!(sql, header: header) do
     h = if header, do: "-header", else: "-noheader"
+
     case System.cmd("sqlite3", [h, @anki_db_path, sql]) do
       {data, 0} -> data
       e -> raise e
@@ -33,9 +35,7 @@ defmodule AnkiViewer do
     json
     |> Jason.decode!()
     |> Map.values()
-    |> Enum.map(
-      &(Map.new(&1, fn {k, v} -> {String.to_atom(k), sanitize_integer(v)} end))
-    )
+    |> Enum.map(&Map.new(&1, fn {k, v} -> {String.to_atom(k), sanitize_integer(v)} end))
   end
 
   defp format_flds(flds), do: Enum.map(flds, &Map.get(&1, "name"))
