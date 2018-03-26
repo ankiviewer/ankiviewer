@@ -6,23 +6,13 @@ defmodule AnkiViewerWeb.PageController do
   end
 
   def collection(conn, _params) do
-    [last_modified_date, number_notes] =
-      case Collection |> Repo.one() do
-        nil ->
-          [0, 0]
+    case Repo.one(Collection) do
+      nil ->
+        json(conn, %{mod: 0, notes: 0})
 
-        c ->
-          [
-            c.mod,
-            Note |> Repo.all() |> length
-          ]
-      end
-
-    attrs = %{
-      last_modified_date: last_modified_date,
-      number_notes: number_notes
-    }
-
-    json(conn, attrs)
+      %{mod: mod} ->
+        notes = Note |> Repo.all() |> length()
+        json(conn, %{mod: mod, notes: notes})
+    end
   end
 end
