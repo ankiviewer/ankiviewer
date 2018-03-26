@@ -7,10 +7,12 @@ import Phoenix.Socket as Socket exposing (Socket)
 import Phoenix.Channel as Channel
 import Phoenix.Push as Push
 import Json.Encode exposing (Value, null)
-import Json.Decode exposing (Decoder, string, decodeValue)
+import Json.Decode exposing (Decoder, string, int, decodeValue)
 import Json.Decode.Pipeline exposing (decode, required)
 import Task
 import Process
+import Http
+import Date
 
 
 main =
@@ -28,11 +30,14 @@ type Msg
     | StopSpinner
     | SyncDatabaseLeave Value
     | SyncDatabaseMsg Value
+    | GetCollection
+    | NewCollection (Result Http.Error Collection)
     | NoOp
 
 
 type alias Model =
     { phxSocket : Socket Msg
+    , collection : Collection
     , error : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
@@ -42,6 +47,7 @@ type alias Model =
 initialModel : Model
 initialModel =
     { phxSocket = initialPhxSocket
+    , collection = { mod = 0, notes = 0 }
     , error = False
     , syncingDatabase = False
     , syncingDatabaseMsg = ""
@@ -55,7 +61,7 @@ socketServer =
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialModel, Cmd.none )
+    ( initialModel, getCollection )
 
 
 initialPhxSocket : Socket Msg
@@ -73,6 +79,24 @@ type alias SyncMsg =
 syncDatabaseMsgDecoder : Decoder SyncMsg
 syncDatabaseMsgDecoder =
     required "msg" string <| decode SyncMsg
+
+
+getCollection : Cmd Msg
+getCollection =
+    Http.send NewCollection <| Http.get "/api/collection" collectionDecoder
+
+
+type alias Collection =
+    { mod : Int
+    , notes : Int
+    }
+
+
+collectionDecoder : Decoder Collection
+collectionDecoder =
+    decode Collection
+        |> required "mod" int
+        |> required "notes" int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -116,15 +140,25 @@ update msg model =
             in
                 { model | phxSocket = phxSocket }
                     ! [ Cmd.map PhxMsg phxCmd
+                      , getCollection
                       , Process.sleep 600 |> Task.perform (always StopSpinner)
                       ]
+
+        NewCollection (Ok collection) ->
+            { model | collection = collection } ! []
+
+        NewCollection (Err e) ->
+            { model | error = True, syncingDatabaseMsg = toString e } ! []
+
+        GetCollection ->
+            model ! [ getCollection ]
 
         NoOp ->
             model ! []
 
 
 view : Model -> Html Msg
-view { syncingDatabase, syncingDatabaseMsg, error } =
+view { syncingDatabase, syncingDatabaseMsg, error, collection } =
     div []
         [ button
             [ onClick SyncDatabase
@@ -144,7 +178,24 @@ view { syncingDatabase, syncingDatabaseMsg, error } =
                 ]
             ]
             [ text syncingDatabaseMsg ]
+        , div
+            []
+            [ div [] [ text <| "last modified: " ++ formatDate collection.mod ]
+            , div [] [ text <| "number notes: " ++ toString collection.notes ]
+            ]
         ]
+
+
+formatDate : Int -> String
+formatDate mod =
+    let
+        date =
+            mod
+                * 1000
+                |> toFloat
+                |> Date.fromTime
+    in
+        (toString <| Date.dayOfWeek date) ++ " " ++ (toString <| Date.day date) ++ " " ++ (toString <| Date.month date) ++ " " ++ (toString <| Date.hour date) ++ ":" ++ (toString <| Date.minute date)
 
 
 subscriptions : Model -> Sub Msg
