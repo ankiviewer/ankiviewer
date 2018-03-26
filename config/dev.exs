@@ -1,5 +1,9 @@
 use Mix.Config
 
+if System.get_env("ANKI_DB_PATH") == nil do
+  raise "ANKI_DB_PATH environment var not set"
+end
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
