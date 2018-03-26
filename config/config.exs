@@ -5,16 +5,10 @@
 # is restricted to this project.
 use Mix.Config
 
-anki_db_path = System.get_env("ANKI_DB_PATH")
-
-if anki_db_path == nil do
-  raise "ANKI_DB_PATH environment var not set"
-end
-
 # General application configuration
 config :anki_viewer,
   ecto_repos: [AnkiViewer.Repo],
-  anki_db_path: anki_db_path
+  anki_db_path: System.get_env("ANKI_DB_PATH")
 
 # Configures the endpoint
 config :anki_viewer, AnkiViewerWeb.Endpoint,

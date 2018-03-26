@@ -21,8 +21,6 @@ defmodule AnkiViewer.TestHelpers do
 
     Repo.delete_all(Note)
 
-    notes_data = AnkiViewer.notes_data!()
-
-    Enum.each(notes_data, &Note.insert!/1)
+    AnkiViewer.notes_data!() |> Enum.each(&Note.insert!/1)
   end
 end
