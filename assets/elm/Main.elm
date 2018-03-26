@@ -12,6 +12,7 @@ import Json.Decode.Pipeline exposing (decode, required)
 import Task
 import Process
 import Http
+import Date
 
 
 main =
@@ -179,10 +180,22 @@ view { syncingDatabase, syncingDatabaseMsg, error, collection } =
             [ text syncingDatabaseMsg ]
         , div
             []
-            [ div [] [ text <| "last modified: " ++ toString collection.mod ]
+            [ div [] [ text <| "last modified: " ++ formatDate collection.mod ]
             , div [] [ text <| "number notes: " ++ toString collection.notes ]
             ]
         ]
+
+
+formatDate : Int -> String
+formatDate mod =
+    let
+        date =
+            mod
+                * 1000
+                |> toFloat
+                |> Date.fromTime
+    in
+        (toString <| Date.dayOfWeek date) ++ " " ++ (toString <| Date.day date) ++ " " ++ (toString <| Date.month date) ++ " " ++ (toString <| Date.hour date) ++ ":" ++ (toString <| Date.minute date)
 
 
 subscriptions : Model -> Sub Msg
