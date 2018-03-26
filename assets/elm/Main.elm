@@ -46,7 +46,7 @@ type alias Model =
 initialModel : Model
 initialModel =
     { phxSocket = initialPhxSocket
-    , collection = { lastModifiedDate = 0, numberNotes = 0 }
+    , collection = { mod = 0, notes = 0 }
     , error = False
     , syncingDatabase = False
     , syncingDatabaseMsg = ""
@@ -82,20 +82,20 @@ syncDatabaseMsgDecoder =
 
 getCollection : Cmd Msg
 getCollection =
-    Http.send NewCollection <| Http.get "/api/collection" collectionResdecoder
+    Http.send NewCollection <| Http.get "/api/collection" collectionDecoder
 
 
 type alias Collection =
-    { lastModifiedDate : Int
-    , numberNotes : Int
+    { mod : Int
+    , notes : Int
     }
 
 
-collectionResdecoder : Decoder Collection
-collectionResdecoder =
+collectionDecoder : Decoder Collection
+collectionDecoder =
     decode Collection
-        |> required "last_modified_date" int
-        |> required "number_notes" int
+        |> required "mod" int
+        |> required "notes" int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -144,18 +144,10 @@ update msg model =
                       ]
 
         NewCollection (Ok collection) ->
-            let
-                _ =
-                    Debug.log "x" collection
-            in
-                { model | collection = collection } ! []
+            { model | collection = collection } ! []
 
         NewCollection (Err e) ->
-            let
-                _ =
-                    Debug.log "e" e
-            in
-                model ! []
+            { model | error = True, syncingDatabaseMsg = toString e } ! []
 
         GetCollection ->
             model ! [ getCollection ]
@@ -187,8 +179,8 @@ view { syncingDatabase, syncingDatabaseMsg, error, collection } =
             [ text syncingDatabaseMsg ]
         , div
             []
-            [ div [] [ text <| "last modified: " ++ toString collection.lastModifiedDate ]
-            , div [] [ text <| "number notes: " ++ toString collection.numberNotes ]
+            [ div [] [ text <| "last modified: " ++ toString collection.mod ]
+            , div [] [ text <| "number notes: " ++ toString collection.notes ]
             ]
         ]
 
