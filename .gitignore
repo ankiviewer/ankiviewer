@@ -14,6 +14,7 @@ npm-debug.log
 # Static artifacts
 /assets/node_modules
 /assets/elm-stuff
+/assets/tests/elm-stuff
 /assets/cypress/screenshots
 /assets/cypress/videos
 /assets/js/elm.js
