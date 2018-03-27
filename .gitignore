@@ -16,12 +16,18 @@ npm-debug.log
 /assets/elm-stuff
 /assets/cypress/screenshots
 /assets/cypress/videos
-/assets/js/main.js
+/assets/js/elm.js
 
 # Since we are building assets from assets/,
 # we ignore priv/static. You may want to comment
 # this depending on your deployment strategy.
-/priv/static/
+/priv/static/*
+!/priv/static/css
+!/priv/static/js
+/priv/static/css/*
+/priv/static/js/*
+!/priv/static/css/.keep
+!/priv/static/js/.keep
 
 # Files matching config/*.secret.exs pattern contain sensitive
 # data and you should not commit them into version control.
