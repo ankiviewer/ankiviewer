@@ -3,8 +3,15 @@
   "repository": {},
   "license": "MIT",
   "scripts": {
-    "deploy": "brunch build --production",
-    "watch": "brunch watch --stdin",
+    "build": "npm run -s build:static && npm run -s build:css && npm run -s build:elm && npm run -s build:js",
+    "build:static": "cp -R static/* ../priv/static",
+    "build:css": "node-sass css/app.scss --output ../priv/static/css",
+    "build:js": "rollup -c rollup.config.js",
+    "build:elm": "node_modules/elm/binwrappers/elm-make elm/Main.elm --output js/elm.js --yes",
+    "watch:static": "nodemon -e txt,ico,png,svg -x 'npm run -s build:static' -q",
+    "watch:css": "node-sass css/app.scss --watch --output ../priv/static/css -q",
+    "watch:js": "rollup -c rollup.config.js -w --silent",
+    "watch:elm": "elm-live elm/Main.elm --output js/elm.js --yes",
     "cypress:run": "cypress run",
     "format": "elm-format elm --yes",
     "checkformat": "elm-format elm --validate",
@@ -12,14 +19,13 @@
   },
   "dependencies": {
     "elm": "^0.18.0",
-    "elm-brunch": "^0.10.0",
-    "brunch": "2.10.9",
-    "clean-css-brunch": "2.10.0",
-    "phoenix_html": "file:../deps/phoenix_html",
-    "uglify-js-brunch": "2.10.0"
+    "node-sass": "^4.8.3",
+    "rollup": "^0.57.1",
+    "rollup-plugin-commonjs": "^9.1.0"
   },
   "devDependencies": {
+    "cypress": "^2.1.0",
     "elm-format": "^0.6.1-alpha",
-    "cypress": "^2.1.0"
+    "elm-live": "^2.7.5"
   }
 }
