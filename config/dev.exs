@@ -4,6 +4,10 @@ if System.get_env("ANKI_DB_PATH") == nil do
   raise "ANKI_DB_PATH environment var not set"
 end
 
+watchers =
+  ~w(static css elm js)
+  |> Enum.map(&{:npm, ["run", "-s", "watch:#{&1}", cd: Path.expand("../assets", __DIR__)]})
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -15,14 +19,7 @@ config :anki_viewer, AnkiViewerWeb.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: [
-    node: [
-      "node_modules/brunch/bin/brunch",
-      "watch",
-      "--stdin",
-      cd: Path.expand("../assets", __DIR__)
-    ]
-  ]
+  watchers: watchers
 
 # ## SSL Support
 #
