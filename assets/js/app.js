@@ -1,2 +1,2 @@
-require('phoenix_html');
-require('./elm.js');
+import 'phoenix_html';
+import './elm.js';
