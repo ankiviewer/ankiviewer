@@ -10,6 +10,7 @@ cache:
     - deps
     - assets/node_modules
     - assets/elm-stuff/build-artifacts
+    - assets/tests/elm-stuff/build-artifacts
     - sysconfcpus
     - ~/.npm
 env:
@@ -28,17 +29,17 @@ before_install:
     fi
 install:
   - mix do local.hex --force, local.rebar --force
-  - mix do deps.get, compile, ecto.create, ecto.migrate
+  - mix do deps.get, compile --warnings-as-errors, ecto.create, ecto.migrate
   - . $HOME/.nvm/nvm.sh
   - nvm install stable
   - nvm use stable
-  - npm install -g elm@$ELM_VERSION
+  - npm install -g elm@$ELM_VERSION elm-test@0.18 elm-format
   - mv $(npm config get prefix)/bin/elm-make $(npm config get prefix)/bin/elm-make-old
   - echo -e "#\!/bin/bash\\n\\necho \"Running elm-make with sysconfcpus -n 2\"\\n\\n$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make-old \"\$@\"" > $(npm config get prefix)/bin/elm-make
   - chmod +x $(npm config get prefix)/bin/elm-make
-  - cd assets && npm install && cd -
+  - (cd assets && npm install && npm run build && npm run build:tests)
 script:
-  - cd assets && npm test && cd -
+  - (cd assets && npm test)
   - mix format --check-formatted
   - mix coveralls.json
   - elixir --detached -e "File.write! 'pid', :os.getpid" -S mix phx.server
@@ -48,9 +49,8 @@ script:
       printf '.'
       sleep 5
     done
-  - cd assets && $(npm bin)/cypress run && cd -
+  - (cd assets && npm run cypress)
   - kill -9 "$(cat pid)"
   - mix ecto.rollback --all
 after_success:
-  - if [ -f ./pid ];then;kill -9 "$(cat pid)";rm pid;fi
   - bash <(curl -s https://codecov.io/bash)
