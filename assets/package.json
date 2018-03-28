@@ -12,7 +12,7 @@
     "watch:css": "node-sass css/app.scss --watch --output ../priv/static/css -q",
     "watch:js": "rollup -c rollup.config.js -w --silent",
     "watch:elm": "elm-live elm/Main.elm --output js/elm.js --yes",
-    "cypress:run": "cypress run",
+    "cypress": "cypress run",
     "format": "elm-format elm --yes",
     "checkformat": "elm-format elm --validate",
     "test": "npm run checkformat"
