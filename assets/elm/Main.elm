@@ -164,10 +164,8 @@ view { syncingDatabase, syncingDatabaseMsg, error, collection } =
             [ onClick SyncDatabase
             , disabled syncingDatabase
             , attribute "data-label" "Sync Database"
-            , classList
-                [ ( "sync-button", True )
-                , ( "syncing", syncingDatabase )
-                ]
+            , class "sync-button"
+            , classList [ ( "syncing", syncingDatabase ) ]
             , id "load-button"
             ]
             [ text "Sync Database" ]
