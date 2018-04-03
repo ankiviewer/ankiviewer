@@ -47,9 +47,7 @@ defmodule AnkiViewer.Rule do
         status = if fine, do: "ok", else: "not ok"
 
         {:error,
-         "note: #{Jason.encode!(note)} and deck: #{Jason.encode!(deck)} were #{status} for rule: #{
-           rule.name
-         }"}
+         "note: #{inspect(note)} and deck: #{inspect(deck)} were #{status} for rule: #{rule.name}"}
     end
   end
 end
