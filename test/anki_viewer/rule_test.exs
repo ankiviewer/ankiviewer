@@ -107,9 +107,8 @@ defmodule AnkiViewer.RuleTest do
       error_rule = Repo.get_by(Rule, name: "no duplicate front")
       {:error, error} = Rule.run_tests(error_rule)
 
-      # TODO: better internal representation of note and deck
       assert error ==
-               ~s(note: {"nid":0,"sfld":"h"} and deck: [{"nid":0,"sfld":"h"},{"nid":1,"sfld":"h"}] were ok for rule: no duplicate front)
+               ~s(note: %{nid: 0, sfld: "h"} and deck: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were ok for rule: no duplicate front)
     end
   end
 end
