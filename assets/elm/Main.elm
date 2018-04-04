@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (Html, program, text, div, button)
-import Html.Attributes exposing (classList, attribute, disabled, id)
+import Html.Attributes exposing (classList, class, attribute, disabled, id)
 import Html.Events exposing (onClick)
 import Phoenix.Socket as Socket exposing (Socket)
 import Phoenix.Channel as Channel
