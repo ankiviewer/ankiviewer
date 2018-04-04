@@ -108,7 +108,7 @@ defmodule AnkiViewer.RuleTest do
       {:error, error} = Rule.run_tests(error_rule)
 
       assert error ==
-               ~s(note: %{nid: 0, sfld: "h"} and deck: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were ok for rule: no duplicate front)
+               ~s(note: %{nid: 0, sfld: "h"} and deck: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were expected to be ok, but were actually not ok for rule: no duplicate front)
     end
   end
 end
