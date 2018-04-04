@@ -5,20 +5,22 @@ defmodule AnkiViewer.RuleTest do
     attrs = %{
       name: "no blank fields",
       code: """
-      (_deck, note) => note.sfld !== ""
+      note.sfld != ""
       """,
-      tests:
+      tests: """
         [
           %{
             note: %{sfld: "h"},
-            fine: true
+            fine: true,
+            deck: nil
           },
           %{
             note: %{sfld: ""},
-            fine: false
+            fine: false,
+            deck: nil
           }
         ]
-        |> Jason.encode!()
+      """
     }
 
     %Rule{}
@@ -32,18 +34,11 @@ defmodule AnkiViewer.RuleTest do
         %{
           name: "no duplicate front",
           code: """
-          (deck, note) => {
-            var fine = true;
-            for (var i=0;i<deck.length;i++) {
-              if (deck[i].sfld == note.sfld && deck[i].nid != note.nid) {
-                fine = false;
-                break;
-              }
-            }
-            return fine;
-          }
+          not Enum.any?(deck, fn n ->
+            n.sfld == note.sfld and n.nid != note.nid
+          end)
           """,
-          tests:
+          tests: """
             [
               %{
                 deck: [
@@ -62,29 +57,36 @@ defmodule AnkiViewer.RuleTest do
                 fine: true
               }
             ]
-            |> Jason.encode!()
+          """
         },
         %{
           name: "nouns start with 'the'",
           code: """
-          (_deck, note) => note.tags.includes('noun') ? note.sfld.startsWith('the ') : true;
+          if "noun" in note.tags do
+            String.starts_with?(note.sfld, "the ")
+          else
+            true
+          end
           """,
-          tests:
+          tests: """
             [
               %{
                 note: %{tags: ["noun"], sfld: "h"},
+                deck: nil,
                 fine: false
               },
               %{
                 note: %{tags: [], sfld: "h"},
+                deck: nil,
                 fine: true
               },
               %{
                 note: %{tags: ["noun"], sfld: "the h"},
+                deck: nil,
                 fine: true
               }
             ]
-            |> Jason.encode!()
+          """
         }
       ]
 
@@ -105,7 +107,8 @@ defmodule AnkiViewer.RuleTest do
       error_rule = Repo.get_by(Rule, name: "no duplicate front")
       {:error, error} = Rule.run_tests(error_rule)
 
-      assert error == ""
+      assert error ==
+               ~s(note: %{nid: 0, sfld: "h"} and deck: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were ok for rule: no duplicate front)
     end
   end
 end
