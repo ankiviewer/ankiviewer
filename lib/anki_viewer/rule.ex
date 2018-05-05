@@ -31,6 +31,9 @@ defmodule AnkiViewer.Rule do
   end
 
   def insert!(list) when is_list(list), do: list |> Enum.each(&insert!/1)
+  
+  defp status(bool),
+    do: if bool, do: "ok", else: "not ok"
 
   def run_tests(%Rule{} = rule) do
     {tests, []} = Code.eval_string(rule.tests)
@@ -44,10 +47,8 @@ defmodule AnkiViewer.Rule do
         :ok
 
       %{fine: fine, note: note, deck: deck} ->
-        status = if fine, do: "ok", else: "not ok"
-
         {:error,
-         "note: #{inspect(note)} and deck: #{inspect(deck)} were #{status} for rule: #{rule.name}"}
+         "note: #{inspect(note)} and deck: #{inspect(deck)} were expected to be #{status(fine)}, but were actually #{status(not fine)} for rule: #{rule.name}"}
     end
   end
 end
