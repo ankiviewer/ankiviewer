@@ -32,21 +32,24 @@ defmodule AnkiViewer.Rule do
 
   def insert!(list) when is_list(list), do: list |> Enum.each(&insert!/1)
 
+  defp status(bool), do: if(bool, do: "ok", else: "not ok")
+
   def run_tests(%Rule{} = rule) do
-    Jason.decode!(rule.tests)
+    {tests, []} = Code.eval_string(rule.tests)
 
-    rule_func = """
-    const ruleFunc = #{rule.code};
-    JSON.parse(process.argv[1]).forEach(({deck, note, fine}) => {
-      if (ruleFunc(deck, note) !== fine) {
-        process.exit(1);
-      }
-    });
-    """
+    Enum.find(tests, :ok, fn %{fine: fine, note: note, deck: deck} ->
+      {eval_fine, _} = Code.eval_string(rule.code, note: note, deck: deck)
+      eval_fine != fine
+    end)
+    |> case do
+      :ok ->
+        :ok
 
-    case System.cmd("node", ["-e", rule_func, rule.tests]) do
-      {"", 0} -> :ok
-      {error, 1} -> {:error, error}
+      %{fine: fine, note: note, deck: deck} ->
+        {:error,
+         "note: #{inspect(note)} and deck: #{inspect(deck)} were expected to be #{status(fine)}, but were actually #{
+           status(not fine)
+         } for rule: #{rule.name}"}
     end
   end
 end
