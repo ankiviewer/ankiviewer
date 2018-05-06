@@ -8,7 +8,7 @@ defmodule AnkiViewer.NoteRuleTest do
       %{
         name: "sfld not blank",
         code: """
-        (_deck, note) => note.sfld !== ''
+        note.sfld != ""
         """,
         tests: "[]"
       }
@@ -18,7 +18,7 @@ defmodule AnkiViewer.NoteRuleTest do
       %{
         name: "sfld is blank",
         code: """
-        (_deck, note) => note.sfld === ''
+        note.sfld == ""
         """,
         tests: "[]"
       }
