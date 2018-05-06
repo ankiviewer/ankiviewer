@@ -24,23 +24,12 @@ defmodule AnkiViewer.NoteRule do
   end
 
   def run(notes, %Note{} = note, %Rule{code: code}) do
-    rule_func = """
-    const ruleFunc = #{code};
-    const notes = process.argv[1];
-    const note = process.argv[2];
-    JSON.parse(notes).forEach((note) => {
-      if (!ruleFunc(notes, note)) {
-        process.exit(1);
-      }
-    });
-    """
-
-    [notes, note] =
-      [notes, note] |> Enum.map(&(&1 |> Utils.parseable_fields() |> Jason.encode!()))
-
-    case System.cmd("node", ["-e", rule_func, notes, note]) do
-      {"", 0} -> :ok
-      {error, 1} -> {:error, error}
+    case Code.eval_string(code, note: note, notes: notes) do
+      {true, _} ->
+        :ok
+      # TODO: error handle
+      {false, _} ->
+        {:error, ""}
     end
   end
 
