@@ -27,6 +27,7 @@ defmodule AnkiViewer.NoteRule do
     case Code.eval_string(code, note: note, notes: notes) do
       {true, _} ->
         :ok
+
       # TODO: error handle
       {false, _} ->
         {:error, ""}
