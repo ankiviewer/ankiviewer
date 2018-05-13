@@ -23,5 +23,6 @@ defmodule AnkiViewerWeb.Router do
     pipe_through(:api)
 
     get("/collection", PageController, :collection)
+    get("/notes", PageController, :notes)
   end
 end
