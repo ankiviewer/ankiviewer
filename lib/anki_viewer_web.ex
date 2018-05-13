@@ -20,6 +20,7 @@ defmodule AnkiViewerWeb do
   def controller do
     quote do
       use Phoenix.Controller, namespace: AnkiViewerWeb
+      import Ecto.Query
       import Plug.Conn
       import AnkiViewerWeb.Router.Helpers
       import AnkiViewerWeb.Gettext
