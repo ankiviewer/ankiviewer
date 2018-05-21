@@ -16,13 +16,19 @@ defmodule AnkiViewerWeb.PageController do
     end
   end
 
-  def notes(conn, %{"deck" => deck, "model" => model, "modelorder" => _modelorder, "rule" => _rule, "search" => search, "tags" => _tags}) do
-    notes = Note
-    |> join(:inner, [n], m in Model, n.mid == m.mid)
-    |> join(:inner, [n, m], d in Deck, n.did == d.did)
-    |> select(
-      [n, m, d],
-      %{
+  def notes(conn, %{
+        "deck" => deck,
+        "model" => model,
+        "modelorder" => _modelorder,
+        "rule" => _rule,
+        "search" => search,
+        "tags" => _tags
+      }) do
+    notes =
+      Note
+      |> join(:inner, [n], m in Model, n.mid == m.mid)
+      |> join(:inner, [n, m], d in Deck, n.did == d.did)
+      |> select([n, m, d], %{
         model: m.name,
         tags: n.tags,
         deck: d.name,
@@ -35,13 +41,12 @@ defmodule AnkiViewerWeb.PageController do
         sfld: n.sfld,
         ord: n.ord,
         mod: n.nmod
-      }
-    )
-    |> where([n, m, d], like(n.flds, ^"%#{search}%"))
-    |> deck_query(deck)
-    |> model_query(model)
-    |> Repo.all()
-    |> extra_fields()
+      })
+      |> where([n, m, d], like(n.flds, ^"%#{search}%"))
+      |> deck_query(deck)
+      |> model_query(model)
+      |> Repo.all()
+      |> extra_fields()
 
     json(conn, notes)
   end
@@ -52,7 +57,7 @@ defmodule AnkiViewerWeb.PageController do
     json(conn, %{error: "BAD PARAMS"})
   end
 
-  @doc"""
+  @doc """
   iex>extra_fields(%{flds: "hiworld", sfld: "world", type: 0})
   %{flds: "hiworld", sfld: "world", front: "hi", back: "world", type: 0, ttype: 0}
 
@@ -61,13 +66,14 @@ defmodule AnkiViewerWeb.PageController do
     map
     |> Map.merge(%{front: String.replace_suffix(flds, sfld, ""), back: sfld, ttype: type})
   end
-  def extra_fields(list) when is_list(list),
-    do: Enum.map(list, &extra_fields/1)
+
+  def extra_fields(list) when is_list(list), do: Enum.map(list, &extra_fields/1)
 
   defp deck_query(q, deck) do
     case deck do
       "" ->
         q
+
       _ ->
         where(q, [n, m, d], d.name == ^deck)
     end
@@ -77,6 +83,7 @@ defmodule AnkiViewerWeb.PageController do
     case model do
       "" ->
         q
+
       _ ->
         where(q, [n, m, d], m.name == ^model)
     end

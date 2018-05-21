@@ -31,7 +31,7 @@ defmodule AnkiViewerWeb.PageControllerTest do
     end
 
     test "without notes data", %{conn: conn} do
-      params =  ~s(search=&model=&deck=&tags=&modelorder=&rule=)
+      params = ~s(search=&model=&deck=&tags=&modelorder=&rule=)
 
       conn = get(conn, "/api/notes?" <> params)
 
@@ -76,7 +76,7 @@ defmodule AnkiViewerWeb.PageControllerTest do
           "type" => 2,
           "front" => "Die Einigung",
           "back" => "the agreement",
-          "mod" => 1512715815,
+          "mod" => 1_512_715_815,
           "ttype" => 2
         },
         %{
@@ -93,7 +93,7 @@ defmodule AnkiViewerWeb.PageControllerTest do
           "type" => 2,
           "front" => "Die Einigung",
           "back" => "the agreement",
-          "mod" => 1512715815,
+          "mod" => 1_512_715_815,
           "ttype" => 2
         }
       ]
