@@ -138,6 +138,8 @@ type alias Collection =
 
 type alias Note =
     { model : String
+    , mod : Int
+    , ord : Int
     , tags : List String
     , deck : String
     , ttype : Int
@@ -164,7 +166,9 @@ notesDecoder =
 noteDecoder : Decoder Note
 noteDecoder =
     decode Note
-        |> required "mod" string
+        |> required "model" string
+        |> required "mod" int
+        |> required "ord" int
         |> required "tags" (list string)
         |> required "deck" string
         |> required "ttype" int
@@ -241,7 +245,7 @@ update msg model =
 
         NewNotes (Err e) ->
             let
-                _ = Debug.log "hi" (toString e)
+                _ = Debug.log "NewNotes Err" (toString e)
             in
                 model ! []
 
@@ -321,8 +325,16 @@ formatDate mod =
                 * 1000
                 |> toFloat
                 |> Date.fromTime
+
+        (dayOfWeek, day, month, hour, minute) =
+            ( Date.dayOfWeek date |> toString
+            , Date.day date |> toString
+            , Date.month date |> toString
+            , Date.hour date |> toString
+            , Date.minute date |> toString
+            )
     in
-        (toString <| Date.dayOfWeek date) ++ " " ++ (toString <| Date.day date) ++ " " ++ (toString <| Date.month date) ++ " " ++ (toString <| Date.hour date) ++ ":" ++ (toString <| Date.minute date)
+        dayOfWeek ++ " " ++ day ++ " " ++ month ++ " " ++ hour ++ ":" ++ minute
 
 
 subscriptions : Model -> Sub Msg
