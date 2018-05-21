@@ -114,27 +114,30 @@ getCollection =
 getNotes : Model -> Cmd Msg
 getNotes model =
     let
-        params = [ ( "search", model.search )
-                 , ( "model", model.model )
-                 , ( "deck", model.deck )
-                 , ( "tags", String.join "," model.tags )
-                 , ( "modelorder", model.order |> List.map toString |> String.join "," )
-                 , ( "rule", toString model.rule )
-                 ]
+        params =
+            [ ( "search", model.search )
+            , ( "model", model.model )
+            , ( "deck", model.deck )
+            , ( "tags", String.join "," model.tags )
+            , ( "modelorder", model.order |> List.map toString |> String.join "," )
+            , ( "rule", toString model.rule )
+            ]
     in
         Http.send NewNotes <| Http.get ("/api/notes?" ++ (parseNoteParams params)) notesDecoder
+
 
 parseNoteParams : List ( String, String ) -> String
 parseNoteParams params =
     params
-    |> List.map (\(k, v) -> k ++ "=" ++ v)
-    |> String.join "&"
+        |> List.map (\( k, v ) -> k ++ "=" ++ v)
+        |> String.join "&"
 
 
 type alias Collection =
     { mod : Int
     , notes : Int
     }
+
 
 type alias Note =
     { model : String
@@ -159,9 +162,10 @@ collectionDecoder =
         |> required "notes" int
 
 
-notesDecoder : Decoder ( List Note )
+notesDecoder : Decoder (List Note)
 notesDecoder =
     list noteDecoder
+
 
 noteDecoder : Decoder Note
 noteDecoder =
@@ -239,22 +243,24 @@ update msg model =
 
         NewNotes (Ok notes) ->
             let
-                _ = Debug.log "hi" (toString notes)
+                _ =
+                    Debug.log "hi" (toString notes)
             in
                 model ! []
 
         NewNotes (Err e) ->
             let
-                _ = Debug.log "NewNotes Err" (toString e)
+                _ =
+                    Debug.log "NewNotes Err" (toString e)
             in
                 model ! []
 
         SearchInput search ->
             let
-                newModel = { model | search = search }
+                newModel =
+                    { model | search = search }
             in
                 newModel ! [ getNotes newModel ]
-
 
         PageChange page ->
             { model | page = page } ! []
@@ -264,10 +270,11 @@ update msg model =
 
 
 view : Model -> Html Msg
-view ({ page} as model) =
+view ({ page } as model) =
     case page of
         Home ->
             homeView model
+
         Search ->
             searchView model
 
@@ -326,7 +333,7 @@ formatDate mod =
                 |> toFloat
                 |> Date.fromTime
 
-        (dayOfWeek, day, month, hour, minute) =
+        ( dayOfWeek, day, month, hour, minute ) =
             ( Date.dayOfWeek date |> toString
             , Date.day date |> toString
             , Date.month date |> toString
