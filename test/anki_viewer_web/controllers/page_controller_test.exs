@@ -1,5 +1,6 @@
 defmodule AnkiViewerWeb.PageControllerTest do
   use AnkiViewerWeb.ConnCase
+  doctest AnkiViewerWeb.PageController, import: true
 
   test "GET /", %{conn: conn} do
     conn = get(conn, "/")
@@ -30,7 +31,7 @@ defmodule AnkiViewerWeb.PageControllerTest do
     end
 
     test "without notes data", %{conn: conn} do
-      params =  ~s(search=&model=&deck=&tags=&modelorder=&rule=)
+      params = ~s(search=&model=&deck=&tags=&modelorder=&rule=)
 
       conn = get(conn, "/api/notes?" <> params)
 
@@ -72,7 +73,11 @@ defmodule AnkiViewerWeb.PageControllerTest do
           "reps" => 3,
           "sfld" => "the agreement",
           "tags" => [],
-          "type" => 2
+          "type" => 2,
+          "front" => "Die Einigung",
+          "back" => "the agreement",
+          "mod" => 1_512_715_815,
+          "ttype" => 2
         },
         %{
           "deck" => "DE",
@@ -85,7 +90,11 @@ defmodule AnkiViewerWeb.PageControllerTest do
           "reps" => 10,
           "sfld" => "the agreement",
           "tags" => [],
-          "type" => 2
+          "type" => 2,
+          "front" => "Die Einigung",
+          "back" => "the agreement",
+          "mod" => 1_512_715_815,
+          "ttype" => 2
         }
       ]
 
