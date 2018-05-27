@@ -18,7 +18,8 @@
     "checkformat": "elm-format elm tests --validate",
     "test": "npm run -s checkformat && npm run -s test:elm",
     "test:elm": "elm-test",
-    "test:js": "echo no js tests"
+    "test:js": "echo no js tests",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "elm": "^0.18.0",
