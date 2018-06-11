@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (Html, program, text, div, button, input)
-import Html.Attributes exposing (classList, class, attribute, disabled, id)
+import Html.Attributes exposing (classList, class, attribute, disabled, id, style)
 import Html.Events exposing (onClick, onInput)
 import Phoenix.Socket as Socket exposing (Socket)
 import Phoenix.Channel as Channel
@@ -35,6 +35,7 @@ type Msg
     | GetNotes
     | NewNotes (Result Http.Error (List Note))
     | PageChange Page
+    | PageChangeToSearch 
     | SearchInput String
     | NoOp
 
@@ -246,7 +247,7 @@ update msg model =
                 _ =
                     Debug.log "hi" (toString notes)
             in
-                model ! []
+                { model | notes = notes } ! []
 
         NewNotes (Err e) ->
             let
@@ -264,6 +265,12 @@ update msg model =
 
         PageChange page ->
             { model | page = page } ! []
+
+        PageChangeToSearch ->
+            let
+                newModel = { model | page = Search, search = "" }
+            in
+                newModel ! [ getNotes newModel ]
 
         NoOp ->
             model ! []
@@ -312,15 +319,62 @@ searchView model =
     div []
         [ nav model
         , input [ onInput SearchInput ] []
-        , div [] [ text "hi" ]
+        , div [ class "flex justify-around"]
+            (List.map
+                (\header ->
+                    div
+                        [ class ""
+                        , style
+                            [ ( "width", (toString <| 100/12) ++ "%")
+                            ]
+                        ]
+                        [ text header ]
+                )
+                [ "model", "mod", "ord", "tags", "deck", "ttype", "queue", "due", "reps", "lapses", "front", "back" ]
+            )
+        , div []
+            (List.map
+                (\note ->
+                    div [ class "flex justify-around" ]
+                        (List.map
+                            (\row ->
+                                div
+                                    [ class "overflow-hidden"
+                                    , style
+                                        [ ( "width", (toString <| 100/12) ++ "%")
+                                        ]
+                                    ]
+                                    [ text row ]
+                            )
+                            [ toString note.model
+                            , toString note.mod
+                            , toString note.ord
+                            , toString note.tags
+                            , note.deck
+                            , toString note.ttype
+                            , toString note.queue
+                            , toString note.due
+                            , toString note.reps
+                            , toString note.lapses
+                            , toString note.front
+                            , toString note.back
+                            ]
+                        )
+                )
+                model.notes
+            )
         ]
 
 
 nav : Model -> Html Msg
 nav model =
     div []
-        [ button [ onClick <| PageChange Home ] [ text "Home" ]
-        , button [ onClick <| PageChange Search ] [ text "Search" ]
+        [ button
+            [ onClick <| PageChange Home ]
+            [ text "Home" ]
+        , button
+            [ onClick PageChangeToSearch ]
+            [ text "Search" ]
         ]
 
 
