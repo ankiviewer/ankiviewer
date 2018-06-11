@@ -35,7 +35,7 @@ type Msg
     | GetNotes
     | NewNotes (Result Http.Error (List Note))
     | PageChange Page
-    | PageChangeToSearch 
+    | PageChangeToSearch
     | SearchInput String
     | NoOp
 
@@ -71,13 +71,17 @@ initialModel =
     , tags = []
     , order = []
     , rule = 0
-    , collection = { mod = 0, notes = 0 }
+    , collection = initialCollection
     , notes = []
     , error = False
     , syncingDatabase = False
     , syncingDatabaseMsg = ""
     , page = Home
     }
+
+
+initialCollection : Collection
+initialCollection = { mod = 0, notes = 0 }
 
 
 socketServer : String
@@ -268,7 +272,8 @@ update msg model =
 
         PageChangeToSearch ->
             let
-                newModel = { model | page = Search, search = "" }
+                newModel =
+                    { model | page = Search, search = "" }
             in
                 newModel ! [ getNotes newModel ]
 
@@ -319,13 +324,13 @@ searchView model =
     div []
         [ nav model
         , input [ onInput SearchInput ] []
-        , div [ class "flex justify-around"]
+        , div [ class "flex justify-around" ]
             (List.map
                 (\header ->
                     div
                         [ class ""
                         , style
-                            [ ( "width", (toString <| 100/12) ++ "%")
+                            [ ( "width", (toString <| 100 / 12) ++ "%" )
                             ]
                         ]
                         [ text header ]
@@ -341,7 +346,7 @@ searchView model =
                                 div
                                     [ class "overflow-hidden"
                                     , style
-                                        [ ( "width", (toString <| 100/12) ++ "%")
+                                        [ ( "width", (toString <| 100 / 12) ++ "%" )
                                         ]
                                     ]
                                     [ text row ]
