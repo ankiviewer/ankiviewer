@@ -81,7 +81,8 @@ initialModel =
 
 
 initialCollection : Collection
-initialCollection = { mod = 0, notes = 0 }
+initialCollection =
+    { mod = 0, notes = 0 }
 
 
 socketServer : String
