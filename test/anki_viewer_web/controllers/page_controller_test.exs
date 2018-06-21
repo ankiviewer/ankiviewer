@@ -58,6 +58,16 @@ defmodule AnkiViewerWeb.PageControllerTest do
       assert json_response(conn, 200) |> length == 10
     end
 
+    test "with model name", %{conn: conn} do
+      load_collection!()
+
+      params = ~s(search=&model=de_reverse&deck=&tags=&modelorder=&rule=)
+
+      conn = get(conn, "/api/notes?" <> params)
+
+      assert json_response(conn, 200) |> length == 10
+    end
+
     test "with search", %{conn: conn} do
       load_collection!()
 
