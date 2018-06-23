@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import Html exposing (Html, program, text, div, button, input)
 import Html.Attributes exposing (classList, class, attribute, disabled, id, style)
@@ -13,53 +13,16 @@ import Task
 import Process
 import Http
 import Date
+import Types exposing (..)
 
 
 main =
     program
         { init = init
+        , subscriptions = subscriptions
         , update = update
         , view = view
-        , subscriptions = subscriptions
         }
-
-
-type Msg
-    = PhxMsg (Socket.Msg Msg)
-    | SyncDatabase
-    | StopSpinner
-    | SyncDatabaseLeave Value
-    | SyncDatabaseMsg Value
-    | GetCollection
-    | NewCollection (Result Http.Error Collection)
-    | GetNotes
-    | NewNotes (Result Http.Error (List Note))
-    | PageChange Page
-    | PageChangeToSearch
-    | SearchInput String
-    | NoOp
-
-
-type alias Model =
-    { phxSocket : Socket Msg
-    , search : String
-    , model : String
-    , deck : String
-    , tags : List String
-    , order : List Int
-    , rule : Int
-    , collection : Collection
-    , notes : List Note
-    , error : Bool
-    , syncingDatabase : Bool
-    , syncingDatabaseMsg : String
-    , page : Page
-    }
-
-
-type Page
-    = Home
-    | Search
 
 
 initialModel : Model
@@ -102,11 +65,6 @@ initialPhxSocket =
         |> Socket.on "done" "sync:database" SyncDatabaseLeave
 
 
-type alias SyncMsg =
-    { syncMsg : String
-    }
-
-
 syncDatabaseMsgDecoder : Decoder SyncMsg
 syncDatabaseMsgDecoder =
     required "msg" string <| decode SyncMsg
@@ -137,28 +95,6 @@ parseNoteParams params =
     params
         |> List.map (\( k, v ) -> k ++ "=" ++ v)
         |> String.join "&"
-
-
-type alias Collection =
-    { mod : Int
-    , notes : Int
-    }
-
-
-type alias Note =
-    { model : String
-    , mod : Int
-    , ord : Int
-    , tags : List String
-    , deck : String
-    , ttype : Int
-    , queue : Int
-    , due : Int
-    , reps : Int
-    , lapses : Int
-    , front : String
-    , back : String
-    }
 
 
 collectionDecoder : Decoder Collection
