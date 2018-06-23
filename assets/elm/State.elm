@@ -62,21 +62,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PhxMsg phxMsg ->
-            let
-                ( phxSocket, phxCmd ) =
-                    Socket.update phxMsg model.phxSocket
-            in
-                { model | phxSocket = phxSocket } ! [ Cmd.map PhxMsg phxCmd ]
+            updateSocket model (Socket.update phxMsg) []
 
         Sync Start ->
-            let
-                channel =
-                    Channel.init "sync:database"
-
-                ( phxSocket, phxCmd ) =
-                    Socket.join channel initialPhxSocket
-            in
-                { model | phxSocket = phxSocket, syncingDatabase = True } ! [ Cmd.map PhxMsg phxCmd ]
+            updateSocket { model | syncingDatabase = True } (Socket.join (Channel.init "sync:database")) []
 
         Sync (Receive raw) ->
             if model.error then
@@ -93,15 +82,7 @@ update msg model =
             { model | syncingDatabase = False } ! []
 
         Sync (Stopping _) ->
-            let
-                ( phxSocket, phxCmd ) =
-                    Socket.leave "sync:database" model.phxSocket
-            in
-                { model | phxSocket = phxSocket }
-                    ! [ Cmd.map PhxMsg phxCmd
-                      , Rest.getCollection
-                      , Process.sleep 600 |> Task.perform (always (Sync Stop))
-                      ]
+            updateSocket model (Socket.leave "sync:database") [ Rest.getCollection, Process.sleep 600 |> Task.perform (always (Sync Stop)) ]
 
         Request (NewCollection (Ok collection)) ->
             { model | collection = collection } ! []
@@ -116,38 +97,36 @@ update msg model =
             model ! [ Rest.getNotes model ]
 
         Request (NewNotes (Ok notes)) ->
-            let
-                _ =
-                    Debug.log "hi" (toString notes)
-            in
-                { model | notes = notes } ! []
+            { model | notes = notes } ! []
 
         Request (NewNotes (Err e)) ->
-            let
-                _ =
-                    Debug.log "NewNotes Err" (toString e)
-            in
-                model ! []
+            { model | error = True, syncingDatabaseMsg = toString e } ! []
 
         SearchInput search ->
-            let
-                newModel =
-                    { model | search = search }
-            in
-                newModel ! [ Rest.getNotes newModel ]
+            updatedModel { model | search = search } Rest.getNotes
 
         ViewChange SearchView ->
-            let
-                newModel =
-                    { model | view = SearchView, search = "" }
-            in
-                newModel ! [ Rest.getNotes newModel ]
+            updatedModel { model | view = SearchView, search = "" } Rest.getNotes
 
         ViewChange view ->
             { model | view = view } ! []
 
         NoOp ->
             model ! []
+
+
+updateSocket : Model -> (Socket Msg -> ( Socket Msg, Cmd (Socket.Msg Msg) )) -> List (Cmd Msg) -> ( Model, Cmd Msg )
+updateSocket model socketCmd cmds =
+    let
+        ( phxSocket, phxCmd ) =
+            socketCmd model.phxSocket
+    in
+        { model | phxSocket = phxSocket } ! [ Cmd.map PhxMsg phxCmd, Cmd.batch cmds ]
+
+
+updatedModel : Model -> (Model -> Cmd Msg) -> ( Model, Cmd Msg )
+updatedModel model modelFn =
+    model ! [ modelFn model ]
 
 
 subscriptions : Model -> Sub Msg
