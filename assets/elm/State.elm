@@ -1,6 +1,14 @@
 module State exposing (init, update, subscriptions)
 
-import Types exposing (Model, Collection, Msg(..), Page(Home, Search))
+import Types
+    exposing
+        ( Model
+        , Collection
+        , Msg(..)
+        , SyncingMsg(..)
+        , RequestMsg(..)
+        , Views(HomeView, SearchView)
+        )
 import Rest
 import Phoenix.Socket as Socket exposing (Socket)
 import Phoenix.Channel as Channel
@@ -29,7 +37,7 @@ initialModel =
     , error = False
     , syncingDatabase = False
     , syncingDatabaseMsg = ""
-    , page = Home
+    , view = HomeView
     }
 
 
@@ -46,21 +54,21 @@ init =
 initialPhxSocket : Socket Msg
 initialPhxSocket =
     Socket.init socketServer
-        |> Socket.on "sync:msg" "sync:database" SyncDatabaseMsg
-        |> Socket.on "done" "sync:database" SyncDatabaseLeave
+        |> Socket.on "sync:msg" "sync:database" (Receive >> Sync)
+        |> Socket.on "done" "sync:database" (Stopping >> Sync)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        PhxMsg msg ->
+        PhxMsg phxMsg ->
             let
                 ( phxSocket, phxCmd ) =
-                    Socket.update msg model.phxSocket
+                    Socket.update phxMsg model.phxSocket
             in
                 { model | phxSocket = phxSocket } ! [ Cmd.map PhxMsg phxCmd ]
 
-        SyncDatabase ->
+        Sync Start ->
             let
                 channel =
                     Channel.init "sync:database"
@@ -70,7 +78,7 @@ update msg model =
             in
                 { model | phxSocket = phxSocket, syncingDatabase = True } ! [ Cmd.map PhxMsg phxCmd ]
 
-        SyncDatabaseMsg raw ->
+        Sync (Receive raw) ->
             if model.error then
                 model ! []
             else
@@ -79,12 +87,12 @@ update msg model =
                         { model | syncingDatabaseMsg = syncMsg } ! []
 
                     Err err ->
-                        update (SyncDatabaseLeave null) { model | syncingDatabaseMsg = err, error = True }
+                        update (Sync (Stopping null)) { model | syncingDatabaseMsg = err, error = True }
 
-        StopSpinner ->
+        Sync Stop ->
             { model | syncingDatabase = False } ! []
 
-        SyncDatabaseLeave _ ->
+        Sync (Stopping _) ->
             let
                 ( phxSocket, phxCmd ) =
                     Socket.leave "sync:database" model.phxSocket
@@ -92,29 +100,29 @@ update msg model =
                 { model | phxSocket = phxSocket }
                     ! [ Cmd.map PhxMsg phxCmd
                       , Rest.getCollection
-                      , Process.sleep 600 |> Task.perform (always StopSpinner)
+                      , Process.sleep 600 |> Task.perform (always (Sync Stop))
                       ]
 
-        NewCollection (Ok collection) ->
+        Request (NewCollection (Ok collection)) ->
             { model | collection = collection } ! []
 
-        NewCollection (Err e) ->
+        Request (NewCollection (Err e)) ->
             { model | error = True, syncingDatabaseMsg = toString e } ! []
 
-        GetCollection ->
+        Request GetCollection ->
             model ! [ Rest.getCollection ]
 
-        GetNotes ->
+        Request GetNotes ->
             model ! [ Rest.getNotes model ]
 
-        NewNotes (Ok notes) ->
+        Request (NewNotes (Ok notes)) ->
             let
                 _ =
                     Debug.log "hi" (toString notes)
             in
                 { model | notes = notes } ! []
 
-        NewNotes (Err e) ->
+        Request (NewNotes (Err e)) ->
             let
                 _ =
                     Debug.log "NewNotes Err" (toString e)
@@ -128,15 +136,15 @@ update msg model =
             in
                 newModel ! [ Rest.getNotes newModel ]
 
-        PageChange page ->
-            { model | page = page } ! []
-
-        PageChangeToSearch ->
+        ViewChange SearchView ->
             let
                 newModel =
-                    { model | page = Search, search = "" }
+                    { model | view = SearchView, search = "" }
             in
                 newModel ! [ Rest.getNotes newModel ]
+
+        ViewChange view ->
+            { model | view = view } ! []
 
         NoOp ->
             model ! []
