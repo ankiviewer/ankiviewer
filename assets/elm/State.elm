@@ -12,7 +12,7 @@ import Process
 
 socketServer : String
 socketServer =
-    "ws://localhost:4000/socket/websocket"
+    "ws://localhost:5000/socket/websocket"
 
 
 initialModel : Model

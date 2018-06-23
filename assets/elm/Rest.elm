@@ -4,6 +4,7 @@ import Types exposing (Model, Note, Collection, SyncMsg, Msg(NewNotes, NewCollec
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
 import Http
+import HttpBuilder
 
 
 syncDatabaseMsgDecoder : Decoder SyncMsg
@@ -13,13 +14,14 @@ syncDatabaseMsgDecoder =
 
 getCollection : Cmd Msg
 getCollection =
-    Http.send NewCollection <| Http.get "/api/collection" collectionDecoder
+    Http.get "/api/collection" collectionDecoder
+        |> Http.send NewCollection
 
 
 getNotes : Model -> Cmd Msg
 getNotes model =
-    let
-        params =
+    HttpBuilder.get "/api/notes"
+        |> HttpBuilder.withQueryParams
             [ ( "search", model.search )
             , ( "model", model.model )
             , ( "deck", model.deck )
@@ -27,15 +29,8 @@ getNotes model =
             , ( "modelorder", model.order |> List.map toString |> String.join "," )
             , ( "rule", toString model.rule )
             ]
-    in
-        Http.send NewNotes <| Http.get ("/api/notes?" ++ (parseNoteParams params)) notesDecoder
-
-
-parseNoteParams : List ( String, String ) -> String
-parseNoteParams params =
-    params
-        |> List.map (\( k, v ) -> k ++ "=" ++ v)
-        |> String.join "&"
+        |> HttpBuilder.withExpect (Http.expectJson notesDecoder)
+        |> HttpBuilder.send NewNotes
 
 
 collectionDecoder : Decoder Collection
