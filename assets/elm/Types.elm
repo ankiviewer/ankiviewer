@@ -1,26 +1,20 @@
-module Types exposing (Msg(..), Page(..), Model, Collection, Note, SyncMsg)
+module Types
+    exposing
+        ( Msg(..)
+        , Views(..)
+        , SyncingMsg(..)
+        , RequestMsg(..)
+        , Model
+        , Collection
+        , Note
+        , ReceivedSyncMsg
+        )
 
 import Phoenix.Socket as Socket exposing (Socket)
 import Phoenix.Channel as Channel
 import Phoenix.Push as Push
 import Http
 import Json.Encode exposing (Value, null)
-
-
-type Msg
-    = PhxMsg (Socket.Msg Msg)
-    | SyncDatabase
-    | StopSpinner
-    | SyncDatabaseLeave Value
-    | SyncDatabaseMsg Value
-    | GetCollection
-    | NewCollection (Result Http.Error Collection)
-    | GetNotes
-    | NewNotes (Result Http.Error (List Note))
-    | PageChange Page
-    | PageChangeToSearch
-    | SearchInput String
-    | NoOp
 
 
 type alias Model =
@@ -36,7 +30,7 @@ type alias Model =
     , error : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
-    , page : Page
+    , view : Views
     }
 
 
@@ -62,11 +56,34 @@ type alias Note =
     }
 
 
-type Page
-    = Home
-    | Search
-
-
-type alias SyncMsg =
+type alias ReceivedSyncMsg =
     { syncMsg : String
     }
+
+
+type Msg
+    = PhxMsg (Socket.Msg Msg)
+    | Sync SyncingMsg
+    | Request RequestMsg
+    | ViewChange Views
+    | SearchInput String
+    | NoOp
+
+
+type SyncingMsg
+    = Start
+    | Receive Value
+    | Stopping Value
+    | Stop
+
+
+type RequestMsg
+    = GetCollection
+    | NewCollection (Result Http.Error Collection)
+    | GetNotes
+    | NewNotes (Result Http.Error (List Note))
+
+
+type Views
+    = HomeView
+    | SearchView

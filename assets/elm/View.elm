@@ -3,18 +3,24 @@ module View exposing (rootView)
 import Html exposing (Html, text, button, div, input)
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (style, class, classList, id, attribute, disabled)
-import Types exposing (Model, Msg(PageChange, PageChangeToSearch, SyncDatabase, SearchInput), Page(Search, Home))
+import Types
+    exposing
+        ( Model
+        , Msg(ViewChange, Sync, SearchInput)
+        , Views(HomeView, SearchView)
+        , SyncingMsg(Start)
+        )
 import Date
 import Date.Extra as Date
 
 
 rootView : Model -> Html Msg
-rootView ({ page } as model) =
-    case page of
-        Home ->
+rootView ({ view } as model) =
+    case view of
+        HomeView ->
             homeView model
 
-        Search ->
+        SearchView ->
             searchView model
 
 
@@ -23,7 +29,7 @@ homeView ({ syncingDatabase, syncingDatabaseMsg, error, collection } as model) =
     div []
         [ nav model
         , button
-            [ onClick SyncDatabase
+            [ onClick <| Sync Start
             , disabled syncingDatabase
             , attribute "data-label" "Sync Database"
             , class "sync-button"
@@ -110,9 +116,9 @@ nav : Model -> Html Msg
 nav model =
     div []
         [ button
-            [ onClick <| PageChange Home ]
+            [ onClick <| ViewChange HomeView ]
             [ text "Home" ]
         , button
-            [ onClick PageChangeToSearch ]
+            [ onClick <| ViewChange SearchView ]
             [ text "Search" ]
         ]

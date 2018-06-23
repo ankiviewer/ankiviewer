@@ -1,21 +1,29 @@
 module Rest exposing (getNotes, getCollection, syncDatabaseMsgDecoder)
 
-import Types exposing (Model, Note, Collection, SyncMsg, Msg(NewNotes, NewCollection))
+import Types
+    exposing
+        ( Model
+        , Note
+        , Collection
+        , ReceivedSyncMsg
+        , Msg(Request)
+        , RequestMsg(NewNotes, NewCollection)
+        )
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
 import Http
 import HttpBuilder
 
 
-syncDatabaseMsgDecoder : Decoder SyncMsg
+syncDatabaseMsgDecoder : Decoder ReceivedSyncMsg
 syncDatabaseMsgDecoder =
-    required "msg" Decode.string <| decode SyncMsg
+    required "msg" Decode.string <| decode ReceivedSyncMsg
 
 
 getCollection : Cmd Msg
 getCollection =
     Http.get "/api/collection" collectionDecoder
-        |> Http.send NewCollection
+        |> Http.send (NewCollection >> Request)
 
 
 getNotes : Model -> Cmd Msg
@@ -30,7 +38,7 @@ getNotes model =
             , ( "rule", toString model.rule )
             ]
         |> HttpBuilder.withExpect (Http.expectJson notesDecoder)
-        |> HttpBuilder.send NewNotes
+        |> HttpBuilder.send (NewNotes >> Request)
 
 
 collectionDecoder : Decoder Collection
