@@ -115,10 +115,14 @@ searchView model =
 nav : Model -> Html Msg
 nav model =
     div []
-        [ button
-            [ onClick <| ViewChange HomeView ]
-            [ text "Home" ]
-        , button
-            [ onClick <| ViewChange SearchView ]
-            [ text "Search" ]
-        ]
+        (List.map
+            (\( viewText, view ) ->
+                button
+                    [ onClick <| ViewChange view ]
+                    [ text viewText ]
+            )
+            ([ ( "Home", HomeView )
+             , ( "Search", SearchView )
+             ]
+            )
+        )
