@@ -3,8 +3,9 @@ module View exposing (rootView)
 import Html exposing (Html, text, button, div, input)
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (style, class, classList, id, attribute, disabled)
-import Types exposing (Model, Msg(..), Page(Search, Home))
+import Types exposing (Model, Msg(PageChange, PageChangeToSearch, SyncDatabase, SearchInput), Page(Search, Home))
 import Date
+import Date.Extra as Date
 
 
 rootView : Model -> Html Msg
@@ -39,7 +40,15 @@ homeView ({ syncingDatabase, syncingDatabaseMsg, error, collection } as model) =
             [ text syncingDatabaseMsg ]
         , div
             []
-            [ div [] [ text <| "last modified: " ++ formatDate collection.mod ]
+            [ div
+                []
+                [ collection.mod
+                    * 1000
+                    |> toFloat
+                    |> Date.fromTime
+                    |> Date.toFormattedString "'last modified: 'EEEE, MMMM d, y 'at' h:mm a"
+                    |> text
+                ]
             , div [] [ text <| "number notes: " ++ toString collection.notes ]
             ]
         ]
@@ -107,23 +116,3 @@ nav model =
             [ onClick PageChangeToSearch ]
             [ text "Search" ]
         ]
-
-
-formatDate : Int -> String
-formatDate mod =
-    let
-        date =
-            mod
-                * 1000
-                |> toFloat
-                |> Date.fromTime
-
-        ( dayOfWeek, day, month, hour, minute ) =
-            ( Date.dayOfWeek date |> toString
-            , Date.day date |> toString
-            , Date.month date |> toString
-            , Date.hour date |> toString
-            , Date.minute date |> toString
-            )
-    in
-        dayOfWeek ++ " " ++ day ++ " " ++ month ++ " " ++ hour ++ ":" ++ minute
