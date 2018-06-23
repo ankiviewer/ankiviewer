@@ -8,6 +8,7 @@
     <meta name="author" content="">
 
     <title>Hello AnkiViewer!</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tachyons/4.9.1/tachyons.min.css">
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
   </head>
 
