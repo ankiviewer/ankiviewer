@@ -30,6 +30,7 @@ type alias Model =
     , error : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
+    , noteColumns : List ( String, Bool )
     , view : Views
     }
 
