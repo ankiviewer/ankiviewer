@@ -30,7 +30,8 @@ type alias Model =
     , error : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
-    , noteColumns : List ( String, Bool )
+    , noteColumns : List Bool
+    , showingManageNoteColumns : Bool
     , view : Views
     }
 
@@ -68,6 +69,8 @@ type Msg
     | Request RequestMsg
     | ViewChange Views
     | SearchInput String
+    | ToggleNoteColumn Int
+    | ToggleManageNotes
     | NoOp
 
 

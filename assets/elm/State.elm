@@ -37,8 +37,16 @@ initialModel =
     , error = False
     , syncingDatabase = False
     , syncingDatabaseMsg = ""
-    , view = HomeView
+    , noteColumns = initialNoteColumns
+    , showingManageNoteColumns = False
+    , view = SearchView
     }
+
+
+initialNoteColumns : List Bool
+initialNoteColumns =
+    List.range 1 12
+        |> List.map (\_ -> True)
 
 
 initialCollection : Collection
@@ -62,10 +70,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PhxMsg phxMsg ->
-            updateSocket model (Socket.update phxMsg) []
+            updateSocketHelper model (Socket.update phxMsg) []
 
         Sync Start ->
-            updateSocket { model | syncingDatabase = True } (Socket.join (Channel.init "sync:database")) []
+            updateSocketHelper { model | syncingDatabase = True } (Socket.join (Channel.init "sync:database")) []
 
         Sync (Receive raw) ->
             if model.error then
@@ -82,7 +90,7 @@ update msg model =
             { model | syncingDatabase = False } ! []
 
         Sync (Stopping _) ->
-            updateSocket model (Socket.leave "sync:database") [ Rest.getCollection, Process.sleep 600 |> Task.perform (always (Sync Stop)) ]
+            updateSocketHelper model (Socket.leave "sync:database") [ Rest.getCollection, Process.sleep 600 |> Task.perform (\_ -> (Sync Stop)) ]
 
         Request (NewCollection (Ok collection)) ->
             { model | collection = collection } ! []
@@ -105,6 +113,23 @@ update msg model =
         SearchInput search ->
             updatedModel { model | search = search } Rest.getNotes
 
+        ToggleNoteColumn index ->
+            let
+                noteColumns =
+                    List.indexedMap
+                        (\i nc ->
+                            if i == index then
+                                not nc
+                            else
+                                nc
+                        )
+                        model.noteColumns
+            in
+                { model | noteColumns = noteColumns } ! []
+
+        ToggleManageNotes ->
+            { model | showingManageNoteColumns = not model.showingManageNoteColumns } ! []
+
         ViewChange SearchView ->
             updatedModel { model | view = SearchView, search = "" } Rest.getNotes
 
@@ -115,8 +140,8 @@ update msg model =
             model ! []
 
 
-updateSocket : Model -> (Socket Msg -> ( Socket Msg, Cmd (Socket.Msg Msg) )) -> List (Cmd Msg) -> ( Model, Cmd Msg )
-updateSocket model socketCmd cmds =
+updateSocketHelper : Model -> (Socket Msg -> ( Socket Msg, Cmd (Socket.Msg Msg) )) -> List (Cmd Msg) -> ( Model, Cmd Msg )
+updateSocketHelper model socketCmd cmds =
     let
         ( phxSocket, phxCmd ) =
             socketCmd model.phxSocket
