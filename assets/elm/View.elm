@@ -6,12 +6,13 @@ import Html.Attributes exposing (style, class, classList, id, attribute, disable
 import Types
     exposing
         ( Model
-        , Msg(ViewChange, Sync, SearchInput)
+        , Msg(ViewChange, Sync, SearchInput, ToggleNoteColumn, ToggleManageNotes)
         , Views(HomeView, SearchView)
         , SyncingMsg(Start)
         )
 import Date
 import Date.Extra as Date
+import List.Extra as List
 
 
 rootView : Model -> Html Msg
@@ -60,51 +61,89 @@ homeView ({ syncingDatabase, syncingDatabaseMsg, error, collection } as model) =
         ]
 
 
+noteColumns : List String
+noteColumns =
+    [ "model", "mod", "ord", "tags", "deck", "type", "queue", "due", "reps", "lapses", "front", "back" ]
+
+
 searchView : Model -> Html Msg
 searchView model =
     div []
         [ nav model
         , input [ onInput SearchInput ] []
-        , div [ class "flex justify-around" ]
-            (List.map
-                (\header ->
-                    div
-                        [ class ""
-                        , style
-                            [ ( "width", (toString <| 100 / 12) ++ "%" )
+        , button
+            [ onClick ToggleManageNotes ]
+            [ text "Manage Notes" ]
+        , div
+            [ class "justify-around"
+            , classList
+                [ ( "dn", not model.showingManageNoteColumns )
+                , ( "flex", model.showingManageNoteColumns )
+                ]
+            ]
+            (noteColumns
+                |> List.zip model.noteColumns
+                |> List.indexedMap (\i ( selected, val ) -> ( i, selected, val ))
+                |> List.map
+                    (\( i, selected, header ) ->
+                        div
+                            [ class "pointer"
+                            , classList
+                                [ ( "red", not selected )
+                                , ( "green", selected )
+                                ]
+                            , style
+                                [ ( "width", (toString (100 / 12)) ++ "%" )
+                                ]
+                            , onClick <| ToggleNoteColumn i
                             ]
-                        ]
-                        [ text header ]
-                )
-                [ "model", "mod", "ord", "tags", "deck", "ttype", "queue", "due", "reps", "lapses", "front", "back" ]
+                            [ text header ]
+                    )
+            )
+        , div [ class "flex justify-around" ]
+            (noteColumns
+                |> List.zip model.noteColumns
+                |> List.filter (\( selected, _ ) -> selected)
+                |> List.map
+                    (\( _, header ) ->
+                        div
+                            [ class ""
+                            , style
+                                [ ( "width", (toString (100 / 12)) ++ "%" )
+                                ]
+                            ]
+                            [ text header ]
+                    )
             )
         , div []
             (List.map
                 (\note ->
                     div [ class "flex justify-around" ]
-                        (List.map
-                            (\row ->
-                                div
-                                    [ class "overflow-hidden"
-                                    , style
-                                        [ ( "width", (toString <| 100 / 12) ++ "%" )
+                        ([ note.model
+                         , toString note.mod
+                         , toString note.ord
+                         , toString note.tags
+                         , note.deck
+                         , toString note.ttype
+                         , toString note.queue
+                         , toString note.due
+                         , toString note.reps
+                         , toString note.lapses
+                         , note.front
+                         , note.back
+                         ]
+                            |> List.zip model.noteColumns
+                            |> List.filter (\( selected, _ ) -> selected)
+                            |> List.map
+                                (\( _, row ) ->
+                                    div
+                                        [ class "overflow-hidden"
+                                        , style
+                                            [ ( "width", (toString <| 100 / 12) ++ "%" )
+                                            ]
                                         ]
-                                    ]
-                                    [ text row ]
-                            )
-                            [ toString note.model
-                            , toString note.mod
-                            , toString note.ord
-                            , toString note.tags
-                            , note.deck
-                            , toString note.ttype
-                            , toString note.queue
-                            , toString note.due
-                            , toString note.reps
-                            , toString note.lapses
-                            , toString note.front
-                            , toString note.back
-                            ]
+                                        [ text row ]
+                                )
                         )
                 )
                 model.notes
