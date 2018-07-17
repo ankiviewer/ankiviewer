@@ -14,6 +14,7 @@
     "watch:js": "rollup -c rollup.config.js -w --silent",
     "watch:elm": "elm-live elm/Main.elm --output js/elm.js --yes",
     "cypress": "cypress run",
+    "cypress:open": "cypress open",
     "format": "elm-format elm tests --yes",
     "checkformat": "elm-format elm tests --validate",
     "test": "npm run -s checkformat && npm run -s test:elm",
