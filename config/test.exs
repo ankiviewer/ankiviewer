@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :anki_viewer, AnkiViewerWeb.Endpoint,
-  http: [port: 4001],
+  http: [port: 5001],
   server: true
 
 config :anki_viewer, anki_db_path: "#{System.get_env("TMP_DIR") || "/tmp"}/anki_test.db"

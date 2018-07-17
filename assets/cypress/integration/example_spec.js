@@ -1,6 +1,11 @@
-describe('Kitchen Sink', function () {
-  it('.should() - assert that <title> is correct', function () {
-    cy.visit('http://localhost:4001')
-    cy.title().should('include', 'Hello AnkiViewer!')
-  })
-})
+describe('Ankiviewer', () => {
+  it('should have correct <title>', () => {
+    cy.visit('/');
+    cy.title().should('include', 'Hello AnkiViewer!');
+  });
+
+  it('.should have correct <title', () => {
+    cy.visit('/search');
+    cy.title().should('include', 'Hello AnkiViewer!');
+  });
+});
