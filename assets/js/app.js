@@ -1,10 +1,26 @@
 import Elm from './elm.js';
 
+var router = new Navigo();
+
 var app_node = document.querySelector('#app');
 var app = Elm.Main.embed(app_node);
 
-app.ports.url.subscribe(function (url) {
-  console.log(url);
-});
+var urlMap = {
+  'HomeView': '/',
+  'SearchView': '/search'
+}
 
-app.ports.url.send({url: '/'});
+router
+  .on({
+    '/': function () {
+      app.ports.urlIn.send({view: '/'});
+    },
+    '/search': function () {
+      app.ports.urlIn.send({view: '/search'});
+    }
+  })
+  .resolve();
+
+app.ports.urlOut.subscribe(function (url) {
+  router.navigate(urlMap[url.view] || '/');
+});

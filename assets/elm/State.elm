@@ -1,4 +1,4 @@
-module State exposing (init, update, subscriptions)
+port module State exposing (init, update, subscriptions)
 
 import Types
     exposing
@@ -8,6 +8,7 @@ import Types
         , SyncingMsg(..)
         , RequestMsg(..)
         , Views(HomeView, SearchView)
+        , Url
         )
 import Rest
 import Phoenix.Socket as Socket exposing (Socket)
@@ -39,7 +40,7 @@ initialModel =
     , syncingDatabaseMsg = ""
     , noteColumns = initialNoteColumns
     , showingManageNoteColumns = False
-    , view = SearchView
+    , view = HomeView
     }
 
 
@@ -56,7 +57,7 @@ initialCollection =
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialModel, Rest.getCollection )
+    initialModel ! [ Rest.getCollection ]
 
 
 initialPhxSocket : Socket Msg
@@ -111,7 +112,11 @@ update msg model =
             { model | error = True, syncingDatabaseMsg = toString e } ! []
 
         SearchInput search ->
-            updatedModel { model | search = search } Rest.getNotes
+            let
+                newModel =
+                    { model | search = search }
+            in
+                newModel ! [ Rest.getNotes newModel ]
 
         ToggleNoteColumn index ->
             let
@@ -131,10 +136,20 @@ update msg model =
             { model | showingManageNoteColumns = not model.showingManageNoteColumns } ! []
 
         ViewChange SearchView ->
-            updatedModel { model | view = SearchView, search = "" } Rest.getNotes
+            { model | view = SearchView }
+                ! [ Rest.getNotes model, toString SearchView |> Url |> urlOut ]
 
         ViewChange view ->
-            { model | view = view } ! []
+            { model | view = view } ! [ toString view |> Url |> urlOut ]
+
+        UrlIn { view } ->
+            { model | view = router view }
+                ! case view of
+                    "/search" ->
+                        [ Rest.getNotes model ]
+
+                    _ ->
+                        []
 
         NoOp ->
             model ! []
@@ -149,11 +164,28 @@ updateSocketHelper model socketCmd cmds =
         { model | phxSocket = phxSocket } ! [ Cmd.map PhxMsg phxCmd, Cmd.batch cmds ]
 
 
-updatedModel : Model -> (Model -> Cmd Msg) -> ( Model, Cmd Msg )
-updatedModel model modelFn =
-    model ! [ modelFn model ]
+router : String -> Views
+router viewString =
+    case viewString of
+        "/" ->
+            HomeView
+
+        "/search" ->
+            SearchView
+
+        _ ->
+            HomeView
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Socket.listen model.phxSocket PhxMsg
+    Sub.batch
+        [ Socket.listen model.phxSocket PhxMsg
+        , urlIn UrlIn
+        ]
+
+
+port urlIn : (Url -> msg) -> Sub msg
+
+
+port urlOut : Url -> Cmd msg
