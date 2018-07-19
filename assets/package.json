@@ -20,7 +20,8 @@
     "test": "npm run -s checkformat && npm run -s test:elm",
     "test:elm": "elm-test",
     "test:js": "echo no js tests",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "elm-lint": "rm -rf elm-stuff/build-artifacts/0.18.0/user/project/1.0.0 && elm-make elm/Main.elm --output /dev/null --warn --yes"
   },
   "dependencies": {
     "elm": "^0.18.0",
