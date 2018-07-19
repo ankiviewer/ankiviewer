@@ -2,12 +2,12 @@ module Rest exposing (getNotes, getCollection, syncDatabaseMsgDecoder)
 
 import Types
     exposing
-        ( Model
-        , Note
-        , Collection
-        , ReceivedSyncMsg
-        , Msg(Request)
+        ( Msg(Request)
         , RequestMsg(NewNotes, NewCollection)
+        , Collection
+        , Model
+        , Note
+        , ReceivedSyncMsg
         )
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)

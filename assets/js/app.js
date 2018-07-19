@@ -31,4 +31,3 @@ router
 app.ports.urlOut.subscribe(function (url) {
   router.navigate(urlMap[url.view] || '/');
 });
-
