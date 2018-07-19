@@ -4,6 +4,7 @@ import Types
     exposing
         ( Model
         , Collection
+        , Flags
         , Msg(..)
         , SyncingMsg(..)
         , RequestMsg(..)
@@ -24,8 +25,8 @@ socketServer =
     "ws://localhost:5000/socket/websocket"
 
 
-initialModel : Model
-initialModel =
+initialModel : Flags -> Model
+initialModel flags =
     { phxSocket = initialPhxSocket
     , search = ""
     , model = ""
@@ -38,16 +39,21 @@ initialModel =
     , error = False
     , syncingDatabase = False
     , syncingDatabaseMsg = ""
-    , noteColumns = initialNoteColumns
+    , noteColumns = initialNoteColumns flags
     , showingManageNoteColumns = False
     , view = HomeView
     }
 
 
-initialNoteColumns : List Bool
-initialNoteColumns =
-    List.range 1 12
-        |> List.map (\_ -> True)
+initialNoteColumns : Flags -> List Bool
+initialNoteColumns flags =
+    case flags of
+        Just columns ->
+            columns
+
+        Nothing ->
+            List.range 1 12
+                |> List.map (\_ -> True)
 
 
 initialCollection : Collection
@@ -55,9 +61,9 @@ initialCollection =
     { mod = 0, notes = 0 }
 
 
-init : ( Model, Cmd Msg )
-init =
-    initialModel ! [ Rest.getCollection ]
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    initialModel flags ! [ Rest.getCollection ]
 
 
 initialPhxSocket : Socket Msg
@@ -130,7 +136,7 @@ update msg model =
                         )
                         model.noteColumns
             in
-                { model | noteColumns = noteColumns } ! []
+                { model | noteColumns = noteColumns } ! [ setColumns noteColumns ]
 
         ToggleManageNotes ->
             { model | showingManageNoteColumns = not model.showingManageNoteColumns } ! []
@@ -189,3 +195,6 @@ port urlIn : (Url -> msg) -> Sub msg
 
 
 port urlOut : Url -> Cmd msg
+
+
+port setColumns : List Bool -> Cmd msg

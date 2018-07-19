@@ -2,8 +2,15 @@ import Elm from './elm.js';
 
 var router = new Navigo();
 
+var storedColumns = localStorage.getItem('ankiviewer-columns-save');
+var startingColumns = storedColumns ? JSON.parse(storedColumns) : null;
+
 var app_node = document.querySelector('#app');
-var app = Elm.Main.embed(app_node);
+var app = Elm.Main.embed(app_node, startingColumns);
+
+app.ports.setColumns.subscribe(function(state) {
+  localStorage.setItem('ankiviewer-columns-save', JSON.stringify(state));
+});
 
 var urlMap = {
   'HomeView': '/',
