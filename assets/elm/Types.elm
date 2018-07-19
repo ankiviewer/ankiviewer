@@ -8,6 +8,7 @@ module Types
         , Collection
         , Note
         , ReceivedSyncMsg
+        , Url
         )
 
 import Phoenix.Socket as Socket exposing (Socket)
@@ -63,6 +64,11 @@ type alias ReceivedSyncMsg =
     }
 
 
+type alias Url =
+    { view : String
+    }
+
+
 type Msg
     = PhxMsg (Socket.Msg Msg)
     | Sync SyncingMsg
@@ -71,6 +77,7 @@ type Msg
     | SearchInput String
     | ToggleNoteColumn Int
     | ToggleManageNotes
+    | UrlIn Url
     | NoOp
 
 

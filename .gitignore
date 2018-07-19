@@ -29,6 +29,7 @@ npm-debug.log
 /priv/static/js/*
 !/priv/static/css/.keep
 !/priv/static/js/.keep
+!/priv/static/js/navigo.min.js*
 
 # Files matching config/*.secret.exs pattern contain sensitive
 # data and you should not commit them into version control.
