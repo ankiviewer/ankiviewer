@@ -2,7 +2,8 @@ module Types
     exposing
         ( Msg(..)
         , RequestMsg(..)
-        , SyncingMsg(..)
+        , WebsocketMsg(Sync)
+        , SyncMsg(..)
         , Views(..)
         , Collection
         , Flags
@@ -13,8 +14,6 @@ module Types
         )
 
 import Phoenix.Socket as Socket exposing (Socket)
-import Phoenix.Channel as Channel
-import Phoenix.Push as Push
 import Http
 import Json.Encode exposing (Value, null)
 
@@ -76,7 +75,7 @@ type alias Url =
 
 type Msg
     = PhxMsg (Socket.Msg Msg)
-    | Sync SyncingMsg
+    | Websocket WebsocketMsg
     | Request RequestMsg
     | ViewChange Views
     | SearchInput String
@@ -86,7 +85,11 @@ type Msg
     | NoOp
 
 
-type SyncingMsg
+type WebsocketMsg
+    = Sync SyncMsg
+
+
+type SyncMsg
     = Start
     | Receive Value
     | Stopping Value
