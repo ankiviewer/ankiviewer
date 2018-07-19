@@ -1,11 +1,12 @@
 module Types
     exposing
         ( Msg(..)
-        , Views(..)
-        , SyncingMsg(..)
         , RequestMsg(..)
-        , Model
+        , SyncingMsg(..)
+        , Views(..)
         , Collection
+        , Flags
+        , Model
         , Note
         , ReceivedSyncMsg
         , Url
@@ -16,6 +17,10 @@ import Phoenix.Channel as Channel
 import Phoenix.Push as Push
 import Http
 import Json.Encode exposing (Value, null)
+
+
+type alias Flags =
+    Maybe (List Bool)
 
 
 type alias Model =
