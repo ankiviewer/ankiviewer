@@ -3,7 +3,7 @@ module Views.Search exposing (searchView)
 import Html exposing (Html, text, div, button, input)
 import Html.Attributes exposing (style, class, classList)
 import Html.Events exposing (onClick, onInput)
-import Types exposing (Model, Msg(ToggleManageNotes, ToggleNoteColumn, SearchInput))
+import Types exposing (Model, Msg(..))
 import List.Extra as List
 import Views.Nav exposing (nav)
 
@@ -22,31 +22,72 @@ searchView model =
             [ onClick ToggleManageNotes ]
             [ text "Manage Notes" ]
         , div
-            [ class "justify-around"
-            , classList
-                [ ( "dn", not model.showingManageNoteColumns )
-                , ( "flex", model.showingManageNoteColumns )
-                ]
-            ]
-            (noteColumns
-                |> List.zip model.noteColumns
-                |> List.indexedMap (\i ( selected, val ) -> ( i, selected, val ))
-                |> List.map
-                    (\( i, selected, header ) ->
-                        div
-                            [ class "pointer"
-                            , classList
-                                [ ( "red", not selected )
-                                , ( "green", selected )
+            [ classList [ ( "dn", not model.showingManageNoteColumns ) ] ]
+            [ div
+                []
+                [ text "Deck:"
+                , div
+                    []
+                    (List.map
+                        (\{ name, did } ->
+                            div
+                                [ class "pointer"
+                                , classList [ ( "red", name == model.deck ) ]
+                                , onClick <| ToggleDeck name
                                 ]
-                            , style
-                                [ ( "width", (toString (100 / 12)) ++ "%" )
-                                ]
-                            , onClick <| ToggleNoteColumn i
-                            ]
-                            [ text header ]
+                                [ text name ]
+                        )
+                        model.collection.decks
                     )
-            )
+                ]
+            , div
+                []
+                [ text "Model:"
+                , div
+                    []
+                    (model.collection.models
+                        |> List.filter
+                            (\collectionModels ->
+                                case List.find (\{ name } -> name == model.deck) model.collection.decks of
+                                    Just { did } ->
+                                        collectionModels.did == did
+
+                                    Nothing ->
+                                        True
+                            )
+                        |> List.map
+                            (\{ name } ->
+                                div
+                                    [ class "pointer"
+                                    , classList [ ( "red", name == model.model ) ]
+                                    , onClick <| ToggleModel name
+                                    ]
+                                    [ text name ]
+                            )
+                    )
+                ]
+            , div
+                [ class "justify-around flex" ]
+                (noteColumns
+                    |> List.zip model.noteColumns
+                    |> List.indexedMap (\i ( selected, val ) -> ( i, selected, val ))
+                    |> List.map
+                        (\( i, selected, header ) ->
+                            div
+                                [ class "pointer"
+                                , classList
+                                    [ ( "red", not selected )
+                                    , ( "green", selected )
+                                    ]
+                                , style
+                                    [ ( "width", (toString (100 / 12)) ++ "%" )
+                                    ]
+                                , onClick <| ToggleNoteColumn i
+                                ]
+                                [ text header ]
+                        )
+                )
+            ]
         , div [ class "flex justify-around" ]
             (noteColumns
                 |> List.zip model.noteColumns

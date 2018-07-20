@@ -53,7 +53,11 @@ initialNoteColumns flags =
 
 initialCollection : Collection
 initialCollection =
-    { mod = 0, notes = 0 }
+    { mod = 0
+    , notes = 0
+    , models = []
+    , decks = []
+    }
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -77,6 +81,32 @@ update msg model =
             let
                 newModel =
                     { model | search = search }
+            in
+                newModel ! [ Rest.getNotes newModel ]
+
+        ToggleDeck deck ->
+            let
+                newDeck =
+                    if deck == model.deck then
+                        ""
+                    else
+                        deck
+
+                newModel =
+                    { model | deck = newDeck }
+            in
+                newModel ! [ Rest.getNotes newModel ]
+
+        ToggleModel m ->
+            let
+                newM =
+                    if m == model.model then
+                        ""
+                    else
+                        m
+
+                newModel =
+                    { model | model = newM }
             in
                 newModel ! [ Rest.getNotes newModel ]
 
