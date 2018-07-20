@@ -6,6 +6,8 @@ import Types
         , RequestMsg(NewNotes, NewCollection)
         , Collection
         , Model
+        , M
+        , D
         , Note
         , ReceivedSyncMsg
         )
@@ -46,6 +48,28 @@ collectionDecoder =
     decode Collection
         |> required "mod" Decode.int
         |> required "notes" Decode.int
+        |> required "models" modelsDecoder
+        |> required "decks" decksDecoder
+
+
+decksDecoder : Decoder (List D)
+decksDecoder =
+    Decode.list
+        (decode D
+            |> required "name" Decode.string
+            |> required "did" Decode.int
+        )
+
+
+modelsDecoder : Decoder (List M)
+modelsDecoder =
+    Decode.list
+        (decode M
+            |> required "name" Decode.string
+            |> required "mid" Decode.int
+            |> required "flds" (Decode.list Decode.string)
+            |> required "did" Decode.int
+        )
 
 
 notesDecoder : Decoder (List Note)
