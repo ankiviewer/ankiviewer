@@ -6,7 +6,9 @@ module Types
         , SyncMsg(..)
         , Views(..)
         , Collection
+        , D
         , Flags
+        , M
         , Model
         , Note
         , ReceivedSyncMsg
@@ -41,9 +43,25 @@ type alias Model =
     }
 
 
+type alias M =
+    { name : String
+    , mid : Int
+    , flds : List String
+    , did : Int
+    }
+
+
+type alias D =
+    { name : String
+    , did : Int
+    }
+
+
 type alias Collection =
     { mod : Int
     , notes : Int
+    , models : List M
+    , decks : List D
     }
 
 
@@ -79,6 +97,8 @@ type Msg
     | Request RequestMsg
     | ViewChange Views
     | SearchInput String
+    | ToggleDeck String
+    | ToggleModel String
     | ToggleNoteColumn Int
     | ToggleManageNotes
     | UrlIn Url
