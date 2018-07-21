@@ -19,7 +19,52 @@ defmodule AnkiViewerWeb.PageControllerTest do
       load_collection!()
       conn = get(conn, "/api/collection")
 
-      assert json_response(conn, 200) == %{"mod" => 1_514_655_628, "notes" => 10}
+      decks = [
+        %{"did" => 1, "name" => "Default"},
+        %{"did" => 1_482_060_876, "name" => "DE"},
+        %{"did" => 1_503_955_755, "name" => "Thai"}
+      ]
+
+      models = [
+        %{
+          "did" => 1_482_060_876,
+          "flds" => ["German", "English", "Hint"],
+          "mid" => 1_482_842_770,
+          "name" => "de_reverse"
+        },
+        %{
+          "did" => 1_482_060_876,
+          "flds" => ["German", "English", "Hint"],
+          "mid" => 1_482_844_263,
+          "name" => "de_en"
+        },
+        %{
+          "did" => 1_482_060_876,
+          "flds" => ["English", "German", "Hint"],
+          "mid" => 1_482_844_395,
+          "name" => "en_de"
+        },
+        %{
+          "did" => 1_482_060_876,
+          "flds" => ["Front", "Back"],
+          "mid" => 1_498_897_408,
+          "name" => "preposition_case"
+        },
+        %{"did" => 1, "flds" => ["Text", "Extra"], "mid" => 1_502_629_924, "name" => "Cloze"},
+        %{
+          "did" => 1,
+          "flds" => ["Front", "Back"],
+          "mid" => 1_507_832_105,
+          "name" => "Basic (and reversed card)"
+        }
+      ]
+
+      assert json_response(conn, 200) == %{
+               "mod" => 1_514_655_628,
+               "notes" => 10,
+               "decks" => decks,
+               "models" => models
+             }
     end
   end
 

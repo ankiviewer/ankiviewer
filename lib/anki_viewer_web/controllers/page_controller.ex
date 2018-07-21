@@ -11,8 +11,11 @@ defmodule AnkiViewerWeb.PageController do
         json(conn, %{mod: 0, notes: 0})
 
       %{mod: mod} ->
+        decks = Deck |> Repo.all() |> Enum.map(&Map.take(&1, ~w(did name)a))
+        models = Model |> Repo.all() |> Enum.map(&Map.take(&1, ~w(did flds mid name)a))
         notes = Note |> Repo.all() |> length()
-        json(conn, %{mod: mod, notes: notes})
+
+        json(conn, %{mod: mod, notes: notes, decks: decks, models: models})
     end
   end
 
