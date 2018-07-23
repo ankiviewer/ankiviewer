@@ -4,6 +4,7 @@ import Types
     exposing
         ( Model
         , Collection
+        , Rule
         , Flags
         , Url
         , Msg(..)
@@ -18,6 +19,7 @@ import Ports exposing (urlIn, urlOut, setColumns)
 import Websocket exposing (updateSocketHelper, initialPhxSocket)
 import Request
 import Router exposing (router)
+import Rule
 
 
 initialModel : Flags -> Model
@@ -29,6 +31,8 @@ initialModel flags =
     , tags = []
     , order = []
     , rule = 0
+    , rules = []
+    , newRule = initialRule
     , collection = initialCollection
     , notes = []
     , error = False
@@ -49,6 +53,15 @@ initialNoteColumns flags =
         Nothing ->
             List.range 1 12
                 |> List.map (\_ -> True)
+
+
+initialRule : Rule
+initialRule =
+    { rid = 0
+    , name = ""
+    , code = ""
+    , tests = ""
+    }
 
 
 initialCollection : Collection
@@ -141,6 +154,9 @@ update msg model =
 
         NoOp ->
             model ! []
+
+        RuleMsg ruleMsg ->
+            Rule.update ruleMsg model
 
 
 subscriptions : Model -> Sub Msg

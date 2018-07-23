@@ -14,7 +14,8 @@ app.ports.setColumns.subscribe(function(state) {
 
 var urlMap = {
   'HomeView': '/',
-  'SearchView': '/search'
+  'SearchView': '/search',
+  'RuleView': '/rules'
 }
 
 router
@@ -24,6 +25,9 @@ router
     },
     '/search': function () {
       app.ports.urlIn.send({view: '/search'});
+    },
+    '/rules': function () {
+      app.ports.urlIn.send({view: '/rules'});
     }
   })
   .resolve();

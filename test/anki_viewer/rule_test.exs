@@ -1,26 +1,29 @@
 defmodule AnkiViewer.RuleTest do
   use AnkiViewer.DataCase, async: false
 
+  @code """
+  note.sfld != ""
+  """
+  @tests """
+  [
+    %{
+      note: %{sfld: "h"},
+      fine: true,
+      deck: nil
+    },
+    %{
+      note: %{sfld: ""},
+      fine: false,
+      deck: nil
+    }
+  ]
+  """
+
   test "insert rule struct" do
     attrs = %{
       name: "no blank fields",
-      code: """
-      note.sfld != ""
-      """,
-      tests: """
-        [
-          %{
-            note: %{sfld: "h"},
-            fine: true,
-            deck: nil
-          },
-          %{
-            note: %{sfld: ""},
-            fine: false,
-            deck: nil
-          }
-        ]
-      """
+      code: @code,
+      tests: @tests
     }
 
     %Rule{}
@@ -109,6 +112,88 @@ defmodule AnkiViewer.RuleTest do
 
       assert error ==
                ~s(note: %{nid: 0, sfld: "h"} and deck: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were expected to be ok, but were actually not ok for rule: no duplicate front)
+    end
+  end
+
+  describe "validate" do
+    test "validate" do
+      assert Rule.validate("asdf") == :err
+    end
+
+    test "blank name" do
+      assert Rule.validate(%{name: ""}) == {:error, %{name: "Can't be blank"}}
+    end
+
+    test "code syntax error" do
+      code = """
+      note.sfld != "
+      """
+
+      actual = Rule.validate(%{name: "n", code: code, tests: @tests})
+      expected = {:error, %{code: "missing terminator: \" (for string starting at line 1)"}}
+
+      assert actual == expected
+    end
+
+    test "tests syntax error" do
+      tests = """
+        [
+          %{
+            note: %{sfld: "h"},
+            fine: true,
+            deck: nil
+          },
+          %{
+            note: %{sfld: ""},
+            fine: false,
+            deck: nil
+          }
+      """
+
+      actual = Rule.validate(%{name: "n", code: @code, tests: tests})
+      expected = {:error, %{tests: "missing terminator: ] (for \"[\" starting at line 1)"}}
+
+      assert actual == expected
+    end
+
+    test "code and tests syntax error" do
+      code = """
+      note.sfld != "
+      """
+
+      tests = """
+        [
+          %{
+            note: %{sfld: "h"},
+            fine: true,
+            deck: nil
+          },
+          %{
+            note: %{sfld: ""},
+            fine: false,
+            deck: nil
+          }
+      """
+
+      actual = Rule.validate(%{name: "n", code: code, tests: tests})
+
+      expected =
+        {:error,
+         %{
+           code: "missing terminator: \" (for string starting at line 1)",
+           tests: "missing terminator: ] (for \"[\" starting at line 1)"
+         }}
+
+      assert actual == expected
+    end
+
+    test "valid code, tests and name" do
+      rule = %{name: "n", code: @code, tests: @tests}
+
+      actual = Rule.validate(rule)
+      expected = {:ok, rule}
+
+      assert actual == expected
     end
   end
 end
