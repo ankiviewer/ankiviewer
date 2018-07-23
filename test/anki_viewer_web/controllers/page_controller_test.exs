@@ -1,5 +1,5 @@
 defmodule AnkiViewerWeb.PageControllerTest do
-  use AnkiViewerWeb.ConnCase
+  use AnkiViewerWeb.ConnCase, async: false
   doctest AnkiViewerWeb.PageController, import: true
 
   test "GET /", %{conn: conn} do

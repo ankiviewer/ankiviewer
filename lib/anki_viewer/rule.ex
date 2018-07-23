@@ -52,4 +52,32 @@ defmodule AnkiViewer.Rule do
          } for rule: #{rule.name}"}
     end
   end
+
+  def validate(%{name: ""}), do: {:error, %{name: "Can't be blank"}}
+
+  def validate(%{name: _, code: code, tests: tests} = rule) do
+    case {validate(code), validate(tests)} do
+      {{:error, code_error}, {:error, tests_error}} ->
+        {:error, %{code: code_error, tests: tests_error}}
+
+      {{:error, code_error}, :ok} ->
+        {:error, %{code: code_error}}
+
+      {:ok, {:error, tests_error}} ->
+        {:error, %{tests: tests_error}}
+
+      {:ok, :ok} ->
+        {:ok, rule}
+    end
+  end
+
+  def validate(code) when is_binary(code) do
+    case Code.string_to_quoted(code) do
+      {:ok, _} ->
+        :ok
+
+      {:error, {_line, error, ""}} ->
+        {:error, error}
+    end
+  end
 end
