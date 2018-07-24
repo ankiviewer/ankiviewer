@@ -1,5 +1,6 @@
 defmodule AnkiViewer.RuleTest do
   use AnkiViewer.DataCase, async: false
+  doctest AnkiViewer.Rule, import: true
 
   @code """
   note.sfld != ""
@@ -116,10 +117,6 @@ defmodule AnkiViewer.RuleTest do
   end
 
   describe "validate" do
-    test "validate" do
-      assert Rule.validate("asdf") == :err
-    end
-
     test "blank name" do
       assert Rule.validate(%{name: ""}) == {:error, %{name: "Can't be blank"}}
     end

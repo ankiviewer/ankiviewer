@@ -1,7 +1,7 @@
 defmodule AnkiViewer.Rule do
   use Ecto.Schema
   import Ecto.Changeset
-  alias AnkiViewer.{Rule, Repo}
+  alias AnkiViewer.{Rule, Repo, Note}
 
   @primary_key {:rid, :id, autogenerate: true}
   schema "rules" do
@@ -71,13 +71,20 @@ defmodule AnkiViewer.Rule do
     end
   end
 
+  @doc"""
+  iex>Rule.validate("asdf()")
+  {:error, "undefined function asdf/0"}
+  iex>Rule.validate("1")
+  :ok
+  """
   def validate(code) when is_binary(code) do
-    case Code.string_to_quoted(code) do
-      {:ok, _} ->
-        :ok
+    try do
+      Code.eval_string(code, note: %Note{})
 
-      {:error, {_line, error, ""}} ->
-        {:error, error}
+      :ok
+    rescue
+      error ->
+        {:error, error.description}
     end
   end
 end
