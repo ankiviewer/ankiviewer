@@ -14,7 +14,7 @@ update requestMsg model =
             { model | collection = collection } ! []
 
         NewCollection (Err e) ->
-            { model | error = True, syncingDatabaseMsg = toString e } ! []
+            { model | syncingError = True, syncingDatabaseMsg = toString e } ! []
 
         GetNotes ->
             model ! [ Rest.getNotes model ]
@@ -23,7 +23,7 @@ update requestMsg model =
             { model | notes = notes } ! []
 
         NewNotes (Err e) ->
-            { model | error = True, syncingDatabaseMsg = toString e } ! []
+            { model | syncingError = True, syncingDatabaseMsg = toString e } ! []
 
         GetRules ->
             model ! [ Rest.getRules ]
