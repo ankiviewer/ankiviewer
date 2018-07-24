@@ -121,6 +121,7 @@ ruleDecoder =
         |> required "name" Decode.string
         |> required "rid" Decode.int
 
+
 ruleEncoder : Rule -> Value
 ruleEncoder rule =
     Encode.object
