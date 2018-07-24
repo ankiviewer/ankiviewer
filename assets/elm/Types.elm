@@ -38,7 +38,7 @@ type alias Model =
     , newRule : Rule
     , collection : Collection
     , notes : List Note
-    , error : Bool
+    , syncingError : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
     , noteColumns : List Bool
