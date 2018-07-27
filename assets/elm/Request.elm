@@ -42,6 +42,20 @@ update requestMsg model =
             in
                 model ! []
 
+        NewRuleResponse (Ok ruleResponse) ->
+            let
+                _ =
+                    Debug.log "NewRuleResponse" ruleResponse
+            in
+                model ! []
+
+        NewRuleResponse (Err err) ->
+            let
+                _ =
+                    Debug.log "NewRuleResponse Err" err
+            in
+                model ! []
+
         CreateRule model ->
             model ! [ Rest.createRule model ]
 

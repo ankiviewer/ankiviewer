@@ -3,6 +3,8 @@ module Types
         ( Msg(..)
         , RequestMsg(..)
         , Rules(..)
+        , ErrRuleResponse
+        , RuleResponse
         , WebsocketMsg(Sync)
         , SyncMsg(..)
         , Views(..)
@@ -58,6 +60,20 @@ type alias M =
 type alias D =
     { name : String
     , did : Int
+    }
+
+
+type alias ErrRuleResponse =
+    { code : String
+    , tests : String
+    , name : String
+    }
+
+
+type alias RuleResponse =
+    { err : Bool
+    , rules : List Rule
+    , ruleErr : ErrRuleResponse
     }
 
 
@@ -143,6 +159,7 @@ type RequestMsg
     | NewNotes (Result Http.Error (List Note))
     | GetRules
     | NewRules (Result Http.Error (List Rule))
+    | NewRuleResponse (Result Http.Error RuleResponse)
     | CreateRule Model
     | UpdateRule Model
     | DeleteRule Model
