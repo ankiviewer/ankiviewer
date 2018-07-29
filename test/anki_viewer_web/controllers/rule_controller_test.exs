@@ -82,13 +82,25 @@ defmodule AnkiViewerWeb.RuleControllerTest do
 
       assert Repo.one(Rule) == nil
     end
+
+    test "empty non name params", %{conn: conn} do
+      params = %{"code" => "", "name" => "sam", "tests" => ""}
+      conn = post(conn, "/api/rules", params)
+
+      %{"err" => true, "params" => actual} = json_response(conn, 200)
+      %{"code" => code_error} = actual
+
+      assert code_error == "can't be blank"
+
+      assert Repo.one(Rule) == nil
+    end
   end
 
   describe "PUT /api/rules/:rid" do
     test "valid params", %{conn: conn} do
       params = %{"name" => @name, "code" => @code, "tests" => @tests}
 
-      %{rid: rid} = Repo.insert!(%Rule{name: @name, code: @code, tests: @tests})
+      %{rid: rid} = %Rule{} |> Map.merge(params) |> Repo.insert!()
 
       new_params = %{params | "name" => "new name"}
 
@@ -139,7 +151,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
 
     conn = delete(conn, "/api/rules/#{rid}")
 
-    assert json_response(conn, 200) == %{"err" => false, "params" => []}
+    assert json_response(conn, 200) == %{"rules" => []}
 
     assert Repo.one(Rule) == nil
   end

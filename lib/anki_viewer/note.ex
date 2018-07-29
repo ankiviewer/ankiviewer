@@ -18,7 +18,7 @@ defmodule AnkiViewer.Note do
     field(:queue, :integer)
     field(:reps, :integer)
     field(:sfld, :string)
-    field(:tags, {:array, :string})
+    field(:tags, {:array, :string}, default: [])
     field(:type, :integer)
 
     timestamps()

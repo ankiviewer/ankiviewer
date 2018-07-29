@@ -5,13 +5,14 @@ import Types
         ( Model
         , Collection
         , Rule
+        , ErrRuleResponse
         , Flags
         , Url
         , Msg(..)
         , RequestMsg(..)
         , WebsocketMsg(Sync)
         , SyncMsg(..)
-        , Views(HomeView, SearchView)
+        , Views(HomeView)
         )
 import Rest
 import Phoenix.Socket as Socket exposing (Socket)
@@ -30,8 +31,13 @@ initialModel flags =
     , deck = ""
     , tags = []
     , order = []
-    , rule = 0
+    , rule = -1
     , rules = []
+    , ruleEditRid = -1
+    , ruleEdit = initialRule
+    , ruleErr = ""
+    , ruleValidationErr = initialErrRuleResponse
+    , areYouSureDelete = -1
     , newRule = initialRule
     , collection = initialCollection
     , notes = []
@@ -57,17 +63,25 @@ initialNoteColumns flags =
 
 initialRule : Rule
 initialRule =
-    { rid = 0
+    { rid = -1
     , name = ""
     , code = ""
     , tests = ""
     }
 
 
+initialErrRuleResponse : ErrRuleResponse
+initialErrRuleResponse =
+    { code = ""
+    , tests = ""
+    , name = ""
+    }
+
+
 initialCollection : Collection
 initialCollection =
-    { mod = 0
-    , notes = 0
+    { mod = -1
+    , notes = -1
     , models = []
     , decks = []
     }
@@ -148,6 +162,9 @@ update msg model =
                 ! case view of
                     "/search" ->
                         [ Rest.getNotes model ]
+
+                    "/rules" ->
+                        [ Rest.getRules ]
 
                     _ ->
                         []

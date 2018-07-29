@@ -21,20 +21,17 @@ defmodule AnkiViewer.RuleTest do
   """
 
   test "insert rule struct" do
-    attrs = %{
+    %{
       name: "no blank fields",
       code: @code,
       tests: @tests
     }
-
-    %Rule{}
-    |> Map.merge(attrs)
     |> Rule.insert!()
   end
 
   describe "rule" do
     setup do
-      attrs = [
+      [
         %{
           name: "no duplicate front",
           code: """
@@ -93,8 +90,9 @@ defmodule AnkiViewer.RuleTest do
           """
         }
       ]
+      |> Rule.insert!()
 
-      Rule.insert!(attrs)
+      :ok
     end
 
     test "insert" do
@@ -116,9 +114,20 @@ defmodule AnkiViewer.RuleTest do
     end
   end
 
-  describe "validate" do
-    test "blank name" do
-      assert Rule.validate(%{name: ""}) == {:error, %{name: "Can't be blank"}}
+  describe "changeset" do
+    test "blank fields" do
+      actual = Rule.insert(%{name: ""})
+
+      expected = {
+        :error,
+        %{
+          name: "can't be blank",
+          code: "can't be blank",
+          tests: "can't be blank"
+        }
+      }
+
+      assert actual == expected
     end
 
     test "code syntax error" do
@@ -126,7 +135,7 @@ defmodule AnkiViewer.RuleTest do
       note.sfld != "
       """
 
-      actual = Rule.validate(%{name: "n", code: code, tests: @tests})
+      actual = Rule.insert(%{name: "n", code: code, tests: @tests})
       expected = {:error, %{code: "missing terminator: \" (for string starting at line 1)"}}
 
       assert actual == expected
@@ -147,7 +156,7 @@ defmodule AnkiViewer.RuleTest do
           }
       """
 
-      actual = Rule.validate(%{name: "n", code: @code, tests: tests})
+      actual = Rule.insert(%{name: "n", code: @code, tests: tests})
       expected = {:error, %{tests: "missing terminator: ] (for \"[\" starting at line 1)"}}
 
       assert actual == expected
@@ -172,7 +181,7 @@ defmodule AnkiViewer.RuleTest do
           }
       """
 
-      actual = Rule.validate(%{name: "n", code: code, tests: tests})
+      actual = Rule.insert(%{name: "n", code: code, tests: tests})
 
       expected =
         {:error,
@@ -187,10 +196,10 @@ defmodule AnkiViewer.RuleTest do
     test "valid code, tests and name" do
       rule = %{name: "n", code: @code, tests: @tests}
 
-      actual = Rule.validate(rule)
-      expected = {:ok, rule}
+      actual = Rule.insert(rule)
+      expected = {:ok, Map.merge(%Rule{}, rule)}
 
-      assert actual == expected
+      assert simplify_struct(actual) == simplify_struct(expected)
     end
   end
 end
