@@ -18,7 +18,7 @@ update : Rules -> Model -> ( Model, Cmd Msg )
 update rules ({ newRule, ruleEdit } as model) =
     case rules of
         Add ->
-            model ! [ Rest.createRule model ]
+            { model | newRule = defaultRule } ! [ Rest.createRule model ]
 
         Update ->
             model ! [ Rest.updateRule model ]
