@@ -12,25 +12,62 @@ defmodule AnkiViewer.Rule do
     timestamps()
   end
 
-  @attrs ~w(code name tests)a
+  @optional_attrs ~w(rid)a
+  @required_attrs ~w(code name tests)a
   def changeset(%Rule{} = rule, attrs \\ %{}) do
     rule
-    |> cast(attrs, @attrs)
-    |> validate_required(@attrs)
+    |> cast(attrs, @optional_attrs ++ @required_attrs)
+    |> validate_required(@required_attrs)
+    |> validate_length(:name, min: 1, max: 30)
+    |> validate_change(:code, rule_validator_helper(:code))
+    |> validate_change(:tests, rule_validator_helper(:tests))
   end
+
+  defp rule_validator_helper(atom) when is_atom(atom) do
+    fn atom, str ->
+      case validate(str) do
+        :ok ->
+          []
+
+        {:error, str_error} ->
+          [{atom, str_error}]
+      end
+    end
+  end
+
+  def insert(attrs) when is_map(attrs) do
+    case changeset = changeset(%Rule{}, attrs) do
+      %Ecto.Changeset{valid?: true} ->
+        Repo.insert(changeset)
+
+      %Ecto.Changeset{errors: errors} ->
+        {:error, errors |> Map.new(fn {k, {msg, _}} -> {k, msg} end)}
+    end
+  end
+
+  def insert(list) when is_list(list), do: list |> Enum.each(&insert/1)
 
   def insert!(attrs) when is_map(attrs) do
-    attrs
-    |> Map.has_key?(:__struct__)
-    |> case do
-      true -> attrs
-      false -> Map.merge(%Rule{}, attrs)
+    case insert(attrs) do
+      {:ok, struct} ->
+        struct
+
+      {:error, insert_error} ->
+        raise Ecto.QueryError, Enum.map(insert_error, fn k, v -> "#{k}: #{v}" end)
     end
-    |> changeset
-    |> Repo.insert!()
   end
 
-  def insert!(list) when is_list(list), do: list |> Enum.each(&insert!/1)
+  def insert!(list) when is_list(list), do: Enum.each(list, &insert!/1)
+
+  def update(%{rid: rid} = attrs) when is_map(attrs) do
+    case changeset = changeset(%Rule{rid: rid}, attrs) do
+      %Ecto.Changeset{valid?: true} ->
+        Repo.update(changeset)
+
+      %Ecto.Changeset{errors: errors} ->
+        {:error, errors |> Map.new(fn {k, {msg, _}} -> {k, msg} end)}
+    end
+  end
 
   defp status(bool), do: if(bool, do: "ok", else: "not ok")
 
@@ -53,33 +90,15 @@ defmodule AnkiViewer.Rule do
     end
   end
 
-  def validate(%{name: ""}), do: {:error, %{name: "Can't be blank"}}
-
-  def validate(%{name: _, code: code, tests: tests} = rule) do
-    case {validate(code), validate(tests)} do
-      {{:error, code_error}, {:error, tests_error}} ->
-        {:error, %{code: code_error, tests: tests_error}}
-
-      {{:error, code_error}, :ok} ->
-        {:error, %{code: code_error}}
-
-      {:ok, {:error, tests_error}} ->
-        {:error, %{tests: tests_error}}
-
-      {:ok, :ok} ->
-        {:ok, rule}
-    end
-  end
-
-  @doc"""
-  iex>Rule.validate("asdf()")
+  @doc """
+  iex>validate("asdf()")
   {:error, "undefined function asdf/0"}
-  iex>Rule.validate("1")
+  iex>validate("1")
   :ok
   """
   def validate(code) when is_binary(code) do
     try do
-      Code.eval_string(code, note: %Note{})
+      Code.eval_string(code, note: %Note{}, deck: [%Note{}])
 
       :ok
     rescue

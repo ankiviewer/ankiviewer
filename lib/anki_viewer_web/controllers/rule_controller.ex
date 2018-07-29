@@ -11,12 +11,8 @@ defmodule AnkiViewerWeb.RuleController do
   end
 
   def create(conn, %{"code" => code, "tests" => tests, "name" => name}) do
-    %{code: code, tests: tests, name: name}
-    |> Rule.validate()
-    |> case do
-      {:ok, rule} ->
-        Rule.insert!(rule)
-
+    case Rule.insert(%{code: code, tests: tests, name: name}) do
+      {:ok, _rule} ->
         params =
           Rule
           |> Repo.all()
@@ -30,14 +26,8 @@ defmodule AnkiViewerWeb.RuleController do
   end
 
   def update(conn, %{"code" => code, "tests" => tests, "name" => name, "rid" => rid}) do
-    %{code: code, tests: tests, name: name}
-    |> Rule.validate()
-    |> case do
-      {:ok, rule} ->
-        %Rule{rid: String.to_integer(rid)}
-        |> Rule.changeset(rule)
-        |> Repo.update!()
-
+    case Rule.update(%{code: code, tests: tests, name: name, rid: String.to_integer(rid)}) do
+      {:ok, _rule} ->
         params =
           Rule
           |> Repo.all()
@@ -53,11 +43,11 @@ defmodule AnkiViewerWeb.RuleController do
   def delete(conn, %{"rid" => rid}) do
     Repo.delete!(%Rule{rid: String.to_integer(rid)})
 
-    params =
+    rules =
       Rule
       |> Repo.all()
       |> Utils.parseable_fields()
 
-    json(conn, %{err: false, params: params})
+    json(conn, %{rules: rules})
   end
 end

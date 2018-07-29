@@ -23,4 +23,14 @@ defmodule AnkiViewer.TestHelpers do
 
     AnkiViewer.notes_data!() |> Enum.each(&Note.insert!/1)
   end
+
+  def simplify_struct(struct) when is_map(struct) do
+    keys = ~w(__meta__ inserted_at updated_at rid id)a
+
+    Map.drop(struct, keys)
+  end
+
+  def simplify_struct({:ok, struct}) when is_map(struct) do
+    {:ok, simplify_struct(struct)}
+  end
 end

@@ -26,35 +26,22 @@ update requestMsg model =
             { model | syncingError = True, syncingDatabaseMsg = toString e } ! []
 
         GetRules ->
-            model ! [ Rest.getRules ]
+            { model | ruleErr = "" } ! [ Rest.getRules ]
 
         NewRules (Ok rules) ->
-            let
-                _ =
-                    Debug.log "rules" rules
-            in
-                model ! []
+            { model | rules = rules } ! []
 
-        NewRules (Err e) ->
-            let
-                _ =
-                    Debug.log "NewRules Err" e
-            in
-                model ! []
+        NewRules (Err ruleErr) ->
+            { model | ruleErr = toString ruleErr } ! []
 
-        NewRuleResponse (Ok ruleResponse) ->
-            let
-                _ =
-                    Debug.log "NewRuleResponse" ruleResponse
-            in
-                model ! []
+        NewRuleResponse (Ok { err, rules, ruleErr }) ->
+            if err then
+                { model | ruleValidationErr = ruleErr, ruleErr = "" } ! []
+            else
+                { model | ruleValidationErr = ruleErr, rules = rules } ! []
 
-        NewRuleResponse (Err err) ->
-            let
-                _ =
-                    Debug.log "NewRuleResponse Err" err
-            in
-                model ! []
+        NewRuleResponse (Err ruleErr) ->
+            { model | ruleErr = toString ruleErr } ! []
 
         CreateRule model ->
             model ! [ Rest.createRule model ]
@@ -62,5 +49,5 @@ update requestMsg model =
         UpdateRule model ->
             model ! [ Rest.updateRule model ]
 
-        DeleteRule model ->
-            model ! [ Rest.deleteRule model ]
+        DeleteRule rid ->
+            model ! [ Rest.deleteRule rid ]

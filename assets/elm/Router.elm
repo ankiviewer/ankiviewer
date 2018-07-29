@@ -23,13 +23,4 @@ router viewString =
 
 update : Views -> Model -> ( Model, Cmd Msg )
 update view model =
-    let
-        cmd =
-            case view of
-                SearchView ->
-                    [ Rest.getNotes model ]
-
-                _ ->
-                    []
-    in
-        { model | view = view } ! ([ toString view |> Url |> urlOut ] ++ cmd)
+    { model | view = view } ! [ toString view |> Url |> urlOut ]

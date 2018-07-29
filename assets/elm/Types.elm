@@ -37,7 +37,12 @@ type alias Model =
     , order : List Int
     , rule : Int
     , rules : List Rule
+    , ruleEditRid : Int
+    , ruleEdit : Rule
     , newRule : Rule
+    , ruleErr : String
+    , ruleValidationErr : ErrRuleResponse
+    , areYouSureDelete : Int
     , collection : Collection
     , notes : List Note
     , syncingError : Bool
@@ -136,6 +141,14 @@ type Msg
 
 type Rules
     = Add
+    | Update
+    | Delete Int
+    | ToggleEdit Int
+    | AreYouSureDelete Int
+    | FocusNewInputs
+    | InputEditCode String
+    | InputEditName String
+    | InputEditTests String
     | InputCode String
     | InputName String
     | InputTests String
@@ -162,7 +175,7 @@ type RequestMsg
     | NewRuleResponse (Result Http.Error RuleResponse)
     | CreateRule Model
     | UpdateRule Model
-    | DeleteRule Model
+    | DeleteRule Int
 
 
 type Views
