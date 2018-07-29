@@ -21,12 +21,15 @@ defmodule AnkiViewer.RuleTest do
   """
 
   test "insert rule struct" do
-    %{
-      name: "no blank fields",
-      code: @code,
-      tests: @tests
-    }
-    |> Rule.insert!()
+    assert :ok ==
+             [
+               %{
+                 name: "no blank fields",
+                 code: @code,
+                 tests: @tests
+               }
+             ]
+             |> Rule.insert()
   end
 
   describe "rule" do
