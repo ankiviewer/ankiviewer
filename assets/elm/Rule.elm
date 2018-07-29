@@ -61,3 +61,6 @@ update rules ({ newRule, ruleEdit } as model) =
 
         InputTests tests ->
             { model | newRule = { newRule | tests = tests } } ! []
+
+        RuleNoOp ->
+            model ! []

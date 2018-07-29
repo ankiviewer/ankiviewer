@@ -37,13 +37,9 @@ defmodule AnkiViewerWeb.RuleControllerTest do
              ~w(inserted_at updated_at rid) |> Enum.all?(&(&1 in Map.keys(r)))
            end)
 
-    actual = Enum.map(rules, &Map.drop(&1, ~w(inserted_at updated_at rid)))
-
-    expected = [
-      %{"name" => @name, "code" => @code, "tests" => @tests}
-    ]
-
-    assert actual == expected
+    assert simplify_struct(rules) == [
+             %{"name" => @name, "code" => @code, "tests" => @tests}
+           ]
   end
 
   describe "POST /api/rules" do
@@ -54,7 +50,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
       %{"err" => false, "params" => actual} = json_response(conn, 200)
       [%{"rid" => rid}] = actual
 
-      assert actual |> List.first() |> Map.take(~w(code name tests)) == params
+      assert simplify_struct(actual) == [params]
 
       actual =
         Rule

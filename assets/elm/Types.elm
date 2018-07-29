@@ -152,6 +152,7 @@ type Rules
     | InputCode String
     | InputName String
     | InputTests String
+    | RuleNoOp
 
 
 type WebsocketMsg
