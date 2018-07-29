@@ -38,7 +38,7 @@ update requestMsg model =
             if err then
                 { model | ruleValidationErr = ruleErr, ruleErr = "" } ! []
             else
-                { model | ruleValidationErr = ruleErr, rules = rules } ! []
+                { model | ruleValidationErr = ruleErr, rules = rules, ruleErr = "" } ! []
 
         NewRuleResponse (Err ruleErr) ->
             { model | ruleErr = toString ruleErr } ! []

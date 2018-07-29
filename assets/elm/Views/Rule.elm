@@ -3,13 +3,19 @@ module Views.Rule exposing (ruleView)
 import Html exposing (Html, div, text, button, input, textarea)
 import Html.Events exposing (onClick, onInput, onFocus)
 import Html.Attributes exposing (value, placeholder)
-import Types exposing (Model, Msg(RuleMsg, NoOp), Rules(..))
+import Types exposing (Model, Rule, ErrRuleResponse, Msg(RuleMsg), Rules(..))
 import Views.Nav exposing (nav)
+import List.Extra as List
 
 
 type InputSize
     = SmallInput
     | LargeInput
+
+
+type RuleInputsType
+    = RuleInputsEdit
+    | RuleInputsNew
 
 
 sizeInput : InputSize -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
@@ -22,8 +28,46 @@ sizeInput inputSize =
             textarea
 
 
-ruleInputs : List ( String, String, String -> Msg, InputSize, String, Msg ) -> Html Msg
-ruleInputs inputParams =
+ruleInputs : Model -> Rule -> RuleInputsType -> Html Msg
+ruleInputs { ruleEditRid, ruleValidationErr } rule ruleInputsType =
+    List.zip5
+        [ rule.name, rule.code, rule.tests ]
+        [ "NAME", "CODE", "TESTS" ]
+        (case ruleInputsType of
+            RuleInputsEdit ->
+                [ InputEditName, InputEditCode, InputEditTests ]
+
+            RuleInputsNew ->
+                [ InputName, InputCode, InputTests ]
+        )
+        [ SmallInput, LargeInput, LargeInput ]
+        ([ ruleValidationErr.name, ruleValidationErr.code, ruleValidationErr.tests ]
+            |> List.map
+                (\s ->
+                    if ruleEditRid == -1 then
+                        s
+                    else
+                        ""
+                )
+        )
+        |> List.map
+            (\( a, b, c, d, e ) ->
+                let
+                    focusCmd =
+                        case ruleInputsType of
+                            RuleInputsEdit ->
+                                RuleNoOp
+
+                            RuleInputsNew ->
+                                FocusNewInputs
+                in
+                    ( a, b, c, d, e, focusCmd )
+            )
+        |> ruleInputs_
+
+
+ruleInputs_ : List ( String, String, String -> Rules, InputSize, String, Rules ) -> Html Msg
+ruleInputs_ inputParams =
     div
         []
         (List.map
@@ -31,8 +75,8 @@ ruleInputs inputParams =
                 div
                     []
                     [ sizeInput inputSize
-                        [ onInput inputMsg
-                        , onFocus focusMsg
+                        [ onInput <| (inputMsg >> RuleMsg)
+                        , onFocus <| RuleMsg focusMsg
                         , value ruleVal
                         , placeholder rulePlaceholder
                         ]
@@ -61,11 +105,7 @@ ruleView model =
                     if model.ruleEditRid == rid then
                         div
                             []
-                            [ ruleInputs
-                                [ ( model.ruleEdit.name, "NAME", InputEditName >> RuleMsg, SmallInput, model.ruleValidationErr.name, NoOp )
-                                , ( model.ruleEdit.code, "CODE", InputEditCode >> RuleMsg, LargeInput, model.ruleValidationErr.code, NoOp )
-                                , ( model.ruleEdit.tests, "TESTS", InputEditTests >> RuleMsg, LargeInput, model.ruleValidationErr.tests, NoOp )
-                                ]
+                            [ ruleInputs model model.ruleEdit RuleInputsEdit
                             , button
                                 [ onClick <| RuleMsg Update ]
                                 [ text "Update" ]
@@ -101,38 +141,7 @@ ruleView model =
                 )
                 model.rules
             )
-        , ruleInputs
-            [ ( model.newRule.name
-              , "NAME"
-              , InputName >> RuleMsg
-              , SmallInput
-              , if model.ruleEditRid == -1 then
-                    model.ruleValidationErr.name
-                else
-                    ""
-              , RuleMsg FocusNewInputs
-              )
-            , ( model.newRule.code
-              , "CODE"
-              , InputCode >> RuleMsg
-              , LargeInput
-              , if model.ruleEditRid == -1 then
-                    model.ruleValidationErr.code
-                else
-                    ""
-              , RuleMsg FocusNewInputs
-              )
-            , ( model.newRule.tests
-              , "TESTS"
-              , InputTests >> RuleMsg
-              , LargeInput
-              , if model.ruleEditRid == -1 then
-                    model.ruleValidationErr.tests
-                else
-                    ""
-              , RuleMsg FocusNewInputs
-              )
-            ]
+        , ruleInputs model model.newRule RuleInputsNew
         , button
             [ onClick <| RuleMsg Add
             ]

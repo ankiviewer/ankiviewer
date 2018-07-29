@@ -25,12 +25,17 @@ defmodule AnkiViewer.TestHelpers do
   end
 
   def simplify_struct(struct) when is_map(struct) do
-    keys = ~w(__meta__ inserted_at updated_at rid id)a
+    atom_keys = ~w(__meta__ inserted_at updated_at rid id)a
+    string_keys = ~w(inserted_at updated_at rid)
 
-    Map.drop(struct, keys)
+    Map.drop(struct, atom_keys ++ string_keys)
   end
 
   def simplify_struct({:ok, struct}) when is_map(struct) do
     {:ok, simplify_struct(struct)}
+  end
+
+  def simplify_struct(list) when is_list(list) do
+    Enum.map(list, &simplify_struct/1)
   end
 end

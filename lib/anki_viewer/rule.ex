@@ -35,15 +35,17 @@ defmodule AnkiViewer.Rule do
     end
   end
 
-  def insert(attrs) when is_map(attrs) do
-    case changeset = changeset(%Rule{}, attrs) do
+  defp insert_update_helper(attrs, repo_func) do
+    case changeset = changeset(%Rule{rid: Map.get(attrs, :rid)}, attrs) do
       %Ecto.Changeset{valid?: true} ->
-        Repo.insert(changeset)
+        repo_func.(changeset)
 
       %Ecto.Changeset{errors: errors} ->
         {:error, errors |> Map.new(fn {k, {msg, _}} -> {k, msg} end)}
     end
   end
+
+  def insert(attrs) when is_map(attrs), do: insert_update_helper(attrs, &Repo.insert/1)
 
   def insert(list) when is_list(list), do: Enum.each(list, &insert/1)
 
@@ -59,15 +61,9 @@ defmodule AnkiViewer.Rule do
 
   def insert!(list) when is_list(list), do: Enum.each(list, &insert!/1)
 
-  def update(%{rid: rid} = attrs) when is_map(attrs) do
-    case changeset = changeset(%Rule{rid: rid}, attrs) do
-      %Ecto.Changeset{valid?: true} ->
-        Repo.update(changeset)
+  def update(%{rid: _rid} = attrs), do: insert_update_helper(attrs, &Repo.update/1)
 
-      %Ecto.Changeset{errors: errors} ->
-        {:error, errors |> Map.new(fn {k, {msg, _}} -> {k, msg} end)}
-    end
-  end
+  def all, do: Rule |> Repo.all() |> Utils.parseable_fields()
 
   defp status(bool), do: if(bool, do: "ok", else: "not ok")
 
