@@ -18,7 +18,7 @@ defmodule AnkiViewer.Note do
     field(:queue, :integer)
     field(:reps, :integer)
     field(:sfld, :string)
-    field(:tags, {:array, :string})
+    field(:tags, {:array, :string}, default: [])
     field(:type, :integer)
 
     timestamps()
@@ -42,12 +42,11 @@ defmodule AnkiViewer.Note do
     |> Repo.insert!()
   end
 
-  def insert!(list) when is_list(list), do: list |> Enum.each(&insert!/1)
+  def insert!(list) when is_list(list), do: Enum.each(list, &insert!/1)
 
   def update_all do
     Repo.delete_all(Note)
 
-    AnkiViewer.notes_data!()
-    |> Enum.each(&insert!/1)
+    Enum.each(AnkiViewer.notes_data!(), &insert!/1)
   end
 end

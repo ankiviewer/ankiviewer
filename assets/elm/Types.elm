@@ -2,6 +2,9 @@ module Types
     exposing
         ( Msg(..)
         , RequestMsg(..)
+        , Rules(..)
+        , ErrRuleResponse
+        , RuleResponse
         , WebsocketMsg(Sync)
         , SyncMsg(..)
         , Views(..)
@@ -12,6 +15,7 @@ module Types
         , Model
         , Note
         , ReceivedSyncMsg
+        , Rule
         , Url
         )
 
@@ -32,9 +36,16 @@ type alias Model =
     , tags : List String
     , order : List Int
     , rule : Int
+    , rules : List Rule
+    , ruleEditRid : Int
+    , ruleEdit : Rule
+    , newRule : Rule
+    , ruleErr : String
+    , ruleValidationErr : ErrRuleResponse
+    , areYouSureDelete : Int
     , collection : Collection
     , notes : List Note
-    , error : Bool
+    , syncingError : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
     , noteColumns : List Bool
@@ -54,6 +65,28 @@ type alias M =
 type alias D =
     { name : String
     , did : Int
+    }
+
+
+type alias ErrRuleResponse =
+    { code : String
+    , tests : String
+    , name : String
+    }
+
+
+type alias RuleResponse =
+    { err : Bool
+    , rules : List Rule
+    , ruleErr : ErrRuleResponse
+    }
+
+
+type alias Rule =
+    { code : String
+    , tests : String
+    , name : String
+    , rid : Int
     }
 
 
@@ -92,17 +125,34 @@ type alias Url =
 
 
 type Msg
-    = PhxMsg (Socket.Msg Msg)
-    | Websocket WebsocketMsg
+    = NoOp
+    | PhxMsg (Socket.Msg Msg)
+    | RuleMsg Rules
     | Request RequestMsg
-    | ViewChange Views
     | SearchInput String
     | ToggleDeck String
+    | ToggleManageNotes
     | ToggleModel String
     | ToggleNoteColumn Int
-    | ToggleManageNotes
     | UrlIn Url
-    | NoOp
+    | ViewChange Views
+    | Websocket WebsocketMsg
+
+
+type Rules
+    = Add
+    | Update
+    | Delete Int
+    | ToggleEdit Int
+    | AreYouSureDelete Int
+    | FocusNewInputs
+    | InputEditCode String
+    | InputEditName String
+    | InputEditTests String
+    | InputCode String
+    | InputName String
+    | InputTests String
+    | RuleNoOp
 
 
 type WebsocketMsg
@@ -121,8 +171,15 @@ type RequestMsg
     | NewCollection (Result Http.Error Collection)
     | GetNotes
     | NewNotes (Result Http.Error (List Note))
+    | GetRules
+    | NewRules (Result Http.Error (List Rule))
+    | NewRuleResponse (Result Http.Error RuleResponse)
+    | CreateRule Model
+    | UpdateRule Model
+    | DeleteRule Int
 
 
 type Views
     = HomeView
     | SearchView
+    | RuleView

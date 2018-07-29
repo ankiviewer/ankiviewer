@@ -10,7 +10,7 @@ import Views.Nav exposing (nav)
 
 
 homeView : Model -> Html Msg
-homeView ({ syncingDatabase, syncingDatabaseMsg, error, collection } as model) =
+homeView ({ syncingDatabase, syncingDatabaseMsg, syncingError, collection } as model) =
     div []
         [ nav model
         , button
@@ -24,8 +24,8 @@ homeView ({ syncingDatabase, syncingDatabaseMsg, error, collection } as model) =
             [ text "Sync Database" ]
         , div
             [ classList
-                [ ( "dn", (not (syncingDatabase || error)) )
-                , ( "red", error )
+                [ ( "dn", (not (syncingDatabase || syncingError)) )
+                , ( "red", syncingError )
                 ]
             ]
             [ text syncingDatabaseMsg ]

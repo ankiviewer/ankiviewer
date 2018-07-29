@@ -5,10 +5,11 @@ import Types
     exposing
         ( Model
         , Msg
-        , Views(HomeView, SearchView)
+        , Views(..)
         )
 import Views.Search exposing (searchView)
 import Views.Home exposing (homeView)
+import Views.Rule exposing (ruleView)
 
 
 rootView : Model -> Html Msg
@@ -19,3 +20,6 @@ rootView ({ view } as model) =
 
         SearchView ->
             searchView model
+
+        RuleView ->
+            ruleView model

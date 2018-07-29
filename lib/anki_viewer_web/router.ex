@@ -25,5 +25,10 @@ defmodule AnkiViewerWeb.Router do
 
     get("/collection", PageController, :collection)
     get("/notes", PageController, :notes)
+
+    get("/rules", RuleController, :index)
+    post("/rules", RuleController, :create)
+    put("/rules/:rid", RuleController, :update)
+    delete("/rules/:rid", RuleController, :delete)
   end
 end

@@ -1,6 +1,6 @@
 module Router exposing (router, update)
 
-import Types exposing (Model, Views(HomeView, SearchView), Msg(ViewChange), Url)
+import Types exposing (Model, Views(..), Msg(ViewChange), Url)
 import Ports exposing (urlOut)
 import Rest
 
@@ -14,16 +14,13 @@ router viewString =
         "/search" ->
             SearchView
 
+        "/rules" ->
+            RuleView
+
         _ ->
             HomeView
 
 
 update : Views -> Model -> ( Model, Cmd Msg )
-update viewMsg model =
-    case viewMsg of
-        SearchView ->
-            { model | view = SearchView }
-                ! [ Rest.getNotes model, toString SearchView |> Url |> urlOut ]
-
-        view ->
-            { model | view = view } ! [ toString view |> Url |> urlOut ]
+update view model =
+    { model | view = view } ! [ toString view |> Url |> urlOut ]
