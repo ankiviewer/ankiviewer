@@ -4,13 +4,15 @@ import Types
     exposing
         ( Model
         , Collection
+        , Rule
+        , ErrRuleResponse
         , Flags
         , Url
         , Msg(..)
         , RequestMsg(..)
         , WebsocketMsg(Sync)
         , SyncMsg(..)
-        , Views(HomeView, SearchView)
+        , Views(HomeView)
         )
 import Rest
 import Phoenix.Socket as Socket exposing (Socket)
@@ -18,6 +20,7 @@ import Ports exposing (urlIn, urlOut, setColumns)
 import Websocket exposing (updateSocketHelper, initialPhxSocket)
 import Request
 import Router exposing (router)
+import Rule
 
 
 initialModel : Flags -> Model
@@ -28,10 +31,17 @@ initialModel flags =
     , deck = ""
     , tags = []
     , order = []
-    , rule = 0
+    , rule = -1
+    , rules = []
+    , ruleEditRid = -1
+    , ruleEdit = initialRule
+    , ruleErr = ""
+    , ruleValidationErr = initialErrRuleResponse
+    , areYouSureDelete = -1
+    , newRule = initialRule
     , collection = initialCollection
     , notes = []
-    , error = False
+    , syncingError = False
     , syncingDatabase = False
     , syncingDatabaseMsg = ""
     , noteColumns = initialNoteColumns flags
@@ -51,10 +61,27 @@ initialNoteColumns flags =
                 |> List.map (\_ -> True)
 
 
+initialRule : Rule
+initialRule =
+    { rid = -1
+    , name = ""
+    , code = ""
+    , tests = ""
+    }
+
+
+initialErrRuleResponse : ErrRuleResponse
+initialErrRuleResponse =
+    { code = ""
+    , tests = ""
+    , name = ""
+    }
+
+
 initialCollection : Collection
 initialCollection =
-    { mod = 0
-    , notes = 0
+    { mod = -1
+    , notes = -1
     , models = []
     , decks = []
     }
@@ -136,11 +163,17 @@ update msg model =
                     "/search" ->
                         [ Rest.getNotes model ]
 
+                    "/rules" ->
+                        [ Rest.getRules ]
+
                     _ ->
                         []
 
         NoOp ->
             model ! []
+
+        RuleMsg ruleMsg ->
+            Rule.update ruleMsg model
 
 
 subscriptions : Model -> Sub Msg

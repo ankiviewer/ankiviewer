@@ -36,7 +36,7 @@ sync syncMsg model =
             updateSocketHelper { model | syncingDatabase = True } (Socket.join (Channel.init "sync:database")) []
 
         Receive raw ->
-            if model.error then
+            if model.syncingError then
                 model ! []
             else
                 case decodeValue Rest.syncDatabaseMsgDecoder raw of
@@ -44,7 +44,7 @@ sync syncMsg model =
                         { model | syncingDatabaseMsg = syncMsg } ! []
 
                     Err err ->
-                        sync (Stopping null) { model | syncingDatabaseMsg = err, error = True }
+                        sync (Stopping null) { model | syncingDatabaseMsg = err, syncingError = True }
 
         Stop ->
             { model | syncingDatabase = False } ! []

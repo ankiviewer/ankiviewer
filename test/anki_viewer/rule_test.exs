@@ -1,36 +1,40 @@
 defmodule AnkiViewer.RuleTest do
   use AnkiViewer.DataCase, async: false
+  doctest AnkiViewer.Rule, import: true
+
+  @code """
+  note.sfld != ""
+  """
+  @tests """
+  [
+    %{
+      note: %{sfld: "h"},
+      fine: true,
+      deck: nil
+    },
+    %{
+      note: %{sfld: ""},
+      fine: false,
+      deck: nil
+    }
+  ]
+  """
 
   test "insert rule struct" do
-    attrs = %{
-      name: "no blank fields",
-      code: """
-      note.sfld != ""
-      """,
-      tests: """
-        [
-          %{
-            note: %{sfld: "h"},
-            fine: true,
-            deck: nil
-          },
-          %{
-            note: %{sfld: ""},
-            fine: false,
-            deck: nil
-          }
-        ]
-      """
-    }
-
-    %Rule{}
-    |> Map.merge(attrs)
-    |> Rule.insert!()
+    assert :ok ==
+             [
+               %{
+                 name: "no blank fields",
+                 code: @code,
+                 tests: @tests
+               }
+             ]
+             |> Rule.insert()
   end
 
   describe "rule" do
     setup do
-      attrs = [
+      [
         %{
           name: "no duplicate front",
           code: """
@@ -89,8 +93,9 @@ defmodule AnkiViewer.RuleTest do
           """
         }
       ]
+      |> Rule.insert!()
 
-      Rule.insert!(attrs)
+      :ok
     end
 
     test "insert" do
@@ -109,6 +114,95 @@ defmodule AnkiViewer.RuleTest do
 
       assert error ==
                ~s(note: %{nid: 0, sfld: "h"} and deck: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were expected to be ok, but were actually not ok for rule: no duplicate front)
+    end
+  end
+
+  describe "changeset" do
+    test "blank fields" do
+      actual = Rule.insert(%{name: ""})
+
+      expected = {
+        :error,
+        %{
+          name: "can't be blank",
+          code: "can't be blank",
+          tests: "can't be blank"
+        }
+      }
+
+      assert actual == expected
+    end
+
+    test "code syntax error" do
+      code = """
+      note.sfld != "
+      """
+
+      actual = Rule.insert(%{name: "n", code: code, tests: @tests})
+      expected = {:error, %{code: "missing terminator: \" (for string starting at line 1)"}}
+
+      assert actual == expected
+    end
+
+    test "tests syntax error" do
+      tests = """
+        [
+          %{
+            note: %{sfld: "h"},
+            fine: true,
+            deck: nil
+          },
+          %{
+            note: %{sfld: ""},
+            fine: false,
+            deck: nil
+          }
+      """
+
+      actual = Rule.insert(%{name: "n", code: @code, tests: tests})
+      expected = {:error, %{tests: "missing terminator: ] (for \"[\" starting at line 1)"}}
+
+      assert actual == expected
+    end
+
+    test "code and tests syntax error" do
+      code = """
+      note.sfld != "
+      """
+
+      tests = """
+        [
+          %{
+            note: %{sfld: "h"},
+            fine: true,
+            deck: nil
+          },
+          %{
+            note: %{sfld: ""},
+            fine: false,
+            deck: nil
+          }
+      """
+
+      actual = Rule.insert(%{name: "n", code: code, tests: tests})
+
+      expected =
+        {:error,
+         %{
+           code: "missing terminator: \" (for string starting at line 1)",
+           tests: "missing terminator: ] (for \"[\" starting at line 1)"
+         }}
+
+      assert actual == expected
+    end
+
+    test "valid code, tests and name" do
+      rule = %{name: "n", code: @code, tests: @tests}
+
+      actual = Rule.insert(rule)
+      expected = {:ok, Map.merge(%Rule{}, rule)}
+
+      assert simplify_struct(actual) == simplify_struct(expected)
     end
   end
 end

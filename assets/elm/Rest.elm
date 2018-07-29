@@ -1,20 +1,33 @@
-module Rest exposing (getNotes, getCollection, syncDatabaseMsgDecoder)
+module Rest
+    exposing
+        ( getNotes
+        , getCollection
+        , syncDatabaseMsgDecoder
+        , getRules
+        , createRule
+        , updateRule
+        , deleteRule
+        )
 
 import Types
     exposing
         ( Msg(Request)
-        , RequestMsg(NewNotes, NewCollection)
+        , RequestMsg(NewNotes, NewCollection, NewRules, NewRuleResponse)
         , Collection
         , Model
         , M
         , D
         , Note
         , ReceivedSyncMsg
+        , Rule
+        , RuleResponse
+        , ErrRuleResponse
         )
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (decode, required)
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
+import Json.Encode as Encode exposing (Value)
 import Http
-import HttpBuilder
+import HttpBuilder exposing (RequestBuilder)
 
 
 syncDatabaseMsgDecoder : Decoder ReceivedSyncMsg
@@ -89,3 +102,97 @@ notesDecoder =
             |> required "front" Decode.string
             |> required "back" Decode.string
         )
+
+
+getRules : Cmd Msg
+getRules =
+    Http.get "/api/rules" (ruleRequestDecoder)
+        |> Http.send (NewRules >> Request)
+
+
+type alias RulesResponse =
+    { rules : List Rule
+    }
+
+
+ruleRequestDecoder : Decoder (List Rule)
+ruleRequestDecoder =
+    decode RulesResponse
+        |> required "rules" rulesDecoder
+        |> Decode.map .rules
+
+
+rulesDecoder : Decoder (List Rule)
+rulesDecoder =
+    Decode.list ruleDecoder
+
+
+ruleDecoder : Decoder Rule
+ruleDecoder =
+    decode Rule
+        |> required "code" Decode.string
+        |> required "tests" Decode.string
+        |> required "name" Decode.string
+        |> required "rid" Decode.int
+
+
+errRuleResponseDecoder : Decoder ErrRuleResponse
+errRuleResponseDecoder =
+    decode ErrRuleResponse
+        |> optional "code" Decode.string ""
+        |> optional "tests" Decode.string ""
+        |> optional "name" Decode.string ""
+
+
+ruleResponseDecoder : Model -> Decoder RuleResponse
+ruleResponseDecoder model =
+    Decode.field "err" Decode.bool
+        |> Decode.andThen
+            (\err ->
+                if err then
+                    decode RuleResponse
+                        |> hardcoded err
+                        |> hardcoded []
+                        |> required "params" errRuleResponseDecoder
+                else
+                    decode RuleResponse
+                        |> hardcoded err
+                        |> required "params" (rulesDecoder)
+                        |> hardcoded (ErrRuleResponse "" "" "")
+            )
+
+
+ruleEncoder : Rule -> Value
+ruleEncoder rule =
+    Encode.object
+        [ ( "name", Encode.string rule.name )
+        , ( "code", Encode.string rule.code )
+        , ( "tests", Encode.string rule.tests )
+        ]
+
+
+createRule : Model -> Cmd Msg
+createRule model =
+    HttpBuilder.post "/api/rules"
+        |> handleRuleRequest model model.newRule
+
+
+updateRule : Model -> Cmd Msg
+updateRule model =
+    HttpBuilder.put ("/api/rules/" ++ toString model.ruleEdit.rid)
+        |> handleRuleRequest model model.ruleEdit
+
+
+handleRuleRequest : Model -> Rule -> RequestBuilder () -> Cmd Msg
+handleRuleRequest model rule req =
+    req
+        |> HttpBuilder.withJsonBody (ruleEncoder rule)
+        |> HttpBuilder.withExpect (Http.expectJson (ruleResponseDecoder model))
+        |> HttpBuilder.send (NewRuleResponse >> Request)
+
+
+deleteRule : Int -> Cmd Msg
+deleteRule rid =
+    HttpBuilder.delete ("/api/rules/" ++ toString rid)
+        |> HttpBuilder.withExpect (Http.expectJson ruleRequestDecoder)
+        |> HttpBuilder.send (NewRules >> Request)

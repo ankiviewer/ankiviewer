@@ -45,5 +45,5 @@ defmodule AnkiViewer.NoteRule do
     |> Repo.insert!()
   end
 
-  def insert!(list) when is_list(list), do: list |> Enum.each(&insert!/1)
+  def insert!(list) when is_list(list), do: Enum.each(list, &insert!/1)
 end

@@ -44,7 +44,7 @@ defmodule UtilsTest do
         str: "string",
         bool: true,
         map: %{},
-        struct: %{cid: 123}
+        struct: %{cid: 123, tags: []}
       },
       %{
         updated_at: expected_date,
@@ -52,7 +52,7 @@ defmodule UtilsTest do
         nested_map: %{
           key: %{
             ok_value: 1,
-            struct: %{cid: 123},
+            struct: %{cid: 123, tags: []},
             date_value: expected_date
           }
         }
