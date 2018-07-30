@@ -5,8 +5,9 @@ module Types
         , Rules(..)
         , ErrRuleResponse
         , RuleResponse
-        , WebsocketMsg(Sync)
+        , WebsocketMsg(Sync, RunRule)
         , SyncMsg(..)
+        , RunRuleMsg(..)
         , Views(..)
         , Collection
         , D
@@ -43,6 +44,9 @@ type alias Model =
     , ruleErr : String
     , ruleValidationErr : ErrRuleResponse
     , areYouSureDelete : Int
+    , ruleRunning : Int
+    , ruleRunError : Bool
+    , ruleRunMsg : String
     , collection : Collection
     , notes : List Note
     , syncingError : Bool
@@ -115,7 +119,7 @@ type alias Note =
 
 
 type alias ReceivedSyncMsg =
-    { syncMsg : String
+    { decodedMsg : String
     }
 
 
@@ -157,6 +161,7 @@ type Rules
 
 type WebsocketMsg
     = Sync SyncMsg
+    | RunRule RunRuleMsg
 
 
 type SyncMsg
@@ -164,6 +169,14 @@ type SyncMsg
     | Receive Value
     | Stopping Value
     | Stop
+
+
+type RunRuleMsg
+    = RunStart Int
+    | RunReceive Value
+    | RunSendStop
+    | RunStopping Value
+    | RunStop
 
 
 type RequestMsg
