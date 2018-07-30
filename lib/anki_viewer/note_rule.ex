@@ -28,9 +28,11 @@ defmodule AnkiViewer.NoteRule do
       {true, _} ->
         :ok
 
-      # TODO: error handle
       {false, _} ->
         {:error, ""}
+
+      {str, _} ->
+        {:error, str}
     end
   end
 

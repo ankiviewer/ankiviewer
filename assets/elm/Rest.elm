@@ -2,7 +2,7 @@ module Rest
     exposing
         ( getNotes
         , getCollection
-        , syncDatabaseMsgDecoder
+        , msgDecoder
         , getRules
         , createRule
         , updateRule
@@ -30,8 +30,8 @@ import Http
 import HttpBuilder exposing (RequestBuilder)
 
 
-syncDatabaseMsgDecoder : Decoder ReceivedSyncMsg
-syncDatabaseMsgDecoder =
+msgDecoder : Decoder ReceivedSyncMsg
+msgDecoder =
     required "msg" Decode.string <| decode ReceivedSyncMsg
 
 

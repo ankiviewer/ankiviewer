@@ -94,7 +94,12 @@ defmodule AnkiViewer.Rule do
   """
   def validate(code) when is_binary(code) do
     try do
-      Code.eval_string(code, note: %Note{}, deck: [%Note{}])
+      # TODO create more thorough note
+      note = %Note{
+        sfld: ""
+      }
+
+      Code.eval_string(code, note: note, deck: [note])
 
       :ok
     rescue

@@ -16,7 +16,7 @@ nav model =
             )
             ([ ( "Home", HomeView )
              , ( "Search", SearchView )
-             , ( "Rule", RuleView )
+             , ( "Rules", RuleView )
              ]
             )
         )

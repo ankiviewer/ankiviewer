@@ -24,7 +24,21 @@ defmodule AnkiViewer.NoteRuleTest do
       }
       |> Rule.insert!()
 
-    %{passing_rule: passing_rule, failing_rule: failing_rule}
+    failing_with_info_rule =
+      %{
+        name: "sfld is blank with info",
+        code: """
+        note.sfld == "" || note.sfld <> " should be blank"
+        """,
+        tests: "[]"
+      }
+      |> Rule.insert!()
+
+    %{
+      passing_rule: passing_rule,
+      failing_rule: failing_rule,
+      failing_with_info_rule: failing_with_info_rule
+    }
   end
 
   test "run a note through a passing rule", %{passing_rule: passing_rule} do
@@ -37,6 +51,12 @@ defmodule AnkiViewer.NoteRuleTest do
     notes = [note | _] = Repo.all(Note)
 
     assert NoteRule.run(notes, note, failing_rule) == {:error, ""}
+  end
+
+  test "run a note through a failing with info rule", %{failing_with_info_rule: failing_with_info_rule} do
+    notes = [note | _] = Repo.all(Note)
+
+    assert NoteRule.run(notes, note, failing_with_info_rule) == {:error, "unuseful should be blank"}
   end
 
   test "insert a NoteRule" do
