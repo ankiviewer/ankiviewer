@@ -12,7 +12,7 @@ defmodule AnkiViewer.Note do
     field(:flds, :string)
     field(:lapses, :integer)
     field(:mid, :integer)
-    field(:nid, :integer)
+    field(:nid, :integer, primary_key: true)
     field(:nmod, :integer)
     field(:ord, :integer)
     field(:queue, :integer)
@@ -28,6 +28,7 @@ defmodule AnkiViewer.Note do
   def changeset(%Note{} = note, attrs \\ %{}) do
     note
     |> cast(attrs, @attrs)
+    |> unique_constraint(:nid)
     |> validate_required(@attrs)
   end
 
@@ -48,5 +49,26 @@ defmodule AnkiViewer.Note do
     Repo.delete_all(Note)
 
     Enum.each(AnkiViewer.notes_data!(), &insert!/1)
+  end
+
+  def delete!(%{nid: nid}) do
+    %Note{
+      nid: nid,
+      cid: 0,
+      cmod: 0,
+      did: 0,
+      due: 0,
+      flds: "",
+      lapses: 0,
+      mid: 0,
+      nmod: 0,
+      ord: 0,
+      queue: 0,
+      reps: 0,
+      sfld: "",
+      tags: [],
+      type: 0
+    }
+    |> Repo.delete!()
   end
 end

@@ -45,10 +45,10 @@ defmodule AnkiViewerWeb.RuleRunChannelTest do
 
       assert_push("done", %{})
 
-      notes = Repo.all(NoteRule)
+      note_rules = Repo.all(NoteRule)
 
-      assert length(notes) == 10
-      assert Enum.all?(notes, &(&1.fails))
+      assert length(note_rules) == 10
+      assert Enum.all?(note_rules, &(&1.fails))
 
       {:ok, _, _socket} = subscribe_and_join(socket(), RuleRunChannel, "run:rule", %{"rid" => rid})
 
@@ -56,9 +56,9 @@ defmodule AnkiViewerWeb.RuleRunChannelTest do
 
       assert_push("done", %{})
 
-      notes = Repo.all(NoteRule)
+      note_rules = Repo.all(NoteRule)
 
-      assert length(notes) == 10
+      assert length(note_rules) == 10
     end
   end
 end

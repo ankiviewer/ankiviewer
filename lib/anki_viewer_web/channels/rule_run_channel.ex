@@ -10,11 +10,16 @@ defmodule AnkiViewerWeb.RuleRunChannel do
   def handle_info({:run, :rule, %{rid: rid}}, socket) do
     push(socket, "run:msg", %{msg: "starting run"})
 
-    notes = Repo.all(Note)
     rule = Repo.get(Rule, rid)
+    note_rules = Repo.all(NoteRule)
+    notes = Repo.all(Note)
 
-    for n <- notes do
-      %NoteRule{nid: n.nid, rid: rid}
+    notes
+    |> Enum.filter(fn %{nid: nid} ->
+      nid not in Enum.map(note_rules, &Map.get(&1, :nid))
+    end)
+    |> Enum.each(fn %{nid: nid} = n ->
+      %NoteRule{nid: nid, rid: rid}
       |> Map.merge(case NoteRule.run(notes, n, rule) do
         :ok ->
           %{fails: false}
@@ -24,7 +29,7 @@ defmodule AnkiViewerWeb.RuleRunChannel do
           %{fails: true, solution: solution}
       end)
       |> NoteRule.insert!()
-    end
+    end)
 
     push(socket, "done", %{})
 

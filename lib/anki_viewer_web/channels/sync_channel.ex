@@ -21,14 +21,31 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     push(socket, "sync:msg", %{msg: "updated collection"})
 
-    Repo.delete_all(Note)
+    notes = Repo.all(Note)
 
     notes_data = AnkiViewer.notes_data!()
 
-    for {n, i} <- Enum.with_index(notes_data) do
-      push(socket, "sync:msg", %{msg: "updating note #{i}/#{length(notes_data)}"})
+    new_notes_data = Enum.filter(notes_data, fn %{nid: nid} ->
+      nid not in Enum.map(notes, &(&1.nid))
+    end)
+
+    new_notes_data
+    |> Enum.with_index(1)
+    |> Enum.each(fn {n, i} ->
+      push(socket, "sync:msg", %{msg: "adding note #{i}/#{length(new_notes_data)}"})
       Note.insert!(n)
-    end
+    end)
+
+    old_notes_data = Enum.filter(notes, fn %{nid: nid} ->
+      nid not in Enum.map(notes_data, &(&1.nid))
+    end)
+
+    old_notes_data
+    |> Enum.with_index(1)
+    |> Enum.each(fn {n, i} ->
+      push(socket, "sync:msg", %{msg: "deleting note #{i}/#{length(old_notes_data)}"})
+      Note.delete!(n)
+    end)
 
     push(socket, "sync:msg", %{msg: "updated notes"})
 

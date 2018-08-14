@@ -125,4 +125,10 @@ defmodule AnkiViewer.CollectionTest do
 
     assert length(Repo.all(Model)) == 2
   end
+
+  test "insert_or_update meta" do
+    Meta.insert_or_update!(%{last_update_time: 1_502_629_944})
+
+    assert Meta |> Repo.one() |> Map.get(:last_update_time) == 1_502_629_944
+  end
 end

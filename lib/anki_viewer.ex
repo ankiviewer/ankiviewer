@@ -52,6 +52,7 @@ defmodule AnkiViewer do
     decks |> format() |> Enum.map(&Map.put(&1, :did, &1.id))
   end
 
+  # TODO: make this one function, no need for format_notes
   def notes_data! do
     """
     select
