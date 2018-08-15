@@ -3,9 +3,18 @@ module Views.Rule exposing (ruleView)
 import Html exposing (Html, div, text, button, input, textarea)
 import Html.Events exposing (onClick, onInput, onFocus)
 import Html.Attributes exposing (value, placeholder)
-import Types exposing (Model, Rule, ErrRuleResponse, Msg(Websocket, RuleMsg), WebsocketMsg(RunRule), RunRuleMsg(RunStart, RunStop), Rules(..))
 import Views.Nav exposing (nav)
 import List.Extra as List
+import Types
+    exposing
+        ( Model
+        , Rule
+        , ErrRuleResponse
+        , Msg(Websocket, RuleMsg)
+        , WebsocketMsg(RunRule)
+        , RunRuleMsg(RunStart, RunStop)
+        , Rules(..)
+        )
 
 
 type InputSize
@@ -138,7 +147,7 @@ ruleView model =
                                     [ onClick <| RuleMsg (AreYouSureDelete rid) ]
                                     [ text "Delete" ]
                             , if model.ruleRunning == rid then
-                                 div
+                                div
                                     []
                                     [ text <| "ERR: " ++ (toString model.ruleRunError)
                                     , text <| "MSG: " ++ model.ruleRunMsg
@@ -146,12 +155,12 @@ ruleView model =
                                         [ onClick <| Websocket (RunRule RunStop) ]
                                         [ text "Stop" ]
                                     ]
-                            else if model.ruleRunning == -1 then
-                                 button
+                              else if model.ruleRunning == -1 then
+                                button
                                     [ onClick <| Websocket (RunRule (RunStart rid)) ]
                                     [ text "Run" ]
-                            else
-                                 text ""
+                              else
+                                text ""
                             ]
                 )
                 model.rules

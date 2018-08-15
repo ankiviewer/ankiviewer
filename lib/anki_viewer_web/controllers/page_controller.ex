@@ -64,7 +64,6 @@ defmodule AnkiViewerWeb.PageController do
   @doc """
   iex>extra_fields(%{flds: "hiworld", sfld: "world", type: 0})
   %{flds: "hiworld", sfld: "world", front: "hi", back: "world", type: 0, ttype: 0}
-
   """
   def extra_fields(%{flds: flds, sfld: sfld, type: type} = map) do
     map

@@ -64,22 +64,23 @@ runRule runRuleMsg model =
         RunStart rid ->
             updateSocketHelper
                 { model | ruleRunning = rid }
-                (Socket.join (Channel.init "run:rule"
-                    |> Channel.withPayload
-                        (Encode.object
-                            [ ( "rid", Encode.int rid ) ]
-                        )
+                (Socket.join
+                    (Channel.init "run:rule"
+                        |> Channel.withPayload
+                            (Encode.object
+                                [ ( "rid", Encode.int rid ) ]
+                            )
                     )
                 )
                 []
 
         RunReceive raw ->
-          case decodeValue Rest.msgDecoder raw of
-            Ok { decodedMsg } ->
-                { model | ruleRunMsg = decodedMsg } ! []
+            case decodeValue Rest.msgDecoder raw of
+                Ok { decodedMsg } ->
+                    { model | ruleRunMsg = decodedMsg } ! []
 
-            Err err ->
-                { model | ruleRunError = True, ruleRunMsg = err } ! []
+                Err err ->
+                    { model | ruleRunError = True, ruleRunMsg = err } ! []
 
         RunSendStop ->
             model ! []
@@ -88,7 +89,7 @@ runRule runRuleMsg model =
             updateSocketHelper model (Socket.leave "run:rule") [ Process.sleep 600 |> Task.perform (\_ -> Websocket (RunRule RunStop)) ]
 
         RunStop ->
-           { model | ruleRunning = -1 } ! []
+            { model | ruleRunning = -1 } ! []
 
 
 updateSocketHelper : Model -> (Socket Msg -> ( Socket Msg, Cmd (Socket.Msg Msg) )) -> List (Cmd Msg) -> ( Model, Cmd Msg )

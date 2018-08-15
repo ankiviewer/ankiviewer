@@ -1,6 +1,5 @@
 defmodule AnkiViewerWeb.RuleRunChannelTest do
   use AnkiViewerWeb.ChannelCase, async: false
-  alias AnkiViewerWeb.RuleRunChannel
 
   describe "run:rule" do
     test "with all correct notes" do
