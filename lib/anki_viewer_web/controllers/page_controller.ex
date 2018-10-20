@@ -8,18 +8,18 @@ defmodule AnkiViewerWeb.PageController do
   def collection(conn, _params) do
     case Repo.one(Collection) do
       nil ->
-        json(conn, %{mod: 0, notes: 0})
+        json(conn, %{mod: 0, cards: 0, decks: [], models: []})
 
       %{mod: mod} ->
         decks = Deck |> Repo.all() |> Enum.map(&Map.take(&1, ~w(did name)a))
         models = Model |> Repo.all() |> Enum.map(&Map.take(&1, ~w(did flds mid name)a))
-        notes = Note |> Repo.all() |> length()
+        cards = Card |> Repo.all() |> length()
 
-        json(conn, %{mod: mod, notes: notes, decks: decks, models: models})
+        json(conn, %{mod: mod, cards: cards, decks: decks, models: models})
     end
   end
 
-  def notes(conn, %{
+  def cards(conn, %{
         "deck" => deck,
         "model" => model,
         "modelorder" => _modelorder,
@@ -27,8 +27,8 @@ defmodule AnkiViewerWeb.PageController do
         "search" => search,
         "tags" => _tags
       }) do
-    notes =
-      Note
+    cards =
+      Card
       |> join(:inner, [n], m in Model, n.mid == m.mid)
       |> join(:inner, [n, m], d in Deck, n.did == d.did)
       |> select([n, m, d], %{
@@ -52,10 +52,10 @@ defmodule AnkiViewerWeb.PageController do
       |> extra_fields()
       |> Enum.take(10)
 
-    json(conn, notes)
+    json(conn, cards)
   end
 
-  def notes(conn, _params) do
+  def cards(conn, _params) do
     # TODO:improve this
 
     json(conn, %{error: "BAD PARAMS"})

@@ -1,1 +1,1 @@
-alias AnkiViewer.{Collection, Model, Deck, Repo, Note, NoteRule, Rule}
+alias AnkiViewer.{Collection, Model, Deck, Repo, Card, CardRule, Rule}

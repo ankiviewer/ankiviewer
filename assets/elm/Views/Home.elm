@@ -40,6 +40,6 @@ homeView ({ syncingDatabase, syncingDatabaseMsg, syncingError, collection } as m
                     |> Date.toFormattedString "'last modified: 'EEEE, MMMM d, y 'at' h:mm a"
                     |> text
                 ]
-            , div [] [ text <| "number notes: " ++ toString collection.notes ]
+            , div [] [ text <| "number cards: " ++ toString collection.cards ]
             ]
         ]

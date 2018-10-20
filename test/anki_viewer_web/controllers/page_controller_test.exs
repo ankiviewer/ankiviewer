@@ -12,7 +12,12 @@ defmodule AnkiViewerWeb.PageControllerTest do
     test "with no collection data", %{conn: conn} do
       conn = get(conn, "/api/collection")
 
-      assert json_response(conn, 200) == %{"mod" => 0, "notes" => 0}
+      assert json_response(conn, 200) == %{
+               "mod" => 0,
+               "cards" => 0,
+               "decks" => [],
+               "models" => []
+             }
     end
 
     test "with collection data", %{conn: conn} do
@@ -21,74 +26,74 @@ defmodule AnkiViewerWeb.PageControllerTest do
 
       decks = [
         %{"did" => 1, "name" => "Default"},
-        %{"did" => 1_482_060_876, "name" => "DE"},
-        %{"did" => 1_503_955_755, "name" => "Thai"}
+        %{"did" => 1_482_060_876_072, "name" => "DE"},
+        %{"did" => 1_503_955_755_113, "name" => "Thai"}
       ]
 
       models = [
         %{
-          "did" => 1_482_060_876,
+          "did" => 1_482_060_876_072,
           "flds" => ["German", "English", "Hint"],
-          "mid" => 1_482_842_770,
+          "mid" => 1_482_842_770_192,
           "name" => "de_reverse"
         },
         %{
-          "did" => 1_482_060_876,
+          "did" => 1_482_060_876_072,
           "flds" => ["German", "English", "Hint"],
-          "mid" => 1_482_844_263,
+          "mid" => 1_482_844_263_685,
           "name" => "de_en"
         },
         %{
-          "did" => 1_482_060_876,
+          "did" => 1_482_060_876_072,
           "flds" => ["English", "German", "Hint"],
-          "mid" => 1_482_844_395,
+          "mid" => 1_482_844_395_181,
           "name" => "en_de"
         },
         %{
-          "did" => 1_482_060_876,
+          "did" => 1_482_060_876_072,
           "flds" => ["Front", "Back"],
-          "mid" => 1_498_897_408,
+          "mid" => 1_498_897_408_555,
           "name" => "preposition_case"
         },
-        %{"did" => 1, "flds" => ["Text", "Extra"], "mid" => 1_502_629_924, "name" => "Cloze"},
+        %{"did" => 1, "flds" => ["Text", "Extra"], "mid" => 1_502_629_924_060, "name" => "Cloze"},
         %{
           "did" => 1,
           "flds" => ["Front", "Back"],
-          "mid" => 1_507_832_105,
+          "mid" => 1_507_832_105_615,
           "name" => "Basic (and reversed card)"
         }
       ]
 
       assert json_response(conn, 200) == %{
-               "mod" => 1_514_655_628,
-               "notes" => 10,
+               "mod" => 1_514_655_628_599,
+               "cards" => 10,
                "decks" => decks,
                "models" => models
              }
     end
   end
 
-  describe "GET /api/notes" do
+  describe "GET /api/cards" do
     test "with bad params", %{conn: conn} do
-      conn = get(conn, "/api/notes")
+      conn = get(conn, "/api/cards")
 
       assert json_response(conn, 200) == %{"error" => "BAD PARAMS"}
     end
 
-    test "without notes data", %{conn: conn} do
+    test "without cards data", %{conn: conn} do
       params = ~s(search=&model=&deck=&tags=&modelorder=&rule=)
 
-      conn = get(conn, "/api/notes?" <> params)
+      conn = get(conn, "/api/cards?" <> params)
 
       assert json_response(conn, 200) == []
     end
 
-    test "with notes data", %{conn: conn} do
+    test "with cards data", %{conn: conn} do
       load_collection!()
 
       params = ~s(search=&model=&deck=&tags=&modelorder=&rule=)
 
-      conn = get(conn, "/api/notes?" <> params)
+      conn = get(conn, "/api/cards?" <> params)
 
       assert json_response(conn, 200) |> length == 10
     end
@@ -98,7 +103,7 @@ defmodule AnkiViewerWeb.PageControllerTest do
 
       params = ~s(search=&model=&deck=DE&tags=&modelorder=&rule=)
 
-      conn = get(conn, "/api/notes?" <> params)
+      conn = get(conn, "/api/cards?" <> params)
 
       assert json_response(conn, 200) |> length == 10
     end
@@ -108,7 +113,7 @@ defmodule AnkiViewerWeb.PageControllerTest do
 
       params = ~s(search=&model=de_reverse&deck=&tags=&modelorder=&rule=)
 
-      conn = get(conn, "/api/notes?" <> params)
+      conn = get(conn, "/api/cards?" <> params)
 
       assert json_response(conn, 200) |> length == 10
     end
@@ -116,7 +121,7 @@ defmodule AnkiViewerWeb.PageControllerTest do
     test "with search", %{conn: conn} do
       load_collection!()
 
-      notes = [
+      cards = [
         %{
           "deck" => "DE",
           "due" => 415,
@@ -155,9 +160,9 @@ defmodule AnkiViewerWeb.PageControllerTest do
 
       params = ~s(search=agreement&model=&deck=&tags=&modelorder=&rule=)
 
-      conn = get(conn, "/api/notes?" <> params)
+      conn = get(conn, "/api/cards?" <> params)
 
-      assert json_response(conn, 200) == notes
+      assert json_response(conn, 200) == cards
     end
   end
 end
