@@ -1,13 +1,13 @@
-defmodule AnkiViewer.NoteRule do
+defmodule AnkiViewer.CardRule do
   use Ecto.Schema
   import Ecto.Changeset
-  alias AnkiViewer.{Note, Rule, NoteRule, Repo}
+  alias AnkiViewer.{Card, Rule, CardRule, Repo}
 
-  schema "note_rules" do
+  schema "card_rules" do
     field(:comment, :string)
     field(:fails, :boolean, default: false)
     field(:ignore, :boolean, default: false)
-    field(:nid, :integer)
+    field(:cid, :integer)
     field(:rid, :integer)
     field(:solution, :string)
     field(:url, :string)
@@ -15,16 +15,16 @@ defmodule AnkiViewer.NoteRule do
     timestamps()
   end
 
-  @required_params ~w(fails nid rid)a
+  @required_params ~w(fails cid rid)a
   @optional_params ~w(comment solution url ignore)a
-  def changeset(%NoteRule{} = note_rule, attrs \\ %{}) do
-    note_rule
+  def changeset(%CardRule{} = card_rule, attrs \\ %{}) do
+    card_rule
     |> cast(attrs, @required_params ++ @optional_params)
     |> validate_required(@required_params)
   end
 
-  def run(notes, %Note{} = note, %Rule{code: code}) do
-    case Code.eval_string(code, note: note, notes: notes) do
+  def run(cards, %Card{} = card, %Rule{code: code}) do
+    case Code.eval_string(code, card: card, cards: cards) do
       {true, _} ->
         :ok
 
@@ -39,7 +39,7 @@ defmodule AnkiViewer.NoteRule do
     |> Map.has_key?(:__struct__)
     |> case do
       true -> attrs
-      false -> Map.merge(%NoteRule{}, attrs)
+      false -> Map.merge(%CardRule{}, attrs)
     end
     |> changeset
     |> Repo.insert!()

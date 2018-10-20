@@ -2,7 +2,7 @@ defmodule UtilsTest do
   use ExUnit.Case
   doctest Utils, import: true
 
-  alias AnkiViewer.Note
+  alias AnkiViewer.Card
 
   test "parseable fields" do
     input = [
@@ -11,7 +11,7 @@ defmodule UtilsTest do
         str: "string",
         bool: true,
         map: %{},
-        struct: %Note{cid: 123}
+        struct: %Card{cid: 123}
       },
       %{
         updated_at: ~N[2018-03-21 22:43:54.238796],
@@ -21,7 +21,7 @@ defmodule UtilsTest do
           key: %{
             ok_value: 1,
             date_value: ~N[2018-03-21 22:43:54.238796],
-            struct: %Note{cid: 123}
+            struct: %Card{cid: 123}
           }
         }
       }

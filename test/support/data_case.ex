@@ -20,8 +20,8 @@ defmodule AnkiViewer.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import AnkiViewer.DataCase
-      import AnkiViewer.TestHelpers, only: [simplify_struct: 1]
-      alias AnkiViewer.{Collection, Deck, Model, Repo, Note, NoteRule, Rule}
+      import AnkiViewer.TestHelpers, only: [simplify_struct: 1, load_collection!: 0]
+      alias AnkiViewer.{Collection, Deck, Model, Repo, Card, CardRule, Rule}
     end
   end
 

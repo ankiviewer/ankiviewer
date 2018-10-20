@@ -43,7 +43,7 @@ getCollection =
 
 getNotes : Model -> Cmd Msg
 getNotes model =
-    HttpBuilder.get "/api/notes"
+    HttpBuilder.get "/api/cards"
         |> HttpBuilder.withQueryParams
             [ ( "search", model.search )
             , ( "model", model.model )
@@ -52,7 +52,7 @@ getNotes model =
             , ( "modelorder", model.order |> List.map toString |> String.join "," )
             , ( "rule", toString model.rule )
             ]
-        |> HttpBuilder.withExpect (Http.expectJson notesDecoder)
+        |> HttpBuilder.withExpect (Http.expectJson cardsDecoder)
         |> HttpBuilder.send (NewNotes >> Request)
 
 
@@ -60,7 +60,7 @@ collectionDecoder : Decoder Collection
 collectionDecoder =
     decode Collection
         |> required "mod" Decode.int
-        |> required "notes" Decode.int
+        |> required "cards" Decode.int
         |> required "models" modelsDecoder
         |> required "decks" decksDecoder
 
@@ -85,8 +85,8 @@ modelsDecoder =
         )
 
 
-notesDecoder : Decoder (List Note)
-notesDecoder =
+cardsDecoder : Decoder (List Note)
+cardsDecoder =
     Decode.list
         (decode Note
             |> required "model" Decode.string

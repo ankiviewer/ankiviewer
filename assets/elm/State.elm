@@ -40,11 +40,11 @@ initialModel flags =
     , areYouSureDelete = -1
     , newRule = initialRule
     , collection = initialCollection
-    , notes = []
+    , cards = []
     , syncingError = False
     , syncingDatabase = False
     , syncingDatabaseMsg = ""
-    , noteColumns = initialNoteColumns flags
+    , cardColumns = initialNoteColumns flags
     , showingManageNoteColumns = False
     , view = HomeView
     }
@@ -81,7 +81,7 @@ initialErrRuleResponse =
 initialCollection : Collection
 initialCollection =
     { mod = -1
-    , notes = -1
+    , cards = -1
     , models = []
     , decks = []
     }
@@ -139,7 +139,7 @@ update msg model =
 
         ToggleNoteColumn index ->
             let
-                noteColumns =
+                cardColumns =
                     List.indexedMap
                         (\i nc ->
                             if i == index then
@@ -147,9 +147,9 @@ update msg model =
                             else
                                 nc
                         )
-                        model.noteColumns
+                        model.cardColumns
             in
-                { model | noteColumns = noteColumns } ! [ setColumns noteColumns ]
+                { model | cardColumns = cardColumns } ! [ setColumns cardColumns ]
 
         ToggleManageNotes ->
             { model | showingManageNoteColumns = not model.showingManageNoteColumns } ! []

@@ -52,7 +52,7 @@ defmodule AnkiViewer do
     decks |> format() |> Enum.map(&Map.put(&1, :did, &1.id))
   end
 
-  def notes_data! do
+  def cards_data! do
     """
     select
     c.id as cid,
@@ -73,25 +73,25 @@ defmodule AnkiViewer do
     from notes as n inner join cards as c on n.id = c.nid
     """
     |> sqlite_cmd!(header: true)
-    |> format_notes
+    |> format_cards
   end
 
-  def format_notes(notes_data) do
-    [keys | notes] =
-      notes_data
+  def format_cards(cards_data) do
+    [keys | cards] =
+      cards_data
       |> String.split("\n", trim: true)
       |> Enum.map(&String.split(&1, "|"))
 
-    notes
-    |> Enum.map(fn nd ->
-      nd
+    cards
+    |> Enum.map(fn cd ->
+      cd
       |> Enum.with_index()
-      |> Map.new(fn {n, i} ->
+      |> Map.new(fn {c, i} ->
         case keys |> Enum.at(i) |> String.to_atom() do
-          :sfld -> {:sfld, n}
-          :flds -> {:flds, n}
-          :tags -> {:tags, String.split(n, " ", trim: true)}
-          k -> {k, sanitize_integer(n)}
+          :sfld -> {:sfld, c}
+          :flds -> {:flds, c}
+          :tags -> {:tags, String.split(c, " ", trim: true)}
+          k -> {k, sanitize_integer(c)}
         end
       end)
     end)
