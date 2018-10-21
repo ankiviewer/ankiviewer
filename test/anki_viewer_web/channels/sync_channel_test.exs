@@ -46,19 +46,19 @@ defmodule AnkiViewerWeb.SyncChannelTest do
       assert [1, 1_482_840_611, "Default"] == [did, mod, name]
     end
 
-    test "cards are updated as expected", %{socket: _socket} do
-      refute_push("sync:msg", %{msg: "updating card 0/10"})
-      assert_push("sync:msg", %{msg: "updating card 1/10"})
-      assert_push("sync:msg", %{msg: "updating card 2/10"})
-      assert_push("sync:msg", %{msg: "updating card 3/10"})
-      assert_push("sync:msg", %{msg: "updating card 4/10"})
-      assert_push("sync:msg", %{msg: "updating card 5/10"})
-      assert_push("sync:msg", %{msg: "updating card 6/10"})
-      assert_push("sync:msg", %{msg: "updating card 7/10"})
-      assert_push("sync:msg", %{msg: "updating card 8/10"})
-      assert_push("sync:msg", %{msg: "updating card 9/10"})
-      assert_push("sync:msg", %{msg: "updating card 10/10"})
-      refute_push("sync:msg", %{msg: "updating card 11/10"})
+    test "cards are added as expected", %{socket: _socket} do
+      refute_push("sync:msg", %{msg: "adding card 0/10"})
+      assert_push("sync:msg", %{msg: "adding card 1/10"})
+      assert_push("sync:msg", %{msg: "adding card 2/10"})
+      assert_push("sync:msg", %{msg: "adding card 3/10"})
+      assert_push("sync:msg", %{msg: "adding card 4/10"})
+      assert_push("sync:msg", %{msg: "adding card 5/10"})
+      assert_push("sync:msg", %{msg: "adding card 6/10"})
+      assert_push("sync:msg", %{msg: "adding card 7/10"})
+      assert_push("sync:msg", %{msg: "adding card 8/10"})
+      assert_push("sync:msg", %{msg: "adding card 9/10"})
+      assert_push("sync:msg", %{msg: "adding card 10/10"})
+      refute_push("sync:msg", %{msg: "adding card 11/10"})
       assert_push("sync:msg", %{msg: "updated cards"})
       assert_push("done", %{})
 
@@ -78,15 +78,49 @@ defmodule AnkiViewerWeb.SyncChannelTest do
     test "cards don't rerun when there is nothing to update" do
       {:ok, _, _socket} = subscribe_and_join(socket(), SyncChannel, "sync:database")
 
-      refute_push("sync:msg", %{msg: "updating card 1/10"})
+      refute_push("sync:msg", %{msg: "adding card 1/10"})
     end
 
-    # test "cards run once when there is 1 card to add" do
-    #   Repo.all(Card) |> List.first
+    test "cards add 1" do
+      Repo.all(Card) |> List.first |> Repo.delete!()
 
-    #   {:ok, _, _socket} = subscribe_and_join(socket(), SyncChannel, "sync:database")
+      {:ok, _, _socket} = subscribe_and_join(socket(), SyncChannel, "sync:database")
 
-    #   assert_push("sync:msg", %{msg: "updating card 1/1"})
+      refute_push("sync:msg", %{msg: "adding card 0/1"})
+      assert_push("sync:msg", %{msg: "adding card 1/1"})
+
+      assert Card |> Repo.all() |> length() == 10
+    end
+
+    test "cards delete 1" do
+      %{
+        cid: 123,
+        cmod: 123,
+        did: 123,
+        due: 123,
+        flds: "onetwo",
+        lapses: 123,
+        mid: 123,
+        nid: 123,
+        nmod: 123,
+        ord: 123,
+        queue: 123,
+        reps: 123,
+        sfld: "two",
+        tags: [],
+        type: 123
+      } |> Card.insert!()
+
+      {:ok, _, _socket} = subscribe_and_join(socket(), SyncChannel, "sync:database")
+
+      refute_push("sync:msg", %{msg: "deleting card 0/1"})
+      assert_push("sync:msg", %{msg: "deleting card 1/1"})
+
+      assert Card |> Repo.all() |> length() == 10
+    end
+
+    # test "cards update 1" do
+
     # end
   end
 end

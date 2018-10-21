@@ -25,16 +25,28 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     current_cards_data = Repo.all(Card)
 
-    filtered_new_cards_data =
-      Enum.filter(new_cards_data, fn card ->
-        card.nid not in Enum.map(current_cards_data, &Map.get(&1, :nid))
+    cards_data_to_add =
+      Enum.filter(new_cards_data, fn %{cid: cid} ->
+        cid not in Enum.map(current_cards_data, &Map.get(&1, :cid))
       end)
 
-    filtered_new_cards_data
+    cards_data_to_delete =
+      Enum.filter(current_cards_data, fn %{cid: cid} ->
+        cid not in Enum.map(new_cards_data, &Map.get(&1, :cid))
+      end)
+
+    cards_data_to_add
     |> Enum.with_index(1)
-    |> Enum.each(fn {n, i} ->
-      push(socket, "sync:msg", %{msg: "updating card #{i}/#{length(filtered_new_cards_data)}"})
-      Card.insert!(n)
+    |> Enum.each(fn {card, i} ->
+      push(socket, "sync:msg", %{msg: "adding card #{i}/#{length(cards_data_to_add)}"})
+      Card.insert!(card)
+    end)
+
+    cards_data_to_delete
+    |> Enum.with_index(1)
+    |> Enum.each(fn {card, i} ->
+      push(socket, "sync:msg", %{msg: "deleting card #{i}/#{length(cards_data_to_delete)}"})
+      Repo.delete!(card)
     end)
 
     push(socket, "sync:msg", %{msg: "updated cards"})
