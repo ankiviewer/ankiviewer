@@ -3,17 +3,17 @@ defmodule AnkiViewer.RuleTest do
   doctest AnkiViewer.Rule, import: true
 
   @code """
-  note.sfld != ""
+  card.sfld != ""
   """
   @tests """
   [
     %{
-      note: %{sfld: "h"},
+      card: %{sfld: "h"},
       fine: true,
       deck: nil
     },
     %{
-      note: %{sfld: ""},
+      card: %{sfld: ""},
       fine: false,
       deck: nil
     }
@@ -39,7 +39,7 @@ defmodule AnkiViewer.RuleTest do
           name: "no duplicate front",
           code: """
           not Enum.any?(deck, fn n ->
-            n.sfld == note.sfld and n.nid != note.nid
+            n.sfld == card.sfld and n.nid != card.nid
           end)
           """,
           tests: """
@@ -49,7 +49,7 @@ defmodule AnkiViewer.RuleTest do
                   %{nid: 0, sfld: "h"},
                   %{nid: 1, sfld: "hi"}
                 ],
-                note: %{nid: 0, sfld: "h"},
+                card: %{nid: 0, sfld: "h"},
                 fine: true
               },
               %{
@@ -57,7 +57,7 @@ defmodule AnkiViewer.RuleTest do
                   %{nid: 0, sfld: "h"},
                   %{nid: 1, sfld: "h"}
                 ],
-                note: %{nid: 0, sfld: "h"},
+                card: %{nid: 0, sfld: "h"},
                 fine: true
               }
             ]
@@ -66,8 +66,8 @@ defmodule AnkiViewer.RuleTest do
         %{
           name: "nouns start with 'the'",
           code: """
-          if "noun" in note.tags do
-            String.starts_with?(note.sfld, "the ")
+          if "noun" in card.tags do
+            String.starts_with?(card.sfld, "the ")
           else
             true
           end
@@ -75,17 +75,17 @@ defmodule AnkiViewer.RuleTest do
           tests: """
             [
               %{
-                note: %{tags: ["noun"], sfld: "h"},
+                card: %{tags: ["noun"], sfld: "h"},
                 deck: nil,
                 fine: false
               },
               %{
-                note: %{tags: [], sfld: "h"},
+                card: %{tags: [], sfld: "h"},
                 deck: nil,
                 fine: true
               },
               %{
-                note: %{tags: ["noun"], sfld: "the h"},
+                card: %{tags: ["noun"], sfld: "the h"},
                 deck: nil,
                 fine: true
               }
@@ -113,7 +113,7 @@ defmodule AnkiViewer.RuleTest do
       {:error, error} = Rule.run_tests(error_rule)
 
       assert error ==
-               ~s(note: %{nid: 0, sfld: "h"} and deck: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were expected to be ok, but were actually not ok for rule: no duplicate front)
+               ~s(card: %{nid: 0, sfld: "h"} and deck: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were expected to be ok, but were actually not ok for rule: no duplicate front)
     end
   end
 
@@ -135,7 +135,7 @@ defmodule AnkiViewer.RuleTest do
 
     test "code syntax error" do
       code = """
-      note.sfld != "
+      card.sfld != "
       """
 
       actual = Rule.insert(%{name: "n", code: code, tests: @tests})
@@ -148,12 +148,12 @@ defmodule AnkiViewer.RuleTest do
       tests = """
         [
           %{
-            note: %{sfld: "h"},
+            card: %{sfld: "h"},
             fine: true,
             deck: nil
           },
           %{
-            note: %{sfld: ""},
+            card: %{sfld: ""},
             fine: false,
             deck: nil
           }
@@ -167,18 +167,18 @@ defmodule AnkiViewer.RuleTest do
 
     test "code and tests syntax error" do
       code = """
-      note.sfld != "
+      card.sfld != "
       """
 
       tests = """
         [
           %{
-            note: %{sfld: "h"},
+            card: %{sfld: "h"},
             fine: true,
             deck: nil
           },
           %{
-            note: %{sfld: ""},
+            card: %{sfld: ""},
             fine: false,
             deck: nil
           }

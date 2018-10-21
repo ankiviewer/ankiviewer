@@ -24,7 +24,7 @@ defmodule AnkiViewerWeb do
       import Plug.Conn
       import AnkiViewerWeb.Router.Helpers
       import AnkiViewerWeb.Gettext
-      alias AnkiViewer.{Collection, Model, Deck, Repo, Note, NoteRule, Rule}
+      alias AnkiViewer.{Collection, Model, Deck, Repo, Card, CardRule, Rule}
     end
   end
 
@@ -43,7 +43,7 @@ defmodule AnkiViewerWeb do
       import AnkiViewerWeb.Router.Helpers
       import AnkiViewerWeb.ErrorHelpers
       import AnkiViewerWeb.Gettext
-      alias AnkiViewer.{Collection, Model, Deck, Repo, Note, NoteRule, Rule}
+      alias AnkiViewer.{Collection, Model, Deck, Repo, Card, CardRule, Rule}
     end
   end
 
@@ -52,7 +52,7 @@ defmodule AnkiViewerWeb do
       use Phoenix.Router
       import Plug.Conn
       import Phoenix.Controller
-      alias AnkiViewer.{Collection, Model, Deck, Repo, Note, NoteRule, Rule}
+      alias AnkiViewer.{Collection, Model, Deck, Repo, Card, CardRule, Rule}
     end
   end
 
@@ -60,7 +60,7 @@ defmodule AnkiViewerWeb do
     quote do
       use Phoenix.Channel
       import AnkiViewerWeb.Gettext
-      alias AnkiViewer.{Collection, Model, Deck, Repo, Note, NoteRule, Rule}
+      alias AnkiViewer.{Collection, Model, Deck, Repo, Card, CardRule, Rule}
     end
   end
 

@@ -19,8 +19,8 @@ update requestMsg model =
         GetNotes ->
             model ! [ Rest.getNotes model ]
 
-        NewNotes (Ok notes) ->
-            { model | notes = notes } ! []
+        NewNotes (Ok cards) ->
+            { model | cards = cards } ! []
 
         NewNotes (Err e) ->
             { model | syncingError = True, syncingDatabaseMsg = toString e } ! []

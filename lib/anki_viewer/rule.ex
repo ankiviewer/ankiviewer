@@ -1,7 +1,7 @@
 defmodule AnkiViewer.Rule do
   use Ecto.Schema
   import Ecto.Changeset
-  alias AnkiViewer.{Rule, Repo, Note}
+  alias AnkiViewer.{Rule, Repo, Card}
 
   @primary_key {:rid, :id, autogenerate: true}
   schema "rules" do
@@ -12,7 +12,7 @@ defmodule AnkiViewer.Rule do
     timestamps()
   end
 
-  @optional_attrs ~w(rid)a
+  @optional_attrs ~w()a
   @required_attrs ~w(code name tests)a
   def changeset(%Rule{} = rule, attrs \\ %{}) do
     rule
@@ -35,17 +35,15 @@ defmodule AnkiViewer.Rule do
     end
   end
 
-  defp insert_update_helper(attrs, repo_func) do
-    case changeset = changeset(%Rule{rid: Map.get(attrs, :rid)}, attrs) do
+  def insert(attrs) when is_map(attrs) do
+    case changeset = changeset(%Rule{}, attrs) do
       %Ecto.Changeset{valid?: true} ->
-        repo_func.(changeset)
+        Repo.insert(changeset)
 
       %Ecto.Changeset{errors: errors} ->
         {:error, errors |> Map.new(fn {k, {msg, _}} -> {k, msg} end)}
     end
   end
-
-  def insert(attrs) when is_map(attrs), do: insert_update_helper(attrs, &Repo.insert/1)
 
   def insert(list) when is_list(list), do: Enum.each(list, &insert/1)
 
@@ -61,7 +59,18 @@ defmodule AnkiViewer.Rule do
 
   def insert!(list) when is_list(list), do: Enum.each(list, &insert!/1)
 
-  def update(%{rid: _rid} = attrs), do: insert_update_helper(attrs, &Repo.update/1)
+  def update(%{rid: rid} = attrs) do
+    case changeset(%Rule{}, attrs) do
+      %Ecto.Changeset{valid?: true} ->
+        Rule
+        |> Repo.get!(rid)
+        |> change(attrs)
+        |> Repo.update()
+
+      %Ecto.Changeset{errors: errors} ->
+        {:error, errors |> Map.new(fn {k, {msg, _}} -> {k, msg} end)}
+    end
+  end
 
   def all, do: Rule |> Repo.all() |> Utils.parseable_fields()
 
@@ -70,17 +79,17 @@ defmodule AnkiViewer.Rule do
   def run_tests(%Rule{} = rule) do
     {tests, []} = Code.eval_string(rule.tests)
 
-    Enum.find(tests, :ok, fn %{fine: fine, note: note, deck: deck} ->
-      {eval_fine, _} = Code.eval_string(rule.code, note: note, deck: deck)
+    Enum.find(tests, :ok, fn %{fine: fine, card: card, deck: deck} ->
+      {eval_fine, _} = Code.eval_string(rule.code, card: card, deck: deck)
       eval_fine != fine
     end)
     |> case do
       :ok ->
         :ok
 
-      %{fine: fine, note: note, deck: deck} ->
+      %{fine: fine, card: card, deck: deck} ->
         {:error,
-         "note: #{inspect(note)} and deck: #{inspect(deck)} were expected to be #{status(fine)}, but were actually #{
+         "card: #{inspect(card)} and deck: #{inspect(deck)} were expected to be #{status(fine)}, but were actually #{
            status(not fine)
          } for rule: #{rule.name}"}
     end
@@ -94,7 +103,7 @@ defmodule AnkiViewer.Rule do
   """
   def validate(code) when is_binary(code) do
     try do
-      Code.eval_string(code, note: %Note{}, deck: [%Note{}])
+      Code.eval_string(code, card: %Card{}, deck: [%Card{}])
 
       :ok
     rescue

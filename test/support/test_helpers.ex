@@ -1,5 +1,5 @@
 defmodule AnkiViewer.TestHelpers do
-  alias AnkiViewer.{Collection, Model, Deck, Note, Repo}
+  alias AnkiViewer.{Collection, Model, Deck, Card, Repo}
 
   def configure_sqlite! do
     {"", 0} =
@@ -19,9 +19,9 @@ defmodule AnkiViewer.TestHelpers do
     collection_data |> Map.fetch!(:models) |> Model.insert_or_update!()
     collection_data |> Map.fetch!(:decks) |> Deck.insert_or_update!()
 
-    Repo.delete_all(Note)
+    Repo.delete_all(Card)
 
-    AnkiViewer.notes_data!() |> Enum.each(&Note.insert!/1)
+    AnkiViewer.cards_data!() |> Enum.each(&Card.insert!/1)
   end
 
   def simplify_struct(struct) when is_map(struct) do
