@@ -20,7 +20,7 @@ defmodule AnkiViewerWeb.ChannelCase do
       # Import conveniences for testing with channels
       use Phoenix.ChannelTest
       import AnkiViewer.TestHelpers
-      alias AnkiViewer.{Collection, Deck, Model, Repo, Note, NoteRule, Rule}
+      alias AnkiViewer.{Collection, Deck, Model, Repo, Card, CardRule, Rule}
 
       # The default endpoint for testing
       @endpoint AnkiViewerWeb.Endpoint

@@ -44,11 +44,11 @@ type alias Model =
     , ruleValidationErr : ErrRuleResponse
     , areYouSureDelete : Int
     , collection : Collection
-    , notes : List Note
+    , cards : List Note
     , syncingError : Bool
     , syncingDatabase : Bool
     , syncingDatabaseMsg : String
-    , noteColumns : List Bool
+    , cardColumns : List Bool
     , showingManageNoteColumns : Bool
     , view : Views
     }
@@ -92,7 +92,7 @@ type alias Rule =
 
 type alias Collection =
     { mod : Int
-    , notes : Int
+    , cards : Int
     , models : List M
     , decks : List D
     }

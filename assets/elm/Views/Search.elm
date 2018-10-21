@@ -8,8 +8,8 @@ import List.Extra as List
 import Views.Nav exposing (nav)
 
 
-noteColumns : List String
-noteColumns =
+cardColumns : List String
+cardColumns =
     [ "model", "mod", "ord", "tags", "deck", "type", "queue", "due", "reps", "lapses", "front", "back" ]
 
 
@@ -68,8 +68,8 @@ searchView model =
                 ]
             , div
                 [ class "justify-around flex" ]
-                (noteColumns
-                    |> List.zip model.noteColumns
+                (cardColumns
+                    |> List.zip model.cardColumns
                     |> List.indexedMap (\i ( selected, val ) -> ( i, selected, val ))
                     |> List.map
                         (\( i, selected, header ) ->
@@ -89,8 +89,8 @@ searchView model =
                 )
             ]
         , div [ class "flex justify-around" ]
-            (noteColumns
-                |> List.zip model.noteColumns
+            (cardColumns
+                |> List.zip model.cardColumns
                 |> List.filter (\( selected, _ ) -> selected)
                 |> List.map
                     (\( _, header ) ->
@@ -105,22 +105,22 @@ searchView model =
             )
         , div []
             (List.map
-                (\note ->
+                (\card ->
                     div [ class "flex justify-around" ]
-                        ([ note.model
-                         , toString note.mod
-                         , toString note.ord
-                         , toString note.tags
-                         , note.deck
-                         , toString note.ttype
-                         , toString note.queue
-                         , toString note.due
-                         , toString note.reps
-                         , toString note.lapses
-                         , note.front
-                         , note.back
+                        ([ card.model
+                         , toString card.mod
+                         , toString card.ord
+                         , toString card.tags
+                         , card.deck
+                         , toString card.ttype
+                         , toString card.queue
+                         , toString card.due
+                         , toString card.reps
+                         , toString card.lapses
+                         , card.front
+                         , card.back
                          ]
-                            |> List.zip model.noteColumns
+                            |> List.zip model.cardColumns
                             |> List.filter (\( selected, _ ) -> selected)
                             |> List.map
                                 (\( _, row ) ->
@@ -134,6 +134,6 @@ searchView model =
                                 )
                         )
                 )
-                model.notes
+                model.cards
             )
         ]

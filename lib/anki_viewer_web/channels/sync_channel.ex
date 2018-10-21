@@ -21,16 +21,23 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     push(socket, "sync:msg", %{msg: "updated collection"})
 
-    Repo.delete_all(Note)
+    new_cards_data = AnkiViewer.cards_data!()
 
-    notes_data = AnkiViewer.notes_data!()
+    current_cards_data = Repo.all(Card)
 
-    for {n, i} <- Enum.with_index(notes_data) do
-      push(socket, "sync:msg", %{msg: "updating note #{i}/#{length(notes_data)}"})
-      Note.insert!(n)
-    end
+    filtered_new_cards_data =
+      Enum.filter(new_cards_data, fn card ->
+        card.nid not in Enum.map(current_cards_data, &Map.get(&1, :nid))
+      end)
 
-    push(socket, "sync:msg", %{msg: "updated notes"})
+    filtered_new_cards_data
+    |> Enum.with_index(1)
+    |> Enum.each(fn {n, i} ->
+      push(socket, "sync:msg", %{msg: "updating card #{i}/#{length(filtered_new_cards_data)}"})
+      Card.insert!(n)
+    end)
+
+    push(socket, "sync:msg", %{msg: "updated cards"})
 
     push(socket, "done", %{})
 

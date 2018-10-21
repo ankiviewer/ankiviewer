@@ -3,17 +3,17 @@ defmodule AnkiViewerWeb.RuleControllerTest do
   doctest AnkiViewerWeb.PageController, import: true
 
   @code """
-    note.sfld != ""
+    card.sfld != ""
   """
   @tests """
     [
       %{
-        note: %{sfld: "h"},
+        card: %{sfld: "h"},
         fine: true,
         deck: nil
       },
       %{
-        note: %{sfld: ""},
+        card: %{sfld: ""},
         fine: false,
         deck: nil
       }
@@ -65,7 +65,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
 
     test "invalid params", %{conn: conn} do
       code = """
-        note.sfld != "
+        card.sfld != "
       """
 
       params = %{"code" => code, "name" => @name, "tests" => @tests}
@@ -114,7 +114,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
 
     test "invalid params", %{conn: conn} do
       code = """
-        note.sfld != "
+        card.sfld != "
       """
 
       params = %{"name" => @name, "code" => @code, "tests" => @tests}
