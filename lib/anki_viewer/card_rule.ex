@@ -35,12 +35,8 @@ defmodule AnkiViewer.CardRule do
   end
 
   def insert!(attrs) when is_map(attrs) do
-    attrs
-    |> Map.has_key?(:__struct__)
-    |> case do
-      true -> attrs
-      false -> Map.merge(%CardRule{}, attrs)
-    end
+    %CardRule{}
+    |> Map.merge(attrs)
     |> changeset
     |> Repo.insert!()
   end

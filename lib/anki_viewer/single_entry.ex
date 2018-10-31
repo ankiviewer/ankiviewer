@@ -10,22 +10,15 @@ defmodule AnkiViewer.SingleEntry do
           Repo.delete_all(__MODULE__)
         end
 
-        cond do
-          is_list(attrs) ->
-            for a <- attrs do
-              __MODULE__
-              |> struct()
-              |> changeset(a)
-              |> Repo.insert!()
-            end
-
-          Map.has_key?(attrs, :__struct__) ->
-            attrs
-            |> changeset()
+        if is_list(attrs) do
+          for a <- attrs do
+            __MODULE__
+            |> struct()
+            |> changeset(a)
             |> Repo.insert!()
-
-          true ->
-            __MODULE__ |> struct() |> Map.merge(attrs) |> insert_or_update!
+          end
+        else
+          __MODULE__ |> struct() |> Map.merge(attrs) |> changeset() |> Repo.insert!()
         end
       end
 

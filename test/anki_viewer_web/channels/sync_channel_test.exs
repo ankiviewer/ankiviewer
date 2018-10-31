@@ -119,8 +119,31 @@ defmodule AnkiViewerWeb.SyncChannelTest do
       assert Card |> Repo.all() |> length() == 10
     end
 
-    # test "cards update 1" do
+    test "cards update 1" do
+      cid = 1506600429296
 
-    # end
+      original_card = Repo.get(Card, cid)
+
+      now = DateTime.utc_now() |> DateTime.to_unix()
+
+      new_card = %{
+        cmod: now,
+        nmod: now,
+        flds: "Unnützuseful",
+        sfld: "useful"
+      }
+
+      new_card
+      |> Map.merge(%{cid: cid})
+      |> Card.update!()
+
+      {:ok, _, _socket} = subscribe_and_join(socket(), SyncChannel, "sync:database")
+
+      refute_push("sync:msg", %{msg: "updating card 0/1"})
+      assert_push("sync:msg", %{msg: "updating card 1/1"})
+
+      assert Card |> Repo.all() |> length() == 10
+      assert Card |> Repo.get(cid) |> Map.take(~w(cmod nmod flds sfld)a) == Map.take(original_card, ~w(cmod nmod flds sfld)a)
+    end
   end
 end

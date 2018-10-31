@@ -31,15 +31,19 @@ defmodule AnkiViewer.Card do
   end
 
   def insert!(attrs) when is_map(attrs) do
-    attrs
-    |> Map.has_key?(:__struct__)
-    |> case do
-      true -> attrs
-      false -> Map.merge(%Card{}, attrs)
-    end
-    |> changeset
+    %Card{}
+    |> Map.merge(attrs)
+    |> changeset()
     |> Repo.insert!()
   end
 
   def insert!(list) when is_list(list), do: Enum.each(list, &insert!/1)
+
+  def update!(attrs) when is_map(attrs) do
+    card = Repo.get(Card, attrs.cid)
+
+    card
+    |> changeset(attrs)
+    |> Repo.update!()
+  end
 end

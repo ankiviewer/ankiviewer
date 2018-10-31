@@ -35,6 +35,13 @@ defmodule AnkiViewerWeb.SyncChannel do
         cid not in Enum.map(new_cards_data, &Map.get(&1, :cid))
       end)
 
+    cards_data_to_update =
+      Enum.filter(new_cards_data, fn %{cid: new_cid, nmod: new_nmod, cmod: new_cmod} ->
+        new_cid in Enum.map(current_cards_data, &Map.get(&1, :cid)) and current_cards_data |> Enum.find(fn %{cid: current_cid} ->
+          current_cid == new_cid
+        end) |> Map.take(~w(cmod nmod)a) != %{cmod: new_cmod, nmod: new_nmod}
+      end)
+
     cards_data_to_add
     |> Enum.with_index(1)
     |> Enum.each(fn {card, i} ->
@@ -47,6 +54,16 @@ defmodule AnkiViewerWeb.SyncChannel do
     |> Enum.each(fn {card, i} ->
       push(socket, "sync:msg", %{msg: "deleting card #{i}/#{length(cards_data_to_delete)}"})
       Repo.delete!(card)
+    end)
+
+    cards_data_to_update
+    |> Enum.with_index(1)
+    |> Enum.each(fn {card, i} ->
+      push(socket, "sync:msg", %{msg: "updating card #{i}/#{length(cards_data_to_update)}"})
+      # TODO: allow this to be struct
+      card
+      |> Map.take(~w(cid nid cmod nmod flds sfld)a)
+      |> Card.update!()
     end)
 
     push(socket, "sync:msg", %{msg: "updated cards"})
