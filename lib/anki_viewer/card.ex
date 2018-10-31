@@ -40,9 +40,8 @@ defmodule AnkiViewer.Card do
   def insert!(list) when is_list(list), do: Enum.each(list, &insert!/1)
 
   def update!(attrs) when is_map(attrs) do
-    card = Repo.get(Card, attrs.cid)
-
-    card
+    Card
+    |> Repo.get(attrs.cid)
     |> changeset(attrs)
     |> Repo.update!()
   end

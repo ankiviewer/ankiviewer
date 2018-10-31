@@ -32,10 +32,11 @@ defmodule AnkiViewer.CardTest do
   test "update card" do
     attrs = @card_attrs
 
-    %{cid: cid} = %Card{}
-    |> Map.merge(attrs)
-    |> Card.changeset()
-    |> Repo.insert!()
+    %{cid: cid} =
+      %Card{}
+      |> Map.merge(attrs)
+      |> Card.changeset()
+      |> Repo.insert!()
 
     Card.update!(%{cid: cid, flds: "onethree", sfld: "three"})
 

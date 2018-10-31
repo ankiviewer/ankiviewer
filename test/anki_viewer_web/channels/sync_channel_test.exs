@@ -82,7 +82,7 @@ defmodule AnkiViewerWeb.SyncChannelTest do
     end
 
     test "cards add 1" do
-      Repo.all(Card) |> List.first |> Repo.delete!()
+      Repo.all(Card) |> List.first() |> Repo.delete!()
 
       {:ok, _, _socket} = subscribe_and_join(socket(), SyncChannel, "sync:database")
 
@@ -109,7 +109,8 @@ defmodule AnkiViewerWeb.SyncChannelTest do
         sfld: "two",
         tags: [],
         type: 123
-      } |> Card.insert!()
+      }
+      |> Card.insert!()
 
       {:ok, _, _socket} = subscribe_and_join(socket(), SyncChannel, "sync:database")
 
@@ -120,7 +121,7 @@ defmodule AnkiViewerWeb.SyncChannelTest do
     end
 
     test "cards update 1" do
-      cid = 1506600429296
+      cid = 1_506_600_429_296
 
       original_card = Repo.get(Card, cid)
 
@@ -143,7 +144,9 @@ defmodule AnkiViewerWeb.SyncChannelTest do
       assert_push("sync:msg", %{msg: "updating card 1/1"})
 
       assert Card |> Repo.all() |> length() == 10
-      assert Card |> Repo.get(cid) |> Map.take(~w(cmod nmod flds sfld)a) == Map.take(original_card, ~w(cmod nmod flds sfld)a)
+
+      assert Card |> Repo.get(cid) |> Map.take(~w(cmod nmod flds sfld)a) ==
+               Map.take(original_card, ~w(cmod nmod flds sfld)a)
     end
   end
 end
