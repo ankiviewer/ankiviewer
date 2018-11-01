@@ -1,27 +1,26 @@
-module Types
-    exposing
-        ( Msg(..)
-        , RequestMsg(..)
-        , Rules(..)
-        , ErrRuleResponse
-        , RuleResponse
-        , WebsocketMsg(Sync)
-        , SyncMsg(..)
-        , Views(..)
-        , Collection
-        , D
-        , Flags
-        , M
-        , Model
-        , Note
-        , ReceivedSyncMsg
-        , Rule
-        , Url
-        )
+module Types exposing
+    ( Collection
+    , D
+    , ErrRuleResponse
+    , Flags
+    , M
+    , Model
+    , Msg(..)
+    , Note
+    , ReceivedSyncMsg
+    , RequestMsg(..)
+    , Rule
+    , RuleResponse
+    , Rules(..)
+    , SyncMsg(..)
+    , Url
+    , Views(..)
+    , WebsocketMsg(..)
+    )
 
-import Phoenix.Socket as Socket exposing (Socket)
 import Http
 import Json.Encode exposing (Value, null)
+import Phoenix.Socket as Socket exposing (Socket)
 
 
 type alias Flags =

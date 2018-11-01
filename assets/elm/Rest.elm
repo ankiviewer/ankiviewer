@@ -1,33 +1,32 @@
-module Rest
-    exposing
-        ( getNotes
-        , getCollection
-        , syncDatabaseMsgDecoder
-        , getRules
-        , createRule
-        , updateRule
-        , deleteRule
-        )
+module Rest exposing
+    ( createRule
+    , deleteRule
+    , getCollection
+    , getNotes
+    , getRules
+    , syncDatabaseMsgDecoder
+    , updateRule
+    )
 
-import Types
-    exposing
-        ( Msg(Request)
-        , RequestMsg(NewNotes, NewCollection, NewRules, NewRuleResponse)
-        , Collection
-        , Model
-        , M
-        , D
-        , Note
-        , ReceivedSyncMsg
-        , Rule
-        , RuleResponse
-        , ErrRuleResponse
-        )
-import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
-import Json.Encode as Encode exposing (Value)
 import Http
 import HttpBuilder exposing (RequestBuilder)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline exposing (decode, hardcoded, optional, required)
+import Json.Encode as Encode exposing (Value)
+import Types
+    exposing
+        ( Collection
+        , D
+        , ErrRuleResponse
+        , M
+        , Model
+        , Msg(..)
+        , Note
+        , ReceivedSyncMsg
+        , RequestMsg(..)
+        , Rule
+        , RuleResponse
+        )
 
 
 syncDatabaseMsgDecoder : Decoder ReceivedSyncMsg
@@ -106,7 +105,7 @@ cardsDecoder =
 
 getRules : Cmd Msg
 getRules =
-    Http.get "/api/rules" (ruleRequestDecoder)
+    Http.get "/api/rules" ruleRequestDecoder
         |> Http.send (NewRules >> Request)
 
 
@@ -154,10 +153,11 @@ ruleResponseDecoder model =
                         |> hardcoded err
                         |> hardcoded []
                         |> required "params" errRuleResponseDecoder
+
                 else
                     decode RuleResponse
                         |> hardcoded err
-                        |> required "params" (rulesDecoder)
+                        |> required "params" rulesDecoder
                         |> hardcoded (ErrRuleResponse "" "" "")
             )
 

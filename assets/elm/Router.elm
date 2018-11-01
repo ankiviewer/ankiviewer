@@ -1,8 +1,8 @@
 module Router exposing (router, update)
 
-import Types exposing (Model, Views(..), Msg(ViewChange), Url)
 import Ports exposing (urlOut)
 import Rest
+import Types exposing (Model, Msg(..), Url, Views(..))
 
 
 router : String -> Views
@@ -23,4 +23,6 @@ router viewString =
 
 update : Views -> Model -> ( Model, Cmd Msg )
 update view model =
-    { model | view = view } ! [ toString view |> Url |> urlOut ]
+    ( { model | view = view }
+    , toString view |> Url |> urlOut
+    )

@@ -2,8 +2,8 @@ module Main exposing (main)
 
 import Html
 import State
+import Types exposing (Flags, Model, Msg)
 import View
-import Types exposing (Model, Msg, Flags)
 
 
 main : Program Flags Model Msg

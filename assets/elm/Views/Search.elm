@@ -1,10 +1,10 @@
 module Views.Search exposing (searchView)
 
-import Html exposing (Html, text, div, button, input)
-import Html.Attributes exposing (style, class, classList)
+import Html exposing (Html, button, div, input, text)
+import Html.Attributes exposing (class, classList, style)
 import Html.Events exposing (onClick, onInput)
-import Types exposing (Model, Msg(..))
 import List.Extra as List
+import Types exposing (Model, Msg(..))
 import Views.Nav exposing (nav)
 
 
@@ -79,9 +79,7 @@ searchView model =
                                     [ ( "red", not selected )
                                     , ( "green", selected )
                                     ]
-                                , style
-                                    [ ( "width", (toString (100 / 12)) ++ "%" )
-                                    ]
+                                , style "width" (toString (100 / 12) ++ "%")
                                 , onClick <| ToggleNoteColumn i
                                 ]
                                 [ text header ]
@@ -96,9 +94,7 @@ searchView model =
                     (\( _, header ) ->
                         div
                             [ class ""
-                            , style
-                                [ ( "width", (toString (100 / 12)) ++ "%" )
-                                ]
+                            , style "width" (toString (100 / 12) ++ "%")
                             ]
                             [ text header ]
                     )
@@ -126,9 +122,7 @@ searchView model =
                                 (\( _, row ) ->
                                     div
                                         [ class "overflow-hidden"
-                                        , style
-                                            [ ( "width", (toString <| 100 / 12) ++ "%" )
-                                            ]
+                                        , style "width" ((toString <| 100 / 12) ++ "%")
                                         ]
                                         [ text row ]
                                 )
