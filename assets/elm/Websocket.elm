@@ -1,13 +1,13 @@
-module Websocket exposing (update, updateSocketHelper, initialPhxSocket)
+module Websocket exposing (initialPhxSocket, update, updateSocketHelper)
 
-import Types exposing (Msg(PhxMsg, Websocket), Model, WebsocketMsg(Sync), SyncMsg(..))
-import Phoenix.Socket as Socket exposing (Socket)
-import Phoenix.Channel as Channel
-import Rest
-import Task
-import Process
 import Json.Decode exposing (decodeValue)
 import Json.Encode exposing (null)
+import Phoenix.Channel as Channel
+import Phoenix.Socket as Socket exposing (Socket)
+import Process
+import Rest
+import Task
+import Types exposing (Model, Msg(..), SyncMsg(..), WebsocketMsg(..))
 
 
 socketServer : String
@@ -37,17 +37,24 @@ sync syncMsg model =
 
         Receive raw ->
             if model.syncingError then
-                model ! []
+                ( model
+                , Cmd.none
+                )
+
             else
                 case decodeValue Rest.syncDatabaseMsgDecoder raw of
                     Ok { syncMsg } ->
-                        { model | syncingDatabaseMsg = syncMsg } ! []
+                        ( { model | syncingDatabaseMsg = syncMsg }
+                        , Cmd.none
+                        )
 
                     Err err ->
                         sync (Stopping null) { model | syncingDatabaseMsg = err, syncingError = True }
 
         Stop ->
-            { model | syncingDatabase = False } ! []
+            ( { model | syncingDatabase = False }
+            , Cmd.none
+            )
 
         Stopping _ ->
             updateSocketHelper model (Socket.leave "sync:database") [ Rest.getCollection, Process.sleep 600 |> Task.perform (\_ -> Websocket (Sync Stop)) ]
@@ -59,4 +66,6 @@ updateSocketHelper model socketCmd cmds =
         ( phxSocket, phxCmd ) =
             socketCmd model.phxSocket
     in
-        { model | phxSocket = phxSocket } ! [ Cmd.map PhxMsg phxCmd, Cmd.batch cmds ]
+    ( { model | phxSocket = phxSocket }
+    , Cmd.batch [ Cmd.map PhxMsg phxCmd, Cmd.batch cmds ]
+    )

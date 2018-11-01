@@ -1,11 +1,11 @@
 module Views.Home exposing (homeView)
 
-import Html exposing (Html, text, div, button)
-import Html.Attributes exposing (classList, id, class, attribute, disabled)
-import Html.Events exposing (onClick)
-import Types exposing (Msg(Websocket), WebsocketMsg(Sync), SyncMsg(Start), Model)
 import Date
 import Date.Extra as Date
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (attribute, class, classList, disabled, id)
+import Html.Events exposing (onClick)
+import Types exposing (Model, Msg(..), SyncMsg(..), WebsocketMsg(..))
 import Views.Nav exposing (nav)
 
 
@@ -24,7 +24,7 @@ homeView ({ syncingDatabase, syncingDatabaseMsg, syncingError, collection } as m
             [ text "Sync Database" ]
         , div
             [ classList
-                [ ( "dn", (not (syncingDatabase || syncingError)) )
+                [ ( "dn", not (syncingDatabase || syncingError) )
                 , ( "red", syncingError )
                 ]
             ]

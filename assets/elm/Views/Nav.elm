@@ -1,8 +1,8 @@
 module Views.Nav exposing (nav)
 
-import Html exposing (Html, div, button, text)
+import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
-import Types exposing (Model, Views(..), Msg(ViewChange))
+import Types exposing (Model, Msg(..), Views(..))
 
 
 nav : Model -> Html Msg
@@ -14,9 +14,8 @@ nav model =
                     [ onClick <| ViewChange view ]
                     [ text viewText ]
             )
-            ([ ( "Home", HomeView )
-             , ( "Search", SearchView )
-             , ( "Rule", RuleView )
-             ]
-            )
+            [ ( "Home", HomeView )
+            , ( "Search", SearchView )
+            , ( "Rule", RuleView )
+            ]
         )

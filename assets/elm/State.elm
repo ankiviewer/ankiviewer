@@ -1,26 +1,26 @@
-module State exposing (init, update, subscriptions)
+module State exposing (init, subscriptions, update)
 
-import Types
-    exposing
-        ( Model
-        , Collection
-        , Rule
-        , ErrRuleResponse
-        , Flags
-        , Url
-        , Msg(..)
-        , RequestMsg(..)
-        , WebsocketMsg(Sync)
-        , SyncMsg(..)
-        , Views(HomeView)
-        )
-import Rest
 import Phoenix.Socket as Socket exposing (Socket)
-import Ports exposing (urlIn, urlOut, setColumns)
-import Websocket exposing (updateSocketHelper, initialPhxSocket)
+import Ports exposing (setColumns, urlIn, urlOut)
 import Request
+import Rest
 import Router exposing (router)
 import Rule
+import Types
+    exposing
+        ( Collection
+        , ErrRuleResponse
+        , Flags
+        , Model
+        , Msg(..)
+        , RequestMsg(..)
+        , Rule
+        , SyncMsg(..)
+        , Url
+        , Views(..)
+        , WebsocketMsg(..)
+        )
+import Websocket exposing (initialPhxSocket, updateSocketHelper)
 
 
 initialModel : Flags -> Model
@@ -89,7 +89,9 @@ initialCollection =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    initialModel flags ! [ Rest.getCollection ]
+    ( initialModel flags
+    , Rest.getCollection
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -109,33 +111,41 @@ update msg model =
                 newModel =
                     { model | search = search }
             in
-                newModel ! [ Rest.getNotes newModel ]
+            ( newModel
+            , Rest.getNotes newModel
+            )
 
         ToggleDeck deck ->
             let
                 newDeck =
                     if deck == model.deck then
                         ""
+
                     else
                         deck
 
                 newModel =
                     { model | deck = newDeck }
             in
-                newModel ! [ Rest.getNotes newModel ]
+            ( newModel
+            , Rest.getNotes newModel
+            )
 
         ToggleModel m ->
             let
                 newM =
                     if m == model.model then
                         ""
+
                     else
                         m
 
                 newModel =
                     { model | model = newM }
             in
-                newModel ! [ Rest.getNotes newModel ]
+            ( newModel
+            , Rest.getNotes newModel
+            )
 
         ToggleNoteColumn index ->
             let
@@ -144,22 +154,28 @@ update msg model =
                         (\i nc ->
                             if i == index then
                                 not nc
+
                             else
                                 nc
                         )
                         model.cardColumns
             in
-                { model | cardColumns = cardColumns } ! [ setColumns cardColumns ]
+            ( { model | cardColumns = cardColumns }
+            , setColumns cardColumns
+            )
 
         ToggleManageNotes ->
-            { model | showingManageNoteColumns = not model.showingManageNoteColumns } ! []
+            ( { model | showingManageNoteColumns = not model.showingManageNoteColumns }
+            , Cmd.none
+            )
 
         ViewChange viewMsg ->
             Router.update viewMsg model
 
         UrlIn { view } ->
-            { model | view = router view }
-                ! case view of
+            ( { model | view = router view }
+            , Cmd.batch
+                (case view of
                     "/search" ->
                         [ Rest.getNotes model ]
 
@@ -168,9 +184,13 @@ update msg model =
 
                     _ ->
                         []
+                )
+            )
 
         NoOp ->
-            model ! []
+            ( model
+            , Cmd.none
+            )
 
         RuleMsg ruleMsg ->
             Rule.update ruleMsg model

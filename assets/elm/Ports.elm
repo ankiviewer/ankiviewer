@@ -1,4 +1,4 @@
-port module Ports exposing (urlIn, urlOut, setColumns)
+port module Ports exposing (setColumns, urlIn, urlOut)
 
 import Types exposing (Url)
 

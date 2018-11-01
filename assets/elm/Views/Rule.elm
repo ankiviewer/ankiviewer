@@ -1,11 +1,11 @@
 module Views.Rule exposing (ruleView)
 
-import Html exposing (Html, div, text, button, input, textarea)
-import Html.Events exposing (onClick, onInput, onFocus)
-import Html.Attributes exposing (value, placeholder)
-import Types exposing (Model, Rule, ErrRuleResponse, Msg(RuleMsg), Rules(..))
-import Views.Nav exposing (nav)
+import Html exposing (Html, button, div, input, text, textarea)
+import Html.Attributes exposing (placeholder, value)
+import Html.Events exposing (onClick, onFocus, onInput)
 import List.Extra as List
+import Types exposing (ErrRuleResponse, Model, Msg(..), Rule, Rules(..))
+import Views.Nav exposing (nav)
 
 
 type InputSize
@@ -46,6 +46,7 @@ ruleInputs { ruleEditRid, ruleValidationErr } rule ruleInputsType =
                 (\s ->
                     if ruleEditRid == -1 then
                         s
+
                     else
                         ""
                 )
@@ -61,7 +62,7 @@ ruleInputs { ruleEditRid, ruleValidationErr } rule ruleInputsType =
                             RuleInputsNew ->
                                 FocusNewInputs
                 in
-                    ( a, b, c, d, e, focusCmd )
+                ( a, b, c, d, e, focusCmd )
             )
         |> ruleInputs_
 
@@ -113,6 +114,7 @@ ruleView model =
                                 [ onClick <| RuleMsg (ToggleEdit rid) ]
                                 [ text "Cancel" ]
                             ]
+
                     else
                         div
                             []
@@ -133,6 +135,7 @@ ruleView model =
                                         [ onClick <| RuleMsg (AreYouSureDelete -1) ]
                                         [ text "No" ]
                                     ]
+
                               else
                                 button
                                     [ onClick <| RuleMsg (AreYouSureDelete rid) ]
