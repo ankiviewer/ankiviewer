@@ -1,16 +1,55 @@
-module Main exposing (main)
+module Main exposing (Flags, Model, Msg(..), init, initialModel, main, update, view)
 
-import Html
-import State
-import Types exposing (Flags, Model, Msg)
-import View
+import Browser
+import Html exposing (Html, div, text)
 
 
-main : Program Flags Model Msg
 main =
-    Html.programWithFlags
-        { init = State.init
-        , subscriptions = State.subscriptions
-        , update = State.update
-        , view = View.rootView
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = \_ -> Sub.none
         }
+
+
+type alias Flags =
+    {}
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( initialModel, Cmd.none )
+
+
+initialModel : Model
+initialModel =
+    { syncMsg = ""
+    , syncError = False
+    , syncPercentage = 0
+    , isSyncing = False
+    , numberCards = 0
+    }
+
+
+type alias Model =
+    { syncMsg : String
+    , syncError : Bool
+    , syncPercentage : Int
+    , isSyncing : Bool
+    , numberCards : Int
+    }
+
+
+type Msg
+    = NoOp
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    ( model, Cmd.none )
+
+
+view : Model -> Html Msg
+view model =
+    div [] [ text "hi" ]
