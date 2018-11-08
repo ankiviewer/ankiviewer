@@ -9,6 +9,6 @@ var app = Elm.Main.init({
   flags: startingColumns
 });
 
-app.ports.setColumns.subscribe(function(state) {
-  localStorage.setItem('ankiviewer-columns-save', JSON.stringify(state));
-});
+// app.ports.setColumns.subscribe(function(state) {
+//   localStorage.setItem('ankiviewer-columns-save', JSON.stringify(state));
+// });
