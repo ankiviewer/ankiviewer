@@ -12,8 +12,10 @@
             "elm/html": "1.0.0",
             "elm/http": "1.0.0",
             "elm/json": "1.0.0",
+            "elm/regex": "1.0.0",
             "elm/time": "1.0.0",
-            "elm-community/list-extra": "8.1.0"
+            "elm-community/list-extra": "8.1.0",
+            "samhstn/time-format": "1.0.0"
         },
         "indirect": {
             "elm/url": "1.0.0",
