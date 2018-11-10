@@ -1,9 +1,10 @@
-module Api exposing (..)
+module Api exposing (collectionDecoder, decksDecoder, getCollection, modelsDecoder)
 
-import Types exposing (Collection, D, M, Msg(..))
+import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
-import Http
+import Types exposing (Collection, D, M, Msg(..))
+
 
 getCollection : Cmd Msg
 getCollection =

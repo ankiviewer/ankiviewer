@@ -1,11 +1,11 @@
-module View exposing (view, nav, navItem)
+module View exposing (nav, navItem, view)
 
-import Html exposing (Html, text, div)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
-import Types exposing (Model, Msg(..), Page(..))
 import Time exposing (utc)
 import Time.Format as Time
+import Types exposing (Model, Msg(..), Page(..))
 
 
 navItem_ : Model -> Page -> Html Msg
@@ -34,7 +34,7 @@ pageToString page =
 
 
 view : Model -> Html Msg
-view ({page} as model) =
+view ({ page } as model) =
     div
         []
         [ nav
@@ -56,7 +56,7 @@ view ({page} as model) =
 
 
 homePage : Model -> Html Msg
-homePage ({collection} as model) =
+homePage ({ collection } as model) =
     div
         []
         [ text <| Time.format utc "Weekday, ordDay Month Year at padHour:padMinute" collection.mod
@@ -82,14 +82,16 @@ rulesPage model =
 nav : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 nav attributes nodes =
     let
-        newAttributes = [ class "nav" ]
+        newAttributes =
+            [ class "nav" ]
     in
-        div (attributes ++ newAttributes) nodes
+    div (attributes ++ newAttributes) nodes
 
 
 navItem : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 navItem attributes nodes =
     let
-        newAttributes = [ class "nav-item" ]
+        newAttributes =
+            [ class "nav-item" ]
     in
-        div (attributes ++ newAttributes) nodes
+    div (attributes ++ newAttributes) nodes

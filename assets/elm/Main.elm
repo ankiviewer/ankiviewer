@@ -12,4 +12,3 @@ main =
         , update = State.update
         , subscriptions = State.subscriptions
         }
-

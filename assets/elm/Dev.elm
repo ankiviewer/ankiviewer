@@ -1,9 +1,9 @@
-module Dev exposing (..)
+module Dev exposing (Model, Msg(..), Page(..), init, main, navItem_, pageToString, update, view, viewWithCss)
 
 import Browser
-import Html exposing (Html, text, div, button)
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (class, classList, style)
 import Html.Events exposing (onClick)
-import Html.Attributes exposing (style, class, classList)
 import View
 
 
@@ -86,7 +86,7 @@ pageToString page =
 
 
 view : Model -> Html Msg
-view ({page} as model) =
+view ({ page } as model) =
     div
         []
         [ View.nav
