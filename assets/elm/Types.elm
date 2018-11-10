@@ -1,9 +1,11 @@
-module Types exposing (..)
+module Types exposing (Collection, D, ErrorType(..), Flags, M, Model, Msg(..), Page(..))
 
 import Http
 
+
 type alias Flags =
     {}
+
 
 type alias Model =
     { incomingMsg : String
@@ -13,6 +15,7 @@ type alias Model =
     , collection : Collection
     , page : Page
     }
+
 
 type ErrorType
     = HttpError
@@ -40,6 +43,7 @@ type alias Collection =
     , decks : List D
     }
 
+
 type alias M =
     { name : String
     , mid : Int
@@ -47,9 +51,8 @@ type alias M =
     , did : Int
     }
 
+
 type alias D =
     { name : String
     , did : Int
     }
-
-

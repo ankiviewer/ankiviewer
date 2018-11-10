@@ -1,18 +1,21 @@
-module State exposing (init, update, subscriptions)
+module State exposing (init, subscriptions, update)
 
-import Types exposing
-    ( Model
-    , Flags
-    , Collection
-    , Msg(..)
-    , ErrorType(..)
-    , Page(..)
-    )
 import Api
+import Types
+    exposing
+        ( Collection
+        , ErrorType(..)
+        , Flags
+        , Model
+        , Msg(..)
+        , Page(..)
+        )
+
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( initialModel, Api.getCollection )
+
 
 initialModel : Model
 initialModel =
@@ -35,13 +38,14 @@ update msg model =
             ( { model | collection = collection }, Cmd.none )
 
         NewCollection (Err e) ->
-            ( { model | error = HttpError, incomingMsg = "Http error has occurred" }, Cmd.none)
+            ( { model | error = HttpError, incomingMsg = "Http error has occurred" }, Cmd.none )
 
         GetCollection ->
             ( model, Cmd.none )
 
         ChangePage page ->
             ( { model | page = page }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
