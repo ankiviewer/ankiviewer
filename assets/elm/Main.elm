@@ -1,16 +1,14 @@
 module Main exposing (main)
 
-import Html
+import Browser
 import State
 import View
-import Types exposing (Model, Msg, Flags)
 
 
-main : Program Flags Model Msg
 main =
-    Html.programWithFlags
+    Browser.element
         { init = State.init
-        , subscriptions = State.subscriptions
+        , view = View.view
         , update = State.update
-        , view = View.rootView
+        , subscriptions = State.subscriptions
         }
