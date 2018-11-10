@@ -1,0 +1,16 @@
+body {
+  padding: 0;
+  margin: 0;
+  font-size: 2rem; }
+
+.nav {
+  display: flex;
+  justify-content: space-around;
+  background-color: #000000;
+  padding: 1rem; }
+  .nav .selected {
+    text-decoration: underline; }
+
+.nav-item {
+  cursor: pointer;
+  color: #FFFFFF; }

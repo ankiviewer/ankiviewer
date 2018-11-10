@@ -11,6 +11,7 @@ type alias Model =
     , syncPercentage : Int
     , isSyncing : Bool
     , collection : Collection
+    , page : Page
     }
 
 type ErrorType
@@ -21,8 +22,16 @@ type ErrorType
 
 type Msg
     = NoOp
+    | ChangePage Page
     | NewCollection (Result Http.Error Collection)
     | GetCollection
+
+
+type Page
+    = Home
+    | Search
+    | Rules
+
 
 type alias Collection =
     { mod : Int
