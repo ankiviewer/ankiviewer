@@ -6,6 +6,7 @@ import Types exposing
     , Collection
     , Msg(..)
     , ErrorType(..)
+    , Page(..)
     )
 import Api
 
@@ -20,6 +21,7 @@ initialModel =
     , syncPercentage = 0
     , isSyncing = False
     , collection = Collection 0 0 [] []
+    , page = Home
     }
 
 
@@ -37,6 +39,9 @@ update msg model =
 
         GetCollection ->
             ( model, Cmd.none )
+
+        ChangePage page ->
+            ( { model | page = page }, Cmd.none )
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
