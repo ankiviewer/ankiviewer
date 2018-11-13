@@ -1,6 +1,8 @@
 module State exposing (init, subscriptions, update)
 
 import Api
+import Browser
+import Browser.Navigation as Nav
 import Types
     exposing
         ( Collection
@@ -10,21 +12,23 @@ import Types
         , Msg(..)
         , Page(..)
         )
+import Url exposing (Url)
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    ( initialModel, Api.getCollection )
+init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+    ( initialModel url key, Api.getCollection )
 
 
-initialModel : Model
-initialModel =
+initialModel : Url -> Nav.Key -> Model
+initialModel url key =
     { incomingMsg = ""
     , error = None
     , syncPercentage = 0
     , isSyncing = False
     , collection = Collection 0 0 [] []
-    , page = Home
+    , key = key
+    , url = url
     }
 
 
@@ -43,8 +47,16 @@ update msg model =
         GetCollection ->
             ( model, Cmd.none )
 
-        ChangePage page ->
-            ( { model | page = page }, Cmd.none )
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+        UrlChanged url ->
+            ( { model | url = url }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
