@@ -11,62 +11,72 @@ import Url
 import Url.Builder
 
 
-navItem_ : Model -> String -> Html Msg
-navItem_ model urlString =
+navItem_ : Model -> Page -> Html Msg
+navItem_ model page =
     navItem
-        [ href urlString
+        [ href <| urlStringFromPage page
         , classList
-            [ ( "selected", Url.toString model.url == urlString )
+            [ ( "selected", model.page == page )
             ]
         ]
-        [ text <| urlStringToString urlString
+        [ text <| pageToString page
         ]
 
 
-urlStringToString : String -> String
-urlStringToString urlString =
-    case urlString of
-        "/" ->
-            "Home"
-
-        "/search" ->
-            "Search"
-
-        "/rules" ->
-            "Rules"
+urlStringFromPage : Page -> String
+urlStringFromPage page =
+    case page of
+        Home ->
+            "/"
 
         _ ->
-            "Unknown"
+            "/" ++ (String.toLower (pageToString page))
+
+
+pageToString : Page -> String
+pageToString page =
+    case page of
+        Home ->
+            "Home"
+
+        Search ->
+            "Search"
+
+        Rules ->
+            "Rules"
+
+        NotFound ->
+            "NotFound"
 
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Ankiviewer - " ++ (model.url |> Url.toString |> urlStringToString)
+    { title = "Ankiviewer - " ++ (pageToString model.page)
     , body = body model
     }
 
 
 body : Model -> List (Html Msg)
 body model =
-    let
-        _ =
-            Debug.log "model.url.path" model.url.path
-    in
     [ nav
         []
-        [ navItem_ model "/"
-        , navItem_ model "/search"
-        , navItem_ model "/rules"
+        [ navItem_ model Home
+        , navItem_ model Search
+        , navItem_ model Rules
         ]
-    , case model.url.path of
-        "/search" ->
+    , case model.page of
+        Home ->
+            homePage model
+
+        Search ->
             searchPage model
 
-        "/rules" ->
+        Rules ->
             rulesPage model
 
-        _ ->
-            homePage model
+        NotFound ->
+            notFoundPage model
+
     ]
 
 
@@ -91,6 +101,14 @@ rulesPage model =
     div
         []
         [ text "Rules"
+        ]
+
+
+notFoundPage : Model -> Html Msg
+notFoundPage model =
+    div
+        []
+        [ text "404 - Not found"
         ]
 
 

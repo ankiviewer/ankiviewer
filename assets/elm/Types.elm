@@ -26,7 +26,7 @@ type alias Model =
     , isSyncing : Bool
     , collection : Collection
     , key : Nav.Key
-    , url : Url.Url
+    , page : Page
     }
 
 
@@ -48,6 +48,7 @@ type Page
     = Home
     | Search
     | Rules
+    | NotFound
 
 
 type alias Collection =
