@@ -28,7 +28,7 @@ initialModel url key =
     , isSyncing = False
     , collection = Collection 0 0 [] []
     , key = key
-    , url = url
+    , page = urlToPage url
     }
 
 
@@ -56,7 +56,23 @@ update msg model =
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url }, Cmd.none )
+            ( { model | page = urlToPage url }, Cmd.none )
+
+
+urlToPage : Url -> Page
+urlToPage url =
+    case url.path of
+        "/" ->
+            Home
+
+        "/search" ->
+            Search
+
+        "/rules" ->
+            Rules
+
+        _ ->
+            NotFound
 
 
 subscriptions : Model -> Sub Msg
