@@ -1,8 +1,10 @@
-module State exposing (init, subscriptions, update)
+port module State exposing (init, subscriptions, update)
 
 import Api
 import Browser
 import Browser.Navigation as Nav
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Types
     exposing
         ( Collection
@@ -13,6 +15,13 @@ import Types
         , Page(..)
         )
 import Url exposing (Url)
+import Url.Parser as Parser exposing (Parser, oneOf, s, top)
+
+
+port startSync : Encode.Value -> Cmd msg
+
+
+port syncMsg : (Encode.Value -> msg) -> Sub msg
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -44,8 +53,19 @@ update msg model =
         NewCollection (Err e) ->
             ( { model | error = HttpError, incomingMsg = "Http error has occurred" }, Cmd.none )
 
-        GetCollection ->
-            ( model, Cmd.none )
+        StartSync ->
+            ( { model | isSyncing = True }, startSync Encode.null )
+
+        SyncMsg val ->
+            case Decode.decodeValue (Decode.field "msg" Decode.string) val of
+                Ok "done" ->
+                    ( { model | isSyncing = False }, Cmd.none )
+
+                Ok message ->
+                    ( { model | incomingMsg = message }, Cmd.none )
+
+                Err e ->
+                    ( { model | error = SyncError }, Cmd.none )
 
         LinkClicked urlRequest ->
             case urlRequest of
@@ -59,22 +79,21 @@ update msg model =
             ( { model | page = urlToPage url }, Cmd.none )
 
 
-urlToPage : Url -> Page
+urlToPage : Url.Url -> Page
 urlToPage url =
-    case url.path of
-        "/" ->
-            Home
+    Parser.parse parser url
+        |> Maybe.withDefault NotFound
 
-        "/search" ->
-            Search
 
-        "/rules" ->
-            Rules
-
-        _ ->
-            NotFound
+parser : Parser (Page -> a) a
+parser =
+    oneOf
+        [ Parser.map Home top
+        , Parser.map Search (s "search")
+        , Parser.map Rules (s "rules")
+        ]
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    syncMsg SyncMsg
