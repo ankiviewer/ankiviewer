@@ -1,36 +1,15 @@
-module View exposing (nav, navItem, view)
+module View exposing (body, errorView, homeInfo, homePage, navbar, notFoundPage, pageToString, rulesPage, searchPage, view)
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html, a, div, text)
+import Html exposing (Html, a, button, div, text)
 import Html.Attributes exposing (class, classList, href)
+import Html.Events exposing (onClick)
 import Time
 import Time.Format as Time
-import Types exposing (Model, Msg(..), Page(..))
+import Types exposing (ErrorType(..), Model, Msg(..), Page(..))
 import Url
 import Url.Builder
-
-
-navItem_ : Model -> Page -> Html Msg
-navItem_ model page =
-    navItem
-        [ href <| urlStringFromPage page
-        , classList
-            [ ( "selected", model.page == page )
-            ]
-        ]
-        [ text <| pageToString page
-        ]
-
-
-urlStringFromPage : Page -> String
-urlStringFromPage page =
-    case page of
-        Home ->
-            "/"
-
-        _ ->
-            "/" ++ (String.toLower (pageToString page))
 
 
 pageToString : Page -> String
@@ -51,19 +30,21 @@ pageToString page =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Ankiviewer - " ++ (pageToString model.page)
+    { title = "Ankiviewer - " ++ pageToString model.page
     , body = body model
     }
 
 
 body : Model -> List (Html Msg)
 body model =
-    [ nav
-        []
-        [ navItem_ model Home
-        , navItem_ model Search
-        , navItem_ model Rules
-        ]
+    [ navbar
+        { items =
+            [ ( Home, "Home", "/" )
+            , ( Search, "Search", "/search" )
+            , ( Rules, "Rules", "/rules" )
+            ]
+        , selected = model.page
+        }
     , case model.page of
         Home ->
             homePage model
@@ -76,15 +57,53 @@ body model =
 
         NotFound ->
             notFoundPage model
-
     ]
+
+
+errorView : String -> Html Msg
+errorView errorText =
+    div
+        [ class "red" ]
+        [ text errorText
+        ]
 
 
 homePage : Model -> Html Msg
 homePage ({ collection } as model) =
+    case model.error of
+        HttpError ->
+            errorView "Error fetching collection data"
+
+        SyncError ->
+            errorView "Error syncing"
+
+        None ->
+            if model.isSyncing then
+                div
+                    []
+                    [ text "isSyncing" ]
+
+            else
+                homeInfo
+                    { mod = collection.mod, cards = collection.cards }
+
+
+homeInfo : { mod : Int, cards : Int } -> Html Msg
+homeInfo { mod, cards } =
     div
         []
-        [ text <| Time.format Time.utc "Weekday, ordDay Month Year at padHour:padMinute" collection.mod
+        [ div
+            [ class "mv2" ]
+            [ text <| "Last modified: " ++ Time.format Time.utc "Weekday, ordDay Month Year at padHour:padMinute" mod
+            ]
+        , div
+            [ class "mv2" ]
+            [ text <| "Number notes: " ++ String.fromInt cards
+            ]
+        , button
+            [ onClick StartSync ]
+            [ text "Sync Database"
+            ]
         ]
 
 
@@ -112,19 +131,19 @@ notFoundPage model =
         ]
 
 
-nav : List (Html.Attribute msg) -> List (Html msg) -> Html msg
-nav attributes nodes =
-    let
-        newAttributes =
-            [ class "nav" ]
-    in
-    div (attributes ++ newAttributes) nodes
-
-
-navItem : List (Html.Attribute msg) -> List (Html msg) -> Html msg
-navItem attributes nodes =
-    let
-        newAttributes =
-            [ class "nav-item" ]
-    in
-    a (attributes ++ newAttributes) nodes
+navbar : { items : List ( b, String, String ), selected : b } -> Html Msg
+navbar { items, selected } =
+    div
+        [ class "nav" ]
+    <|
+        List.map
+            (\( identifier, content, link ) ->
+                a
+                    [ class "nav-item"
+                    , classList [ ( "selected", identifier == selected ) ]
+                    , href link
+                    ]
+                    [ text content
+                    ]
+            )
+            items

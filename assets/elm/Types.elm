@@ -12,6 +12,7 @@ module Types exposing
 import Browser
 import Browser.Navigation as Nav
 import Http
+import Json.Encode as Encode
 import Url
 
 
@@ -39,9 +40,10 @@ type ErrorType
 type Msg
     = NoOp
     | NewCollection (Result Http.Error Collection)
-    | GetCollection
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
+    | StartSync
+    | SyncMsg Encode.Value
 
 
 type Page
