@@ -1,6 +1,19 @@
-module Types exposing (Collection, D, ErrorType(..), Flags, M, Model, Msg(..), Page(..))
+module Types exposing
+    ( Collection
+    , D
+    , ErrorType(..)
+    , Flags
+    , M
+    , Model
+    , Msg(..)
+    , Page(..)
+    )
 
+import Browser
+import Browser.Navigation as Nav
 import Http
+import Json.Encode as Encode
+import Url
 
 
 type alias Flags =
@@ -13,6 +26,7 @@ type alias Model =
     , syncPercentage : Int
     , isSyncing : Bool
     , collection : Collection
+    , key : Nav.Key
     , page : Page
     }
 
@@ -25,15 +39,18 @@ type ErrorType
 
 type Msg
     = NoOp
-    | ChangePage Page
     | NewCollection (Result Http.Error Collection)
-    | GetCollection
+    | LinkClicked Browser.UrlRequest
+    | UrlChanged Url.Url
+    | StartSync
+    | SyncMsg Encode.Value
 
 
 type Page
     = Home
     | Search
     | Rules
+    | NotFound
 
 
 type alias Collection =
