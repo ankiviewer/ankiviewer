@@ -18,7 +18,7 @@ install:
   - . $HOME/.nvm/nvm.sh
   - nvm install stable
   - nvm use stable
-  - npm install -g elm@0.19.0 elm-test@beta elm-format
+  - npm install -g elm@0.19.0 elm-test elm-format
   - (cd assets && npm install && npm run build)
 script:
   - (cd assets && npm test)

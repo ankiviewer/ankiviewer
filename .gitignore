@@ -18,6 +18,7 @@ npm-debug.log
 /assets/cypress/screenshots
 /assets/cypress/videos
 /assets/js/elm.js
+/assets/elm/app.css
 
 # Since we are building assets from assets/,
 # we ignore priv/static. You may want to comment

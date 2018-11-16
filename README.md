@@ -66,6 +66,8 @@ cd assets && node_modules/.bin/elm-test
 
 ### Designs
 
+TODO
+
 ### Development
 
 When developing the elm files in obsqure states make use of the `Dev.elm` entry point.
