@@ -7,6 +7,7 @@ module Types exposing
     , Model
     , Msg(..)
     , Page(..)
+    , SyncData
     )
 
 import Browser
@@ -72,4 +73,10 @@ type alias M =
 type alias D =
     { name : String
     , did : Int
+    }
+
+
+type alias SyncData =
+    { message : String
+    , percentage : Int
     }

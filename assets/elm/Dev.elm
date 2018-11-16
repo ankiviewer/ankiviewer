@@ -22,6 +22,13 @@ type alias Model =
     }
 
 
+init : Model
+init =
+    { page = Home
+    , homeView = Syncing
+    }
+
+
 type Msg
     = NoOp
     | ChangePage Page
@@ -38,13 +45,6 @@ type HomeView
     = Error
     | Syncing
     | Info
-
-
-init : Model
-init =
-    { page = Home
-    , homeView = Info
-    }
 
 
 update : Msg -> Model -> Model
@@ -77,6 +77,11 @@ viewWithCss model =
 navbar : { items : List ( a, String, String ), selected : a } -> Html Msg
 navbar args =
     Html.map (\_ -> NoOp) <| View.navbar args
+
+
+syncing : { message : String, syncPercentage : Int } -> Html Msg
+syncing args =
+    Html.map (\_ -> NoOp) <| View.syncing args
 
 
 homeInfo : { mod : Int, cards : Int } -> Html Msg
@@ -120,7 +125,8 @@ home model =
             errorView "Error fetching collection data"
 
         Syncing ->
-            text "hello syncing"
+            syncing
+                { message = "Updating Cards", syncPercentage = 2 }
 
         Info ->
             homeInfo
@@ -140,9 +146,7 @@ rules model =
 control : Model -> Html Msg
 control model =
     div
-        [ style "position" "absolute"
-        , style "bottom" "0"
-        , style "width" "100%"
+        [ style "margin-top" "5rem"
         , style "padding" "1rem"
         ]
         [ div
@@ -169,12 +173,12 @@ control model =
             , button
                 [ onClick <| ChangeHome Syncing
                 ]
-                [ text "Error"
+                [ text "Syncing"
                 ]
             , button
                 [ onClick <| ChangeHome Info
                 ]
-                [ text "Error"
+                [ text "Info"
                 ]
             ]
         ]

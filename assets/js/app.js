@@ -24,11 +24,12 @@ app.ports.startSync.subscribe(function () {
     .receive('error', function (resp) { console.log('Unable to join'); })
 
   channel.on('sync:msg', function (msg) {
+    console.log(msg);
     app.ports.syncMsg.send(msg);
   })
 
   channel.on('done', function () {
-    app.ports.syncMsg.send({msg: 'done'});
+    app.ports.syncMsg.send({msg: 'done', percentage: 0});
 
     channel.leave()
       .receive('ok', function (resp) { console.log('Left successfully'); })
