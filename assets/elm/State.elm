@@ -3,7 +3,7 @@ port module State exposing (init, subscriptions, update)
 import Api
 import Browser
 import Browser.Navigation as Nav
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Types
     exposing
@@ -13,6 +13,7 @@ import Types
         , Model
         , Msg(..)
         , Page(..)
+        , SyncData
         )
 import Url exposing (Url)
 import Url.Parser as Parser exposing (Parser, oneOf, s, top)
@@ -41,6 +42,13 @@ initialModel url key =
     }
 
 
+syncDataDecoder : Decoder SyncData
+syncDataDecoder =
+    Decode.map2 SyncData
+        (Decode.field "msg" Decode.string)
+        (Decode.field "percentage" Decode.int)
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -57,14 +65,25 @@ update msg model =
             ( { model | isSyncing = True }, startSync Encode.null )
 
         SyncMsg val ->
-            case Decode.decodeValue (Decode.field "msg" Decode.string) val of
-                Ok "done" ->
-                    ( { model | isSyncing = False }, Cmd.none )
+            case Decode.decodeValue syncDataDecoder val of
+                Ok { message, percentage } ->
+                    let
+                        isSyncing =
+                            if message == "done" then
+                                False
 
-                Ok message ->
-                    ( { model | incomingMsg = message }, Cmd.none )
+                            else
+                                model.isSyncing
+                    in
+                    ( { model | incomingMsg = message, syncPercentage = percentage, isSyncing = isSyncing }
+                    , Cmd.none
+                    )
 
                 Err e ->
+                    let
+                        _ =
+                            Debug.log "e" e
+                    in
                     ( { model | error = SyncError }, Cmd.none )
 
         LinkClicked urlRequest ->
