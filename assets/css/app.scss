@@ -32,3 +32,37 @@ body {
 .red {
   color: $red;
 }
+
+.button-primary {
+  font-weight: bold;
+  border: 0;
+  background-color: $primary;
+  padding: 1rem;
+  box-shadow: 3px 3px 3px $shadow;
+  -moz-box-shadow: 3px 3px 3px $shadow;
+	-webkit-box-shadow: 3px 3px 3px $shadow;
+  &:focus {
+    outline:0;
+  }
+  &:active {
+    box-shadow: none;
+  }
+}
+
+.sync-loader {
+  background-color: $lightgrey;
+  height: 1rem;
+  margin: 1rem auto;
+  width: 80%;
+  border-top-right-radius: 25px;
+  border-bottom-right-radius: 25px;
+
+  .sync-bar {
+    background-color: $primary;
+    height: 100%;
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    -webkit-transition: width 1s;
+    transition: width 1s;
+  }
+}
