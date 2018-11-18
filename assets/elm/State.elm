@@ -34,13 +34,15 @@ init flags url key =
 
 initialModel : Url -> Nav.Key -> Model
 initialModel url key =
-    { incomingMsg = ""
+    { key = key
+    , page = urlToPage url
+    , collection = Collection 0 0 [] []
+    , incomingMsg = ""
     , error = None
     , syncPercentage = 0
     , isSyncing = False
-    , collection = Collection 0 0 [] []
-    , key = key
-    , page = urlToPage url
+    , columns = []
+    , showColumns = False
     }
 
 

@@ -22,13 +22,15 @@ type alias Flags =
 
 
 type alias Model =
-    { incomingMsg : String
+    { key : Nav.Key
+    , page : Page
+    , collection : Collection
+    , incomingMsg : String
     , error : ErrorType
     , syncPercentage : Int
     , isSyncing : Bool
-    , collection : Collection
-    , key : Nav.Key
-    , page : Page
+    , showColumns : Bool
+    , columns : List ( Bool, String )
     }
 
 
