@@ -5,6 +5,8 @@ import Browser
 import Browser.Navigation as Nav
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import Process
+import Task
 import Types
     exposing
         ( Collection
@@ -49,6 +51,11 @@ syncDataDecoder =
         (Decode.field "percentage" Decode.int)
 
 
+delay time msg =
+    Process.sleep time
+        |> Task.perform (\_ -> msg)
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -68,15 +75,15 @@ update msg model =
             case Decode.decodeValue syncDataDecoder val of
                 Ok { message, percentage } ->
                     let
-                        isSyncing =
+                        cmd =
                             if message == "done" then
-                                False
+                                delay 2000 StopSync
 
                             else
-                                model.isSyncing
+                                Cmd.none
                     in
-                    ( { model | incomingMsg = message, syncPercentage = percentage, isSyncing = isSyncing }
-                    , Cmd.none
+                    ( { model | incomingMsg = message, syncPercentage = percentage }
+                    , cmd
                     )
 
                 Err e ->
@@ -85,6 +92,9 @@ update msg model =
                             Debug.log "e" e
                     in
                     ( { model | error = SyncError }, Cmd.none )
+
+        StopSync ->
+            ( { model | isSyncing = False }, Cmd.none )
 
         LinkClicked urlRequest ->
             case urlRequest of

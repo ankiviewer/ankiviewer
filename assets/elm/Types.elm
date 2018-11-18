@@ -45,6 +45,7 @@ type Msg
     | UrlChanged Url.Url
     | StartSync
     | SyncMsg Encode.Value
+    | StopSync
 
 
 type Page
