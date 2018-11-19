@@ -1,5 +1,7 @@
 module Types exposing
-    ( Collection
+    ( Card
+    , CardSearchParams
+    , Collection
     , D
     , ErrorType(..)
     , Flags
@@ -14,6 +16,7 @@ import Browser
 import Browser.Navigation as Nav
 import Http
 import Json.Encode as Encode
+import Set exposing (Set)
 import Url
 
 
@@ -22,13 +25,17 @@ type alias Flags =
 
 
 type alias Model =
-    { incomingMsg : String
+    { key : Nav.Key
+    , page : Page
+    , collection : Collection
+    , incomingMsg : String
     , error : ErrorType
     , syncPercentage : Int
     , isSyncing : Bool
-    , collection : Collection
-    , key : Nav.Key
-    , page : Page
+    , showColumns : Bool
+    , excludedColumns : Set String
+    , search : String
+    , cards : List Card
     }
 
 
@@ -46,6 +53,10 @@ type Msg
     | StartSync
     | SyncMsg Encode.Value
     | StopSync
+    | NewCards (Result Http.Error (List Card))
+    | ToggleShowColumns
+    | ToggleColumn String
+    | SearchInput String
 
 
 type Page
@@ -80,4 +91,25 @@ type alias D =
 type alias SyncData =
     { message : String
     , percentage : Int
+    }
+
+
+type alias Card =
+    { model : String
+    , mod : Int
+    , ord : Int
+    , tags : List String
+    , deck : String
+    , ttype : Int
+    , queue : Int
+    , due : Int
+    , reps : Int
+    , lapses : Int
+    , front : String
+    , back : String
+    }
+
+
+type alias CardSearchParams =
+    { search : String
     }

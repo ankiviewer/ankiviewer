@@ -2,14 +2,20 @@ module View exposing (body, errorView, homeInfo, homePage, navbar, notFoundPage,
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html, a, button, div, text)
+import Html exposing (Html, a, button, div, input, text)
 import Html.Attributes exposing (class, classList, href, style)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput)
+import Set
 import Time
 import Time.Format as Time
 import Types exposing (ErrorType(..), Model, Msg(..), Page(..))
 import Url
 import Url.Builder
+
+
+cardColumns : List String
+cardColumns =
+    [ "model", "mod", "ord", "tags", "deck", "type", "queue", "due", "reps", "lapses", "front", "back" ]
 
 
 pageToString : Page -> String
@@ -137,10 +143,159 @@ homeInfo { mod, cards } =
 
 searchPage : Model -> Html Msg
 searchPage model =
-    div
-        []
-        [ text "Search"
-        ]
+    if model.showColumns then
+        div
+            []
+            [ div
+                []
+                [ text "Green is showing, red is not showing, click to toggle"
+                ]
+            , div
+                []
+                (List.map
+                    (\col ->
+                        div
+                            [ class "dib ma1 pointer"
+                            , classList
+                                [ ( "red", Set.member col model.excludedColumns )
+                                , ( "green", not (Set.member col model.excludedColumns) )
+                                ]
+                            , onClick <| ToggleColumn col
+                            ]
+                            [ text col ]
+                    )
+                    cardColumns
+                )
+            , div
+                []
+                [ button
+                    [ onClick ToggleShowColumns
+                    ]
+                    [ text "Done"
+                    ]
+                ]
+            ]
+
+    else
+        div
+            []
+            [ div
+                []
+                [ input
+                    [ onInput SearchInput ]
+                    []
+                ]
+            , if model.search == "" then
+                div
+                    []
+                    [ button
+                        [ onClick ToggleShowColumns
+                        ]
+                        [ text "Edit columns"
+                        ]
+                    ]
+
+              else
+                div
+                    []
+                    [ div
+                        []
+                        (let
+                            columns =
+                                cardColumns
+                                    |> List.filter
+                                        (\col ->
+                                            not (Set.member col model.excludedColumns)
+                                        )
+                         in
+                         List.map
+                            (\col ->
+                                div
+                                    [ class "dib ma1"
+                                    , style "width" <| String.fromInt (100 // List.length columns) ++ "%"
+                                    ]
+                                    [ text col
+                                    ]
+                            )
+                            columns
+                        )
+                    , div
+                        []
+                        (List.map
+                            (\card ->
+                                cardColumns
+                                    |> List.foldr
+                                        (\cur acc ->
+                                            if not (Set.member cur model.excludedColumns) then
+                                                case cur of
+                                                    "model" ->
+                                                        card.model :: acc
+
+                                                    "mod" ->
+                                                        String.fromInt card.mod :: acc
+
+                                                    "ord" ->
+                                                        String.fromInt card.ord :: acc
+
+                                                    "tags" ->
+                                                        String.join ", " card.tags :: acc
+
+                                                    "deck" ->
+                                                        card.deck :: acc
+
+                                                    "type" ->
+                                                        String.fromInt card.ttype :: acc
+
+                                                    "queue" ->
+                                                        String.fromInt card.queue :: acc
+
+                                                    "due" ->
+                                                        String.fromInt card.due :: acc
+
+                                                    "reps" ->
+                                                        String.fromInt card.reps :: acc
+
+                                                    "lapses" ->
+                                                        String.fromInt card.lapses :: acc
+
+                                                    "front" ->
+                                                        card.front :: acc
+
+                                                    "back" ->
+                                                        card.back :: acc
+
+                                                    _ ->
+                                                        let
+                                                            _ =
+                                                                Debug.log "UNKNOWN" cur
+                                                        in
+                                                        acc
+
+                                            else
+                                                acc
+                                        )
+                                        []
+                            )
+                            model.cards
+                            |> List.map
+                                (\cards ->
+                                    div
+                                        [ class "ma1" ]
+                                        (List.map
+                                            (\card ->
+                                                div
+                                                    [ class "ma1 dib overflow-hidden"
+                                                    , style "width" <| String.fromInt (100 // List.length cards) ++ "%"
+                                                    ]
+                                                    [ text card
+                                                    ]
+                                            )
+                                            cards
+                                        )
+                                )
+                        )
+                    ]
+            ]
 
 
 rulesPage : Model -> Html Msg
