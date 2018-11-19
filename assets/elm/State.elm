@@ -6,6 +6,7 @@ import Browser.Navigation as Nav
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Process
+import Set
 import Task
 import Types
     exposing
@@ -34,13 +35,17 @@ init flags url key =
 
 initialModel : Url -> Nav.Key -> Model
 initialModel url key =
-    { incomingMsg = ""
+    { key = key
+    , page = urlToPage url
+    , collection = Collection 0 0 [] []
+    , incomingMsg = ""
     , error = None
     , syncPercentage = 0
     , isSyncing = False
-    , collection = Collection 0 0 [] []
-    , key = key
-    , page = urlToPage url
+    , showColumns = False
+    , excludedColumns = Set.empty
+    , search = ""
+    , cards = []
     }
 
 
@@ -106,6 +111,34 @@ update msg model =
 
         UrlChanged url ->
             ( { model | page = urlToPage url }, Cmd.none )
+
+        NewCards (Ok cards) ->
+            ( { model | cards = cards }, Cmd.none )
+
+        NewCards (Err err) ->
+            let
+                _ =
+                    Debug.log "err" err
+            in
+            ( model, Cmd.none )
+
+        ToggleShowColumns ->
+            ( { model | showColumns = not model.showColumns }, Cmd.none )
+
+        ToggleColumn col ->
+            ( { model
+                | excludedColumns =
+                    if Set.member col model.excludedColumns then
+                        Set.remove col model.excludedColumns
+
+                    else
+                        Set.insert col model.excludedColumns
+              }
+            , Cmd.none
+            )
+
+        SearchInput search ->
+            ( { model | search = search }, Api.getCards { search = search } )
 
 
 urlToPage : Url.Url -> Page
