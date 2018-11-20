@@ -5,6 +5,7 @@ import Browser
 import Browser.Navigation as Nav
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import List.Extra as List
 import Process
 import Set
 import Task
@@ -16,6 +17,8 @@ import Types
         , Model
         , Msg(..)
         , Page(..)
+        , Rule
+        , RuleInputType(..)
         , SyncData
         )
 import Url exposing (Url)
@@ -30,7 +33,7 @@ port syncMsg : (Encode.Value -> msg) -> Sub msg
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( initialModel url key, Api.getCollection )
+    ( initialModel url key, Cmd.batch [ Api.getCollection, Api.getRules ] )
 
 
 initialModel : Url -> Nav.Key -> Model
@@ -46,6 +49,10 @@ initialModel url key =
     , excludedColumns = Set.empty
     , search = ""
     , cards = []
+    , rules = []
+    , ruleInput = Rule "" "" "" 0
+    , ruleErr = Nothing
+    , selectedRule = Nothing
     }
 
 
@@ -139,6 +146,106 @@ update msg model =
 
         SearchInput search ->
             ( { model | search = search }, Api.getCards { search = search } )
+
+        RuleInput ruleInputType ->
+            let
+                oldRuleInput =
+                    model.ruleInput
+            in
+            case ruleInputType of
+                RuleName name ->
+                    let
+                        newRuleInput =
+                            { oldRuleInput | name = name }
+                    in
+                    ( { model | ruleInput = newRuleInput, ruleErr = Nothing }, Cmd.none )
+
+                RuleCode code ->
+                    let
+                        newRuleInput =
+                            { oldRuleInput | code = code }
+                    in
+                    ( { model | ruleInput = newRuleInput, ruleErr = Nothing }, Cmd.none )
+
+                RuleTests tests ->
+                    let
+                        newRuleInput =
+                            { oldRuleInput | tests = tests }
+                    in
+                    ( { model | ruleInput = newRuleInput, ruleErr = Nothing }, Cmd.none )
+
+        NewRules (Ok rules) ->
+            ( { model | rules = rules }, Cmd.none )
+
+        NewRules (Err err) ->
+            let
+                _ =
+                    Debug.log "rules:err" err
+            in
+            ( model, Cmd.none )
+
+        NewRuleResponse (Ok { err, ruleErr, rules }) ->
+            if err then
+                ( { model | ruleErr = Just ruleErr }, Cmd.none )
+
+            else
+                ( { model | rules = rules, ruleErr = Nothing, ruleInput = Rule "" "" "" 0 }, Cmd.none )
+
+        NewRuleResponse (Err err) ->
+            let
+                _ =
+                    Debug.log "jasdkfljasflsdf" err
+            in
+            ( model, Cmd.none )
+
+        CreateRule ->
+            ( model, Api.createRule model.ruleInput )
+
+        GetRules ->
+            ( model, Api.getRules )
+
+        UpdateRule ->
+            ( model, Api.updateRule model.ruleInput )
+
+        DeleteRule rid ->
+            ( { model | ruleInput = Rule "" "" "" 0, selectedRule = Nothing }, Api.deleteRule rid )
+
+        ToggleRule ruleId ->
+            case model.selectedRule of
+                Nothing ->
+                    let
+                        ruleInput =
+                            List.find
+                                (\{ rid } ->
+                                    rid == ruleId
+                                )
+                                model.rules
+                                |> Maybe.withDefault (Rule "" "" "" 0)
+                    in
+                    ( { model | selectedRule = Just ruleId, ruleInput = ruleInput }, Cmd.none )
+
+                Just oldSelectedRuleId ->
+                    if ruleId == oldSelectedRuleId then
+                        ( { model | selectedRule = Nothing, ruleInput = Rule "" "" "" 0 }, Cmd.none )
+
+                    else
+                        let
+                            ruleInput =
+                                List.find
+                                    (\{ rid } ->
+                                        rid == ruleId
+                                    )
+                                    model.rules
+                                    |> Maybe.withDefault (Rule "" "" "" 0)
+                        in
+                        ( { model | selectedRule = Just ruleId, ruleInput = ruleInput }, Cmd.none )
+
+        RunRule rid ->
+            let
+                _ =
+                    Debug.todo "handle rule running"
+            in
+            ( model, Cmd.none )
 
 
 urlToPage : Url.Url -> Page

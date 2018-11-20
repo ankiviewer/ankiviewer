@@ -5,7 +5,7 @@ if System.get_env("ANKI_DB_PATH") == nil do
 end
 
 watchers =
-  ~w(static css js)
+  ~w(static elm css js)
   |> Enum.map(&{:npm, ["run", "watch:#{&1}", cd: Path.expand("../assets", __DIR__)]})
 
 # For development, we disable any cache and enable

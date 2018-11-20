@@ -1,10 +1,108 @@
-module Api exposing (collectionDecoder, decksDecoder, getCards, getCollection, modelsDecoder)
+module Api exposing (collectionDecoder, createRule, decksDecoder, deleteRule, getCards, getCollection, getRules, modelsDecoder, ruleResponseDecoder, updateRule)
 
 import Http
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (required)
-import Types exposing (Card, CardSearchParams, Collection, D, M, Msg(..))
+import Json.Decode.Pipeline exposing (hardcoded, optional, required)
+import Json.Encode as Encode
+import Types exposing (Card, CardSearchParams, Collection, D, M, Msg(..), Rule, RuleResponse)
 import Url.Builder as Url
+
+
+put : String -> Http.Body -> Decoder a -> Http.Request a
+put url body decoder =
+    Http.request
+        { method = "POST"
+        , headers = []
+        , url = url
+        , body = body
+        , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
+delete : String -> Decoder a -> Http.Request a
+delete url decoder =
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , url = url
+        , body = Http.emptyBody
+        , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
+getRules : Cmd Msg
+getRules =
+    Http.send NewRules (Http.get "/api/rules" rulesDecoder)
+
+
+createRule : Rule -> Cmd Msg
+createRule rule =
+    Http.send NewRuleResponse (Http.post "/api/rules" (Http.jsonBody (ruleEncoder rule)) ruleResponseDecoder)
+
+
+updateRule : Rule -> Cmd Msg
+updateRule rule =
+    Http.send NewRuleResponse (put ("/api/rules/" ++ String.fromInt rule.rid) (Http.jsonBody (ruleEncoder rule)) ruleResponseDecoder)
+
+
+deleteRule : Int -> Cmd Msg
+deleteRule rid =
+    Http.send NewRules (delete ("/api/rules/" ++ String.fromInt rid) rulesDecoder)
+
+
+ruleEncoder : Rule -> Encode.Value
+ruleEncoder rule =
+    Encode.object
+        [ ( "name", Encode.string rule.name )
+        , ( "code", Encode.string rule.code )
+        , ( "tests", Encode.string rule.tests )
+        ]
+
+
+rulesDecoder : Decoder (List Rule)
+rulesDecoder =
+    Decode.field "rules" (Decode.list ruleDecoder)
+
+
+ruleDecoder : Decoder Rule
+ruleDecoder =
+    Decode.succeed Rule
+        |> required "name" Decode.string
+        |> required "code" Decode.string
+        |> required "tests" Decode.string
+        |> required "rid" Decode.int
+
+
+ruleErrDecoder : Decoder Rule
+ruleErrDecoder =
+    Decode.succeed Rule
+        |> optional "name" Decode.string ""
+        |> optional "code" Decode.string ""
+        |> optional "tests" Decode.string ""
+        |> hardcoded 0
+
+
+ruleResponseDecoder : Decoder RuleResponse
+ruleResponseDecoder =
+    Decode.field "err" Decode.bool
+        |> Decode.andThen
+            (\err ->
+                if err then
+                    Decode.succeed RuleResponse
+                        |> hardcoded err
+                        |> hardcoded []
+                        |> required "params" ruleErrDecoder
+
+                else
+                    Decode.succeed RuleResponse
+                        |> hardcoded err
+                        |> required "params" (Decode.list ruleDecoder)
+                        |> hardcoded (Rule "" "" "" 0)
+            )
 
 
 getCollection : Cmd Msg
