@@ -9,6 +9,9 @@ module Types exposing
     , Model
     , Msg(..)
     , Page(..)
+    , Rule
+    , RuleInputType(..)
+    , RuleResponse
     , SyncData
     )
 
@@ -36,6 +39,25 @@ type alias Model =
     , excludedColumns : Set String
     , search : String
     , cards : List Card
+    , rules : List Rule
+    , ruleInput : Rule
+    , ruleErr : Maybe Rule
+    , selectedRule : Maybe Int
+    }
+
+
+type alias Rule =
+    { name : String
+    , code : String
+    , tests : String
+    , rid : Int
+    }
+
+
+type alias RuleResponse =
+    { err : Bool
+    , rules : List Rule
+    , ruleErr : Rule
     }
 
 
@@ -57,6 +79,21 @@ type Msg
     | ToggleShowColumns
     | ToggleColumn String
     | SearchInput String
+    | GetRules
+    | NewRules (Result Http.Error (List Rule))
+    | NewRuleResponse (Result Http.Error RuleResponse)
+    | RuleInput RuleInputType
+    | CreateRule
+    | UpdateRule
+    | DeleteRule Int
+    | ToggleRule Int
+    | RunRule Int
+
+
+type RuleInputType
+    = RuleName String
+    | RuleCode String
+    | RuleTests String
 
 
 type Page
