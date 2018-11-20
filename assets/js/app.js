@@ -16,7 +16,7 @@ var app = Elm.Main.init({
   flags: startingColumns
 });
 
-app.ports.startSync.subscribe(function () {
+app.ports.portStartSync.subscribe(function () {
   channel = socket.channel('sync:database', {})
 
   channel.join()
@@ -25,11 +25,11 @@ app.ports.startSync.subscribe(function () {
 
   channel.on('sync:msg', function (msg) {
     console.log(msg);
-    app.ports.syncMsg.send(msg);
+    app.ports.portSyncMsg.send(msg);
   })
 
   channel.on('done', function () {
-    app.ports.syncMsg.send({msg: 'done', percentage: 100});
+    app.ports.portSyncMsg.send({msg: 'done', percentage: 100});
 
     channel.leave()
       .receive('ok', function (resp) { console.log('Left successfully'); })

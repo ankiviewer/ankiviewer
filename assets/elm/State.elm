@@ -1,11 +1,11 @@
 port module State exposing (init, subscriptions, update)
 
-import Api
 import Browser
 import Browser.Navigation as Nav
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import List.Extra as List
+import Network.Http
 import Process
 import Set
 import Task
@@ -36,7 +36,12 @@ port portSyncMsg : (Encode.Value -> msg) -> Sub msg
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( initialModel url key, Cmd.batch [ Api.getCollection, Api.getRules ] )
+    ( initialModel url key
+    , Cmd.batch
+        [ Network.Http.getCollection
+        , Network.Http.getRules
+        ]
+    )
 
 
 initialModel : Url -> Nav.Key -> Model
@@ -102,10 +107,10 @@ update msg model =
             )
 
         SearchInput search ->
-            ( { model | search = search }, Api.getCards { search = search } )
+            ( { model | search = search }, Network.Http.getCards { search = search } )
 
-        RuleInput ruleInputType ->
-            ( { model | ruleInput = ruleInputUpdate model.ruleInput ruleInputType, ruleErr = Nothing }, Cmd.none )
+        RuleInput ruleInputType s ->
+            ( { model | ruleInput = ruleInputUpdate model.ruleInput ruleInputType s, ruleErr = Nothing }, Cmd.none )
 
         ToggleRule ruleId ->
             case model.selectedRule of
@@ -145,17 +150,17 @@ update msg model =
             ( model, Cmd.none )
 
 
-ruleInputUpdate : Rule -> RuleInputType -> Rule
-ruleInputUpdate ruleInput ruleInputType =
+ruleInputUpdate : Rule -> RuleInputType -> String -> Rule
+ruleInputUpdate ruleInput ruleInputType s =
     case ruleInputType of
-        RuleName name ->
-            { ruleInput | name = name }
+        RuleName ->
+            { ruleInput | name = s }
 
-        RuleCode code ->
-            { ruleInput | code = code }
+        RuleCode ->
+            { ruleInput | code = s }
 
-        RuleTests tests ->
-            { ruleInput | tests = tests }
+        RuleTests ->
+            { ruleInput | tests = s }
 
 
 requestUpdate : Model -> RequestMsg -> ( Model, Cmd Msg )
@@ -186,16 +191,16 @@ requestUpdate model requestMsg =
             ( model, Cmd.none )
 
         CreateRule ->
-            ( model, Api.createRule model.ruleInput )
+            ( model, Network.Http.createRule model.ruleInput )
 
         GetRules ->
-            ( model, Api.getRules )
+            ( model, Network.Http.getRules )
 
         UpdateRule ->
-            ( model, Api.updateRule model.ruleInput )
+            ( model, Network.Http.updateRule model.ruleInput )
 
         DeleteRule rid ->
-            ( { model | ruleInput = Rule "" "" "" 0, selectedRule = Nothing }, Api.deleteRule rid )
+            ( { model | ruleInput = Rule "" "" "" 0, selectedRule = Nothing }, Network.Http.deleteRule rid )
 
         NewCards (Ok cards) ->
             ( { model | cards = cards }, Cmd.none )

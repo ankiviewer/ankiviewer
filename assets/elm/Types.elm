@@ -80,7 +80,7 @@ type Msg
     | ToggleShowColumns
     | ToggleColumn String
     | SearchInput String
-    | RuleInput RuleInputType
+    | RuleInput RuleInputType String
     | ToggleRule Int
     | RunRule Int
 
@@ -103,9 +103,9 @@ type RequestMsg
 
 
 type RuleInputType
-    = RuleName String
-    | RuleCode String
-    | RuleTests String
+    = RuleName
+    | RuleCode
+    | RuleTests
 
 
 type Page

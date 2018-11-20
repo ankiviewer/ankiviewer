@@ -6,8 +6,6 @@ import Html exposing (Html, a, button, div, input, label, text, textarea)
 import Html.Attributes exposing (class, classList, href, style, value)
 import Html.Events exposing (onClick, onInput)
 import Set
-import Time
-import Time.Format as Time
 import Types
     exposing
         ( ErrorType(..)
@@ -15,10 +13,9 @@ import Types
         , Msg(..)
         , Page(..)
         , RequestMsg(..)
+        , Rule
         , RuleInputType(..)
         )
-import Url
-import Url.Builder
 import View.Home
 
 
@@ -89,10 +86,9 @@ searchPage model =
                 (List.map
                     (\col ->
                         div
-                            [ class "dib ma1 pointer"
+                            [ class "dib ma1 pointer red"
                             , classList
-                                [ ( "red", Set.member col model.excludedColumns )
-                                , ( "green", not (Set.member col model.excludedColumns) )
+                                [ ( "green", not (Set.member col model.excludedColumns) )
                                 ]
                             , onClick <| ToggleColumn col
                             ]
@@ -232,90 +228,45 @@ searchPage model =
             ]
 
 
+ruleInputItem : Model -> (Rule -> String) -> String -> (List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg) -> RuleInputType -> String -> Html Msg
+ruleInputItem model ruleKey labelText inputType ruleInputType heightClass =
+    div
+        []
+        [ div
+            [ class "ma4 flex items-center" ]
+            [ label
+                [ class "dib w-20"
+                ]
+                [ text labelText
+                ]
+            , inputType
+                [ class <| heightClass ++ " w-70 border-box ba b--gray"
+                , onInput (RuleInput ruleInputType)
+                , value (ruleKey model.ruleInput)
+                ]
+                []
+            ]
+        , case model.ruleErr of
+            Nothing ->
+                text ""
+
+            Just err ->
+                div
+                    [ class "red" ]
+                    [ text <| ruleKey err
+                    ]
+        ]
+
+
 rulesPage : Model -> Html Msg
 rulesPage model =
     div
         [ class "flex items-top" ]
         [ div
             [ class "w-80 dib" ]
-            [ div
-                []
-                [ div
-                    [ class "ma4 flex items-center" ]
-                    [ label
-                        [ class "dib w-20"
-                        ]
-                        [ text "Name:"
-                        ]
-                    , input
-                        [ class "h2 w-70 border-box ba b--gray"
-                        , onInput (RuleName >> RuleInput)
-                        , value model.ruleInput.name
-                        ]
-                        []
-                    ]
-                , case model.ruleErr of
-                    Nothing ->
-                        text ""
-
-                    Just err ->
-                        div
-                            [ class "red" ]
-                            [ text err.name
-                            ]
-                ]
-            , div
-                []
-                [ div
-                    [ class "ma4 flex items-center" ]
-                    [ label
-                        [ class "dib w-20"
-                        ]
-                        [ text "Code:"
-                        ]
-                    , textarea
-                        [ class "h4 w-70 border-box ba b--gray"
-                        , onInput (RuleCode >> RuleInput)
-                        , value model.ruleInput.code
-                        ]
-                        []
-                    ]
-                , case model.ruleErr of
-                    Nothing ->
-                        text ""
-
-                    Just err ->
-                        div
-                            [ class "red" ]
-                            [ text err.code
-                            ]
-                ]
-            , div
-                []
-                [ div
-                    [ class "ma4 flex items-center" ]
-                    [ label
-                        [ class "dib w-20"
-                        ]
-                        [ text "Tests:"
-                        ]
-                    , textarea
-                        [ class "h4 w-70 ba b--gray"
-                        , onInput (RuleTests >> RuleInput)
-                        , value model.ruleInput.tests
-                        ]
-                        []
-                    ]
-                , case model.ruleErr of
-                    Nothing ->
-                        text ""
-
-                    Just err ->
-                        div
-                            [ class "red" ]
-                            [ text err.tests
-                            ]
-                ]
+            [ ruleInputItem model .name "Name:" input RuleName "h2"
+            , ruleInputItem model .code "Code:" textarea RuleCode "h4"
+            , ruleInputItem model .tests "Tests:" textarea RuleTests "h4"
             , case model.selectedRule of
                 Nothing ->
                     div
@@ -376,8 +327,7 @@ navbar : { items : List ( b, String, String ), selected : b } -> Html Msg
 navbar { items, selected } =
     div
         [ class "nav" ]
-    <|
-        List.map
+        (List.map
             (\( identifier, content, link ) ->
                 a
                     [ class "nav-item"
@@ -388,3 +338,4 @@ navbar { items, selected } =
                     ]
             )
             items
+        )
