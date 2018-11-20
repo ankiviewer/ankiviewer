@@ -1,10 +1,17 @@
-module Api exposing (collectionDecoder, createRule, decksDecoder, deleteRule, getCards, getCollection, getRules, modelsDecoder, ruleResponseDecoder, updateRule)
+module Api exposing
+    ( createRule
+    , deleteRule
+    , getCards
+    , getCollection
+    , getRules
+    , updateRule
+    )
 
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
-import Types exposing (Card, CardSearchParams, Collection, D, M, Msg(..), Rule, RuleResponse, RequestMsg(..))
+import Types exposing (Card, CardSearchParams, Collection, D, M, Msg(..), RequestMsg(..), Rule, RuleResponse)
 import Url.Builder as Url
 
 
@@ -46,7 +53,7 @@ createRule rule =
 
 updateRule : Rule -> Cmd Msg
 updateRule rule =
-    Http.send  (NewRuleResponse >> Request) (put ("/api/rules/" ++ String.fromInt rule.rid) (Http.jsonBody (ruleEncoder rule)) ruleResponseDecoder)
+    Http.send (NewRuleResponse >> Request) (put ("/api/rules/" ++ String.fromInt rule.rid) (Http.jsonBody (ruleEncoder rule)) ruleResponseDecoder)
 
 
 deleteRule : Int -> Cmd Msg
