@@ -1,4 +1,4 @@
-module View exposing (body, errorView, homeInfo, homePage, navbar, notFoundPage, pageToString, rulesPage, searchPage, syncing, view)
+module View exposing (navbar, view)
 
 import Browser
 import Browser.Navigation as Nav
@@ -8,10 +8,18 @@ import Html.Events exposing (onClick, onInput)
 import Set
 import Time
 import Time.Format as Time
-import Types exposing (
-  ErrorType(..), Model, Msg(..), Page(..), RuleInputType(..), RequestMsg(..))
+import Types
+    exposing
+        ( ErrorType(..)
+        , Model
+        , Msg(..)
+        , Page(..)
+        , RequestMsg(..)
+        , RuleInputType(..)
+        )
 import Url
 import Url.Builder
+import View.Home
 
 
 cardColumns : List String
@@ -54,7 +62,7 @@ body model =
         }
     , case model.page of
         Home ->
-            homePage model
+            View.Home.view model
 
         Search ->
             searchPage model
@@ -65,81 +73,6 @@ body model =
         NotFound ->
             notFoundPage model
     ]
-
-
-errorView : String -> Html Msg
-errorView errorText =
-    div
-        [ class "red" ]
-        [ text errorText
-        ]
-
-
-homePage : Model -> Html Msg
-homePage ({ collection } as model) =
-    case model.error of
-        HttpError ->
-            errorView "Error fetching collection data"
-
-        SyncError ->
-            errorView "Error syncing"
-
-        None ->
-            if model.isSyncing then
-                syncing
-                    { message = model.incomingMsg
-                    , syncPercentage = model.syncPercentage
-                    }
-
-            else
-                homeInfo
-                    { mod = collection.mod
-                    , cards = collection.cards
-                    }
-
-
-syncing : { message : String, syncPercentage : Int } -> Html Msg
-syncing { message, syncPercentage } =
-    div
-        []
-        [ div
-            []
-            [ text <| message ++ "..."
-            ]
-        , div
-            [ class "sync-loader" ]
-            [ div
-                [ class "sync-bar"
-                , style "width" <| String.fromInt syncPercentage ++ "%"
-                ]
-                []
-            ]
-        , div
-            []
-            [ text <| String.fromInt syncPercentage ++ "%"
-            ]
-        ]
-
-
-homeInfo : { mod : Int, cards : Int } -> Html Msg
-homeInfo { mod, cards } =
-    div
-        []
-        [ div
-            [ class "mv2" ]
-            [ text <| "Last modified: " ++ Time.format Time.utc "Weekday, ordDay Month Year at padHour:padMinute" mod
-            ]
-        , div
-            [ class "mv2" ]
-            [ text <| "Number notes: " ++ String.fromInt cards
-            ]
-        , button
-            [ onClick StartSync
-            , class "button-primary"
-            ]
-            [ text "Sync Database"
-            ]
-        ]
 
 
 searchPage : Model -> Html Msg

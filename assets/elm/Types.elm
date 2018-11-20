@@ -9,11 +9,13 @@ module Types exposing
     , Model
     , Msg(..)
     , Page(..)
+    , RequestMsg(..)
     , Rule
     , RuleInputType(..)
     , RuleResponse
     , SyncData
-    , RequestMsg(..)
+    , SyncMsg(..)
+    , SyncState(..)
     )
 
 import Browser
@@ -32,10 +34,7 @@ type alias Model =
     { key : Nav.Key
     , page : Page
     , collection : Collection
-    , incomingMsg : String
-    , error : ErrorType
-    , syncPercentage : Int
-    , isSyncing : Bool
+    , homeMsg : Result ErrorType SyncState
     , showColumns : Bool
     , excludedColumns : Set String
     , search : String
@@ -62,10 +61,14 @@ type alias RuleResponse =
     }
 
 
+type SyncState
+    = Syncing ( String, Int )
+    | NotSyncing
+
+
 type ErrorType
-    = HttpError
-    | SyncError
-    | None
+    = HttpError String
+    | SyncError String
 
 
 type Msg
@@ -73,15 +76,19 @@ type Msg
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | Request RequestMsg
-    | StartSync
-    | SyncMsg Encode.Value
-    | StopSync
+    | Sync SyncMsg
     | ToggleShowColumns
     | ToggleColumn String
     | SearchInput String
     | RuleInput RuleInputType
     | ToggleRule Int
     | RunRule Int
+
+
+type SyncMsg
+    = StartSync
+    | StopSync
+    | SyncIncomingMsg Encode.Value
 
 
 type RequestMsg

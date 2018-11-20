@@ -1,4 +1,4 @@
-module Dev exposing (HomeView(..), Model, Msg(..), Page(..), control, errorView, home, homeInfo, init, main, navbar, rules, search, update, view, viewWithCss)
+module Dev exposing (main)
 
 import Browser
 import Html exposing (Html, button, div, text)
@@ -6,6 +6,7 @@ import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Types
 import View
+import View.Home exposing (syncing)
 
 
 main =
@@ -81,17 +82,17 @@ navbar args =
 
 syncing : { message : String, syncPercentage : Int } -> Html Msg
 syncing args =
-    Html.map (\_ -> NoOp) <| View.syncing args
+    Html.map (\_ -> NoOp) <| View.Home.syncing args
 
 
 homeInfo : { mod : Int, cards : Int } -> Html Msg
 homeInfo args =
-    Html.map (\_ -> NoOp) <| View.homeInfo args
+    Html.map (\_ -> NoOp) <| View.Home.info args
 
 
 errorView : String -> Html Msg
 errorView str =
-    Html.map (\_ -> NoOp) <| View.errorView str
+    Html.map (\_ -> NoOp) <| View.Home.errorView str
 
 
 view : Model -> Html Msg

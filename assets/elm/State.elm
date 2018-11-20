@@ -17,19 +17,21 @@ import Types
         , Model
         , Msg(..)
         , Page(..)
+        , RequestMsg(..)
         , Rule
         , RuleInputType(..)
         , SyncData
-        , RequestMsg(..)
+        , SyncMsg(..)
+        , SyncState(..)
         )
 import Url exposing (Url)
 import Url.Parser as Parser exposing (Parser, oneOf, s, top)
 
 
-port startSync : Encode.Value -> Cmd msg
+port portStartSync : Encode.Value -> Cmd msg
 
 
-port syncMsg : (Encode.Value -> msg) -> Sub msg
+port portSyncMsg : (Encode.Value -> msg) -> Sub msg
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -42,10 +44,7 @@ initialModel url key =
     { key = key
     , page = urlToPage url
     , collection = Collection 0 0 [] []
-    , incomingMsg = ""
-    , error = None
-    , syncPercentage = 0
-    , isSyncing = False
+    , homeMsg = Ok NotSyncing
     , showColumns = False
     , excludedColumns = Set.empty
     , search = ""
@@ -64,50 +63,17 @@ syncDataDecoder =
         (Decode.field "percentage" Decode.int)
 
 
-delay time msg =
-    Process.sleep time
-        |> Task.perform (\_ -> msg)
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
 
-        Request (NewCollection (Ok collection)) ->
-            ( { model | collection = collection }, Cmd.none )
+        Request requestMsg ->
+            requestUpdate model requestMsg
 
-        Request (NewCollection (Err e)) ->
-            ( { model | error = HttpError, incomingMsg = "Http error has occurred" }, Cmd.none )
-
-        StartSync ->
-            ( { model | isSyncing = True }, startSync Encode.null )
-
-        SyncMsg val ->
-            case Decode.decodeValue syncDataDecoder val of
-                Ok { message, percentage } ->
-                    let
-                        cmd =
-                            if message == "done" then
-                                delay 2000 StopSync
-
-                            else
-                                Cmd.none
-                    in
-                    ( { model | incomingMsg = message, syncPercentage = percentage }
-                    , cmd
-                    )
-
-                Err e ->
-                    let
-                        _ =
-                            Debug.log "e" e
-                    in
-                    ( { model | error = SyncError }, Cmd.none )
-
-        StopSync ->
-            ( { model | isSyncing = False }, Cmd.none )
+        Sync syncMsg ->
+            syncUpdate model syncMsg
 
         LinkClicked urlRequest ->
             case urlRequest of
@@ -119,16 +85,6 @@ update msg model =
 
         UrlChanged url ->
             ( { model | page = urlToPage url }, Cmd.none )
-
-        Request (NewCards (Ok cards)) ->
-            ( { model | cards = cards }, Cmd.none )
-
-        Request (NewCards (Err err)) ->
-            let
-                _ =
-                    Debug.log "err" err
-            in
-            ( model, Cmd.none )
 
         ToggleShowColumns ->
             ( { model | showColumns = not model.showColumns }, Cmd.none )
@@ -149,67 +105,7 @@ update msg model =
             ( { model | search = search }, Api.getCards { search = search } )
 
         RuleInput ruleInputType ->
-            let
-                oldRuleInput =
-                    model.ruleInput
-            in
-            case ruleInputType of
-                RuleName name ->
-                    let
-                        newRuleInput =
-                            { oldRuleInput | name = name }
-                    in
-                    ( { model | ruleInput = newRuleInput, ruleErr = Nothing }, Cmd.none )
-
-                RuleCode code ->
-                    let
-                        newRuleInput =
-                            { oldRuleInput | code = code }
-                    in
-                    ( { model | ruleInput = newRuleInput, ruleErr = Nothing }, Cmd.none )
-
-                RuleTests tests ->
-                    let
-                        newRuleInput =
-                            { oldRuleInput | tests = tests }
-                    in
-                    ( { model | ruleInput = newRuleInput, ruleErr = Nothing }, Cmd.none )
-
-        Request (NewRules (Ok rules)) ->
-            ( { model | rules = rules }, Cmd.none )
-
-        Request (NewRules (Err err)) ->
-            let
-                _ =
-                    Debug.log "rules:err" err
-            in
-            ( model, Cmd.none )
-
-        Request (NewRuleResponse (Ok { err, ruleErr, rules })) ->
-            if err then
-                ( { model | ruleErr = Just ruleErr }, Cmd.none )
-
-            else
-                ( { model | rules = rules, ruleErr = Nothing, ruleInput = Rule "" "" "" 0 }, Cmd.none )
-
-        Request (NewRuleResponse (Err err)) ->
-            let
-                _ =
-                    Debug.log "jasdkfljasflsdf" err
-            in
-            ( model, Cmd.none )
-
-        Request CreateRule ->
-            ( model, Api.createRule model.ruleInput )
-
-        Request GetRules ->
-            ( model, Api.getRules )
-
-        Request UpdateRule ->
-            ( model, Api.updateRule model.ruleInput )
-
-        Request (DeleteRule rid) ->
-            ( { model | ruleInput = Rule "" "" "" 0, selectedRule = Nothing }, Api.deleteRule rid )
+            ( { model | ruleInput = ruleInputUpdate model.ruleInput ruleInputType, ruleErr = Nothing }, Cmd.none )
 
         ToggleRule ruleId ->
             case model.selectedRule of
@@ -249,6 +145,104 @@ update msg model =
             ( model, Cmd.none )
 
 
+ruleInputUpdate : Rule -> RuleInputType -> Rule
+ruleInputUpdate ruleInput ruleInputType =
+    case ruleInputType of
+        RuleName name ->
+            { ruleInput | name = name }
+
+        RuleCode code ->
+            { ruleInput | code = code }
+
+        RuleTests tests ->
+            { ruleInput | tests = tests }
+
+
+requestUpdate : Model -> RequestMsg -> ( Model, Cmd Msg )
+requestUpdate model requestMsg =
+    case requestMsg of
+        NewRules (Ok rules) ->
+            ( { model | rules = rules }, Cmd.none )
+
+        NewRules (Err err) ->
+            let
+                _ =
+                    Debug.log "rules:err" err
+            in
+            ( model, Cmd.none )
+
+        NewRuleResponse (Ok { err, ruleErr, rules }) ->
+            if err then
+                ( { model | ruleErr = Just ruleErr }, Cmd.none )
+
+            else
+                ( { model | rules = rules, ruleErr = Nothing, ruleInput = Rule "" "" "" 0 }, Cmd.none )
+
+        NewRuleResponse (Err err) ->
+            let
+                _ =
+                    Debug.log "jasdkfljasflsdf" err
+            in
+            ( model, Cmd.none )
+
+        CreateRule ->
+            ( model, Api.createRule model.ruleInput )
+
+        GetRules ->
+            ( model, Api.getRules )
+
+        UpdateRule ->
+            ( model, Api.updateRule model.ruleInput )
+
+        DeleteRule rid ->
+            ( { model | ruleInput = Rule "" "" "" 0, selectedRule = Nothing }, Api.deleteRule rid )
+
+        NewCards (Ok cards) ->
+            ( { model | cards = cards }, Cmd.none )
+
+        NewCards (Err err) ->
+            let
+                _ =
+                    Debug.log "err" err
+            in
+            ( model, Cmd.none )
+
+        NewCollection (Ok collection) ->
+            ( { model | collection = collection }, Cmd.none )
+
+        NewCollection (Err e) ->
+            ( { model | homeMsg = Err (HttpError (Debug.toString e)) }, Cmd.none )
+
+
+syncUpdate : Model -> SyncMsg -> ( Model, Cmd Msg )
+syncUpdate model syncMsg =
+    case syncMsg of
+        StartSync ->
+            ( { model | homeMsg = Ok (Syncing ( "", 0 )) }, portStartSync Encode.null )
+
+        SyncIncomingMsg val ->
+            case Decode.decodeValue syncDataDecoder val of
+                Ok { message, percentage } ->
+                    let
+                        cmd =
+                            if message == "done" then
+                                Process.sleep 2000
+                                    |> Task.perform (\_ -> Sync StopSync)
+
+                            else
+                                Cmd.none
+                    in
+                    ( { model | homeMsg = Ok (Syncing ( message, percentage )) }
+                    , cmd
+                    )
+
+                Err e ->
+                    ( { model | homeMsg = Err (SyncError (Debug.toString e)) }, Cmd.none )
+
+        StopSync ->
+            ( { model | homeMsg = Ok NotSyncing }, Cmd.none )
+
+
 urlToPage : Url.Url -> Page
 urlToPage url =
     Parser.parse parser url
@@ -266,4 +260,4 @@ parser =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    syncMsg SyncMsg
+    portSyncMsg (SyncIncomingMsg >> Sync)

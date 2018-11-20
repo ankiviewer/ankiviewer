@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import State
-import Types exposing (Msg(..), Flags, Model)
+import Types exposing (Flags, Model, Msg(..))
 import View
 
 
