@@ -20,6 +20,7 @@ import Types
         , Rule
         , RuleInputType(..)
         , SyncData
+        , RequestMsg(..)
         )
 import Url exposing (Url)
 import Url.Parser as Parser exposing (Parser, oneOf, s, top)
@@ -74,10 +75,10 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        NewCollection (Ok collection) ->
+        Request (NewCollection (Ok collection)) ->
             ( { model | collection = collection }, Cmd.none )
 
-        NewCollection (Err e) ->
+        Request (NewCollection (Err e)) ->
             ( { model | error = HttpError, incomingMsg = "Http error has occurred" }, Cmd.none )
 
         StartSync ->
@@ -119,10 +120,10 @@ update msg model =
         UrlChanged url ->
             ( { model | page = urlToPage url }, Cmd.none )
 
-        NewCards (Ok cards) ->
+        Request (NewCards (Ok cards)) ->
             ( { model | cards = cards }, Cmd.none )
 
-        NewCards (Err err) ->
+        Request (NewCards (Err err)) ->
             let
                 _ =
                     Debug.log "err" err
@@ -174,40 +175,40 @@ update msg model =
                     in
                     ( { model | ruleInput = newRuleInput, ruleErr = Nothing }, Cmd.none )
 
-        NewRules (Ok rules) ->
+        Request (NewRules (Ok rules)) ->
             ( { model | rules = rules }, Cmd.none )
 
-        NewRules (Err err) ->
+        Request (NewRules (Err err)) ->
             let
                 _ =
                     Debug.log "rules:err" err
             in
             ( model, Cmd.none )
 
-        NewRuleResponse (Ok { err, ruleErr, rules }) ->
+        Request (NewRuleResponse (Ok { err, ruleErr, rules })) ->
             if err then
                 ( { model | ruleErr = Just ruleErr }, Cmd.none )
 
             else
                 ( { model | rules = rules, ruleErr = Nothing, ruleInput = Rule "" "" "" 0 }, Cmd.none )
 
-        NewRuleResponse (Err err) ->
+        Request (NewRuleResponse (Err err)) ->
             let
                 _ =
                     Debug.log "jasdkfljasflsdf" err
             in
             ( model, Cmd.none )
 
-        CreateRule ->
+        Request CreateRule ->
             ( model, Api.createRule model.ruleInput )
 
-        GetRules ->
+        Request GetRules ->
             ( model, Api.getRules )
 
-        UpdateRule ->
+        Request UpdateRule ->
             ( model, Api.updateRule model.ruleInput )
 
-        DeleteRule rid ->
+        Request (DeleteRule rid) ->
             ( { model | ruleInput = Rule "" "" "" 0, selectedRule = Nothing }, Api.deleteRule rid )
 
         ToggleRule ruleId ->

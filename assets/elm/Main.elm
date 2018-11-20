@@ -2,10 +2,11 @@ module Main exposing (main)
 
 import Browser
 import State
-import Types exposing (Msg(..))
+import Types exposing (Msg(..), Flags, Model)
 import View
 
 
+main : Program Flags Model Msg
 main =
     Browser.application
         { init = State.init
