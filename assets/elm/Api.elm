@@ -4,7 +4,7 @@ import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
-import Types exposing (Card, CardSearchParams, Collection, D, M, Msg(..), Rule, RuleResponse)
+import Types exposing (Card, CardSearchParams, Collection, D, M, Msg(..), Rule, RuleResponse, RequestMsg(..))
 import Url.Builder as Url
 
 
@@ -36,22 +36,22 @@ delete url decoder =
 
 getRules : Cmd Msg
 getRules =
-    Http.send NewRules (Http.get "/api/rules" rulesDecoder)
+    Http.send (NewRules >> Request) (Http.get "/api/rules" rulesDecoder)
 
 
 createRule : Rule -> Cmd Msg
 createRule rule =
-    Http.send NewRuleResponse (Http.post "/api/rules" (Http.jsonBody (ruleEncoder rule)) ruleResponseDecoder)
+    Http.send (NewRuleResponse >> Request) (Http.post "/api/rules" (Http.jsonBody (ruleEncoder rule)) ruleResponseDecoder)
 
 
 updateRule : Rule -> Cmd Msg
 updateRule rule =
-    Http.send NewRuleResponse (put ("/api/rules/" ++ String.fromInt rule.rid) (Http.jsonBody (ruleEncoder rule)) ruleResponseDecoder)
+    Http.send  (NewRuleResponse >> Request) (put ("/api/rules/" ++ String.fromInt rule.rid) (Http.jsonBody (ruleEncoder rule)) ruleResponseDecoder)
 
 
 deleteRule : Int -> Cmd Msg
 deleteRule rid =
-    Http.send NewRules (delete ("/api/rules/" ++ String.fromInt rid) rulesDecoder)
+    Http.send (NewRules >> Request) (delete ("/api/rules/" ++ String.fromInt rid) rulesDecoder)
 
 
 ruleEncoder : Rule -> Encode.Value
@@ -107,7 +107,7 @@ ruleResponseDecoder =
 
 getCollection : Cmd Msg
 getCollection =
-    Http.send NewCollection (Http.get "/api/collection" collectionDecoder)
+    Http.send (NewCollection >> Request) (Http.get "/api/collection" collectionDecoder)
 
 
 getCards : CardSearchParams -> Cmd Msg
@@ -124,7 +124,7 @@ getCards { search } =
                 , Url.string "rule" ""
                 ]
     in
-    Http.send NewCards (Http.get url (Decode.list cardsDecoder))
+    Http.send (NewCards >> Request) (Http.get url (Decode.list cardsDecoder))
 
 
 cardsDecoder : Decoder Card

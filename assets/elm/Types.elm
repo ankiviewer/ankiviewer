@@ -13,6 +13,7 @@ module Types exposing
     , RuleInputType(..)
     , RuleResponse
     , SyncData
+    , RequestMsg(..)
     )
 
 import Browser
@@ -69,25 +70,29 @@ type ErrorType
 
 type Msg
     = NoOp
-    | NewCollection (Result Http.Error Collection)
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
+    | Request RequestMsg
     | StartSync
     | SyncMsg Encode.Value
     | StopSync
-    | NewCards (Result Http.Error (List Card))
     | ToggleShowColumns
     | ToggleColumn String
     | SearchInput String
-    | GetRules
+    | RuleInput RuleInputType
+    | ToggleRule Int
+    | RunRule Int
+
+
+type RequestMsg
+    = NewCollection (Result Http.Error Collection)
     | NewRules (Result Http.Error (List Rule))
     | NewRuleResponse (Result Http.Error RuleResponse)
-    | RuleInput RuleInputType
+    | NewCards (Result Http.Error (List Card))
+    | GetRules
     | CreateRule
     | UpdateRule
     | DeleteRule Int
-    | ToggleRule Int
-    | RunRule Int
 
 
 type RuleInputType

@@ -8,7 +8,8 @@ import Html.Events exposing (onClick, onInput)
 import Set
 import Time
 import Time.Format as Time
-import Types exposing (ErrorType(..), Model, Msg(..), Page(..), RuleInputType(..))
+import Types exposing (
+  ErrorType(..), Model, Msg(..), Page(..), RuleInputType(..), RequestMsg(..))
 import Url
 import Url.Builder
 
@@ -387,7 +388,7 @@ rulesPage model =
                     div
                         []
                         [ button
-                            [ onClick CreateRule
+                            [ onClick <| Request CreateRule
                             ]
                             [ text "Add New" ]
                         ]
@@ -396,12 +397,12 @@ rulesPage model =
                     div
                         []
                         [ button
-                            [ onClick UpdateRule
+                            [ onClick <| Request UpdateRule
                             ]
                             [ text "Update Rule"
                             ]
                         , button
-                            [ onClick <| DeleteRule ruleId
+                            [ onClick <| Request (DeleteRule ruleId)
                             ]
                             [ text "Delete Rule"
                             ]
