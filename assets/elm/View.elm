@@ -2,13 +2,13 @@ module View exposing (body, errorView, homeInfo, homePage, navbar, notFoundPage,
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html, a, button, div, input, text)
-import Html.Attributes exposing (class, classList, href, style)
+import Html exposing (Html, a, button, div, input, label, text, textarea)
+import Html.Attributes exposing (class, classList, href, style, value)
 import Html.Events exposing (onClick, onInput)
 import Set
 import Time
 import Time.Format as Time
-import Types exposing (ErrorType(..), Model, Msg(..), Page(..))
+import Types exposing (ErrorType(..), Model, Msg(..), Page(..), RuleInputType(..))
 import Url
 import Url.Builder
 
@@ -301,8 +301,132 @@ searchPage model =
 rulesPage : Model -> Html Msg
 rulesPage model =
     div
-        []
-        [ text "Rules"
+        [ class "flex items-top" ]
+        [ div
+            [ class "w-80 dib" ]
+            [ div
+                []
+                [ div
+                    [ class "ma4 flex items-center" ]
+                    [ label
+                        [ class "dib w-20"
+                        ]
+                        [ text "Name:"
+                        ]
+                    , input
+                        [ class "h2 w-70 border-box ba b--gray"
+                        , onInput (RuleName >> RuleInput)
+                        , value model.ruleInput.name
+                        ]
+                        []
+                    ]
+                , case model.ruleErr of
+                    Nothing ->
+                        text ""
+
+                    Just err ->
+                        div
+                            [ class "red" ]
+                            [ text err.name
+                            ]
+                ]
+            , div
+                []
+                [ div
+                    [ class "ma4 flex items-center" ]
+                    [ label
+                        [ class "dib w-20"
+                        ]
+                        [ text "Code:"
+                        ]
+                    , textarea
+                        [ class "h4 w-70 border-box ba b--gray"
+                        , onInput (RuleCode >> RuleInput)
+                        , value model.ruleInput.code
+                        ]
+                        []
+                    ]
+                , case model.ruleErr of
+                    Nothing ->
+                        text ""
+
+                    Just err ->
+                        div
+                            [ class "red" ]
+                            [ text err.code
+                            ]
+                ]
+            , div
+                []
+                [ div
+                    [ class "ma4 flex items-center" ]
+                    [ label
+                        [ class "dib w-20"
+                        ]
+                        [ text "Tests:"
+                        ]
+                    , textarea
+                        [ class "h4 w-70 ba b--gray"
+                        , onInput (RuleTests >> RuleInput)
+                        , value model.ruleInput.tests
+                        ]
+                        []
+                    ]
+                , case model.ruleErr of
+                    Nothing ->
+                        text ""
+
+                    Just err ->
+                        div
+                            [ class "red" ]
+                            [ text err.tests
+                            ]
+                ]
+            , case model.selectedRule of
+                Nothing ->
+                    div
+                        []
+                        [ button
+                            [ onClick CreateRule
+                            ]
+                            [ text "Add New" ]
+                        ]
+
+                Just ruleId ->
+                    div
+                        []
+                        [ button
+                            [ onClick UpdateRule
+                            ]
+                            [ text "Update Rule"
+                            ]
+                        , button
+                            [ onClick <| DeleteRule ruleId
+                            ]
+                            [ text "Delete Rule"
+                            ]
+                        , button
+                            [ onClick <| RunRule ruleId ]
+                            [ text "Run Rule"
+                            ]
+                        ]
+            ]
+        , div
+            [ class "w-20 dib mv4 mr2" ]
+            (List.map
+                (\rule ->
+                    div
+                        [ classList
+                            [ ( "bg-primary", (model.selectedRule |> Maybe.withDefault 0) == rule.rid )
+                            ]
+                        , class "pa1 pointer"
+                        , onClick <| ToggleRule rule.rid
+                        ]
+                        [ text rule.name
+                        ]
+                )
+                model.rules
+            )
         ]
 
 
