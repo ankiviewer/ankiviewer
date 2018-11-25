@@ -31,7 +31,7 @@ script:
       printf '.'
       sleep 5
     done
-  - (cd assets && npm run cypress)
+  - (cd assets && npm test)
   - kill -9 "$(cat pid)"
   - mix ecto.rollback --all
 after_success:
