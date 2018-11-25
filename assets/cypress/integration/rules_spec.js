@@ -1,12 +1,11 @@
 describe('Rules', () => {
-  beforeEach((done) => {
-    cy.request('/api/rules')
+  beforeEach(() => {
+    return cy.request('/api/rules')
       .then((response) => Promise.all(
         response.body.rules.map((rule) => {
           return cy.request('DELETE', '/api/rules/' + rule.rid);
         })
       ))
-      .then(() => done());
   });
 
   it('should behave as expected', () => {
@@ -55,7 +54,6 @@ describe('Rules', () => {
     cy.get('#rules-add_new').click({ force: true });
     cy.wait('@postRules');
     cy.get('#rules-input_tests').type('[]', { force: true });
-    cy.wait('@postRules');
     cy.get('#rules-add_new').click({ force: true });
     cy.wait('@postRules');
     cy.get('#rules-input_name').should('have.value', '');
