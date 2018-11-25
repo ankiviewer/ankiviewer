@@ -11,34 +11,51 @@ import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
-import Network.Http.Extra as Http
 import Types exposing (Card, CardSearchParams, Collection, D, M, Msg(..), RequestMsg(..), Rule, RuleResponse)
 import Url.Builder as Url
 
 
 getRules : Cmd Msg
 getRules =
-    Http.send (NewRules >> Request) (Http.get "/api/rules" rulesDecoder)
+    Http.get
+        { url = "/api/rules"
+        , expect = Http.expectJson (NewRules >> Request) rulesDecoder
+        }
 
 
 createRule : Rule -> Cmd Msg
 createRule rule =
-    Http.send (NewRuleResponse >> Request) <|
-        Http.post "/api/rules" (Http.jsonBody (ruleEncoder rule)) ruleResponseDecoder
+    Http.post
+        { url = "/api/rules"
+        , body = Http.jsonBody (ruleEncoder rule)
+        , expect = Http.expectJson (NewRuleResponse >> Request) ruleResponseDecoder
+        }
 
 
 updateRule : Rule -> Cmd Msg
 updateRule rule =
-    Http.send (NewRuleResponse >> Request) <|
-        Http.put ("/api/rules/" ++ String.fromInt rule.rid)
-            (Http.jsonBody (ruleEncoder rule))
-            ruleResponseDecoder
+    Http.request
+        { method = "PUT"
+        , headers = []
+        , url = "/api/rules/" ++ String.fromInt rule.rid
+        , body = Http.jsonBody (ruleEncoder rule)
+        , expect = Http.expectJson (NewRuleResponse >> Request) ruleResponseDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 
 deleteRule : Int -> Cmd Msg
 deleteRule rid =
-    Http.send (NewRules >> Request) <|
-        Http.delete ("/api/rules/" ++ String.fromInt rid) rulesDecoder
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , url = "/api/rules/" ++ String.fromInt rid
+        , body = Http.emptyBody
+        , expect = Http.expectJson (NewRules >> Request) rulesDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 
 ruleEncoder : Rule -> Encode.Value
@@ -94,8 +111,10 @@ ruleResponseDecoder =
 
 getCollection : Cmd Msg
 getCollection =
-    Http.send (NewCollection >> Request) <|
-        Http.get "/api/collection" collectionDecoder
+    Http.get
+        { url = "/api/collection"
+        , expect = Http.expectJson (NewCollection >> Request) collectionDecoder
+        }
 
 
 getCards : CardSearchParams -> Cmd Msg
@@ -112,7 +131,10 @@ getCards { search } =
                 , Url.string "rule" ""
                 ]
     in
-    Http.send (NewCards >> Request) (Http.get url (Decode.list cardsDecoder))
+    Http.get
+        { url = url
+        , expect = Http.expectJson (NewCards >> Request) (Decode.list cardsDecoder)
+        }
 
 
 cardsDecoder : Decoder Card
