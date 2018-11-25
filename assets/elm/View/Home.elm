@@ -1,7 +1,7 @@
 module View.Home exposing (errorView, info, syncing, view)
 
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Time
 import Time.Format as Time
@@ -43,16 +43,21 @@ info { mod, cards } =
     div
         []
         [ div
-            [ class "mv2" ]
+            [ class "mv2"
+            , id "home-last_modified"
+            ]
             [ text <| "Last modified: " ++ Time.format Time.utc "Weekday, ordDay Month Year at padHour:padMinute" mod
             ]
         , div
-            [ class "mv2" ]
+            [ class "mv2"
+            , id "home-number_notes"
+            ]
             [ text <| "Number notes: " ++ String.fromInt cards
             ]
         , button
             [ onClick <| Sync StartSync
             , class "button-primary"
+            , id "home-sync_button"
             ]
             [ text "Sync Database"
             ]
@@ -68,7 +73,9 @@ syncing { message, syncPercentage } =
             [ text <| message ++ "..."
             ]
         , div
-            [ class "sync-loader" ]
+            [ class "sync-loader"
+            , id "home-sync_loader"
+            ]
             [ div
                 [ class "sync-bar"
                 , style "width" <| String.fromInt syncPercentage ++ "%"

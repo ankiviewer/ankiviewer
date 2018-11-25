@@ -3,7 +3,7 @@ module View exposing (navbar, view)
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html, a, button, div, input, label, text, textarea)
-import Html.Attributes exposing (class, classList, href, style, value)
+import Html.Attributes exposing (class, classList, href, id, style, value)
 import Html.Events exposing (onClick, onInput)
 import Set
 import Types
@@ -82,7 +82,8 @@ searchPage model =
                 [ text "Green is showing, red is not showing, click to toggle"
                 ]
             , div
-                []
+                [ id "search-columns_container"
+                ]
                 (List.map
                     (\col ->
                         div
@@ -100,6 +101,7 @@ searchPage model =
                 []
                 [ button
                     [ onClick ToggleShowColumns
+                    , id "search-done"
                     ]
                     [ text "Done"
                     ]
@@ -112,7 +114,9 @@ searchPage model =
             [ div
                 []
                 [ input
-                    [ onInput SearchInput ]
+                    [ onInput SearchInput
+                    , id "search-input"
+                    ]
                     []
                 ]
             , if model.search == "" then
@@ -120,6 +124,7 @@ searchPage model =
                     []
                     [ button
                         [ onClick ToggleShowColumns
+                        , id "search-edit_columns"
                         ]
                         [ text "Edit columns"
                         ]
@@ -129,7 +134,7 @@ searchPage model =
                 div
                     []
                     [ div
-                        []
+                        [ id "search-column_headers" ]
                         (let
                             columns =
                                 cardColumns
@@ -150,7 +155,7 @@ searchPage model =
                             columns
                         )
                     , div
-                        []
+                        [ id "search-result-rows" ]
                         (List.map
                             (\card ->
                                 cardColumns
@@ -228,8 +233,8 @@ searchPage model =
             ]
 
 
-ruleInputItem : Model -> (Rule -> String) -> String -> (List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg) -> RuleInputType -> String -> Html Msg
-ruleInputItem model ruleKey labelText inputType ruleInputType heightClass =
+ruleInputItem : Model -> (Rule -> String) -> String -> (List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg) -> RuleInputType -> String -> String -> Html Msg
+ruleInputItem model ruleKey labelText inputType ruleInputType heightClass inputId =
     div
         []
         [ div
@@ -243,17 +248,18 @@ ruleInputItem model ruleKey labelText inputType ruleInputType heightClass =
                 [ class <| heightClass ++ " w-70 border-box ba b--gray"
                 , onInput (RuleInput ruleInputType)
                 , value (ruleKey model.ruleInput)
+                , id inputId
                 ]
                 []
             ]
-        , case model.ruleErr of
-            Nothing ->
+        , case Maybe.withDefault "" (Maybe.map ruleKey model.ruleErr) of
+            "" ->
                 text ""
 
-            Just err ->
+            e ->
                 div
                     [ class "red" ]
-                    [ text <| ruleKey err
+                    [ text e
                     ]
         ]
 
@@ -264,17 +270,19 @@ rulesPage model =
         [ class "flex items-top" ]
         [ div
             [ class "w-80 dib" ]
-            [ ruleInputItem model .name "Name:" input RuleName "h2"
-            , ruleInputItem model .code "Code:" textarea RuleCode "h4"
-            , ruleInputItem model .tests "Tests:" textarea RuleTests "h4"
+            [ ruleInputItem model .name "Name:" input RuleName "h2" "rules-input_name"
+            , ruleInputItem model .code "Code:" textarea RuleCode "h4" "rules-input_code"
+            , ruleInputItem model .tests "Tests:" textarea RuleTests "h4" "rules-input_tests"
             , case model.selectedRule of
                 Nothing ->
                     div
                         []
                         [ button
                             [ onClick <| Request CreateRule
+                            , id "rules-add_new"
                             ]
-                            [ text "Add New" ]
+                            [ text "Add New"
+                            ]
                         ]
 
                 Just ruleId ->
@@ -282,22 +290,28 @@ rulesPage model =
                         []
                         [ button
                             [ onClick <| Request UpdateRule
+                            , id "rules-update_rule"
                             ]
                             [ text "Update Rule"
                             ]
                         , button
                             [ onClick <| Request (DeleteRule ruleId)
+                            , id "rules-delete_rule"
                             ]
                             [ text "Delete Rule"
                             ]
                         , button
-                            [ onClick <| RunRule ruleId ]
+                            [ onClick <| RunRule ruleId
+                            , id "rules-run_rule"
+                            ]
                             [ text "Run Rule"
                             ]
                         ]
             ]
         , div
-            [ class "w-20 dib mv4 mr2" ]
+            [ class "w-20 dib mv4 mr2"
+            , id "rules-rules_container"
+            ]
             (List.map
                 (\rule ->
                     div

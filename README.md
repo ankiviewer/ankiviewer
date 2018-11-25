@@ -21,7 +21,7 @@ An app for viewing and optimising Anki flashcards
 
 Make sure you have the following environment variables in your `$PATH`:
 
-`ANKI_SQLITE_PATH` - See https://github.com/ankiviewer/ankiviewer/blob/master/SQLITE.md for infor on this
+`ANKI_DB_PATH` - See https://github.com/ankiviewer/ankiviewer/blob/master/SQLITE.md for infor on this
 
 ```bash
 # Clone the repo
