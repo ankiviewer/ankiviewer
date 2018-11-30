@@ -32,10 +32,10 @@ main =
         }
 
 
-port portStartSync : Encode.Value -> Cmd msg
+port startSync : Encode.Value -> Cmd msg
 
 
-port portSyncMsg : (Encode.Value -> msg) -> Sub msg
+port syncData : (Encode.Value -> msg) -> Sub msg
 
 
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -51,7 +51,7 @@ init flags url key =
 initialModel : Url -> Nav.Key -> Model
 initialModel url key =
     { key = key
-    , page = urlToPage url
+    , page = stepUrl url
     , collection = Collection 0 0 [] []
     , homeMsg = Ok NotSyncing
     , showColumns = False
@@ -93,7 +93,7 @@ update msg model =
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | page = urlToPage url }, Cmd.none )
+            ( { model | page = stepUrl url }, Cmd.none )
 
         ToggleShowColumns ->
             ( { model | showColumns = not model.showColumns }, Cmd.none )
@@ -227,7 +227,7 @@ syncUpdate : Model -> SyncMsg -> ( Model, Cmd Msg )
 syncUpdate model syncMsg =
     case syncMsg of
         StartSync ->
-            ( { model | homeMsg = Ok (Syncing ( "", 0 )) }, portStartSync Encode.null )
+            ( { model | homeMsg = Ok (Syncing ( "", 0 )) }, startSync Encode.null )
 
         SyncIncomingMsg val ->
             case Decode.decodeValue syncDataDecoder val of
@@ -252,8 +252,8 @@ syncUpdate model syncMsg =
             ( { model | homeMsg = Ok NotSyncing }, Cmd.none )
 
 
-urlToPage : Url.Url -> Page
-urlToPage url =
+stepUrl : Url.Url -> Page
+stepUrl url =
     Parser.parse parser url
         |> Maybe.withDefault NotFound
 
@@ -269,7 +269,7 @@ parser =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    portSyncMsg (SyncIncomingMsg >> Sync)
+    syncData (SyncIncomingMsg >> Sync)
 
 
 getRules : Cmd Msg
