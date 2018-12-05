@@ -249,7 +249,7 @@ syncUpdate model syncMsg =
                     ( { model | homeMsg = Err (SyncError (Debug.toString e)) }, Cmd.none )
 
         StopSync ->
-            ( { model | homeMsg = Ok NotSyncing }, Cmd.none )
+            ( { model | homeMsg = Ok NotSyncing }, getCollection )
 
 
 stepUrl : Url.Url -> Page
