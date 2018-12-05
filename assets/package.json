@@ -18,7 +18,7 @@
     "cypress:open": "cypress open",
     "format": "elm-format elm --yes",
     "checkformat": "elm-format elm --validate",
-    "test": "npm run -s checkformat",
+    "test": "npm run checkformat && npm run cypress",
     "postinstall": "npm run build"
   },
   "dependencies": {
