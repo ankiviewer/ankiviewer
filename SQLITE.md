@@ -11,43 +11,43 @@ Mine was found here:  `~/Library/Application\ Support/Anki2/sam/colletion.anki2`
 Export it as follows:
 
 ```bash
-export ANKI_SQLITE_PATH="$HOME/Library/Application Support/Anki2/sam/colletion.anki2"
+export ANKI_DB_PATH="$HOME/Library/Application Support/Anki2/sam/colletion.anki2"
 ```
 
 you can open the cli with the following command
 
 ```bash
-sqlite3 $ANKI_SQLITE_PATH
+sqlite3 $ANKI_DB_PATH
 ```
 
 or you can have each command saved in your `bash` `history` by running:
 
 
 ```bash
-sqlite3 $ANKI_SQLITE_PATH 'cmd'
+sqlite3 $ANKI_DB_PATH 'cmd'
 ```
 
 useful commands are as follows:
 
 ##### list all tables
 ```bash
-sqlite3 $ANKI_SQLITE_PATH '.tables'
+sqlite3 $ANKI_DB_PATH '.tables'
 ```
 
 ##### see spefic table (with column headers)
 ```bash
-sqlite3 -header $ANKI_SQLITE_PATH 'select * from col'
+sqlite3 -header $ANKI_DB_PATH 'select * from col'
 ```
 
 #### collection
 
 ```bash
-sqlite3 $ANKI_SQLITE_PATH 'select models, decks, tags, mod, crt from col'
+sqlite3 $ANKI_DB_PATH 'select models, decks, tags, mod, crt from col'
 ```
 
 #### notes
 ```bash
-sqlite3 $ANKI_SQLITE_PATH 'SELECT
+sqlite3 $ANKI_DB_PATH 'SELECT
   cards.id AS cid,
   notes.id AS nid,
   cards.mod AS cmod,
@@ -75,7 +75,7 @@ sqlite3 $ANKI_SQLITE_PATH 'SELECT
 After an Anki edit is made the diff can be seen by piping the output of this command into a file and doing a diff on these files after the change.
 
 ```bash
-for t in $(sqlite3 $ANKI_SQLITE_PATH '.tables');do;sqlite3 $ANKI_SQLITE_PATH "select * from $t";done
+for t in $(sqlite3 $ANKI_DB_PATH '.tables');do;sqlite3 $ANKI_DB_PATH "select * from $t";done
 ```
 
 Some of the db edit finding can be found here: https://github.com/ankiviewer/ankiviewer/blob/master/DB_EDIT_FINDINGS.md

@@ -21,7 +21,6 @@ install:
   - npm install -g elm@0.19.0 elm-test elm-format
   - (cd assets && npm install && npm run build)
 script:
-  - (cd assets && npm test)
   - mix format --check-formatted
   - mix coveralls.json
   - elixir --detached -e "File.write! 'pid', :os.getpid" -S mix phx.server
@@ -31,7 +30,7 @@ script:
       printf '.'
       sleep 5
     done
-  - (cd assets && npm run cypress)
+  - (cd assets && npm test)
   - kill -9 "$(cat pid)"
   - mix ecto.rollback --all
 after_success:

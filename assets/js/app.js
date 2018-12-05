@@ -25,11 +25,11 @@ app.ports.startSync.subscribe(function () {
 
   channel.on('sync:msg', function (msg) {
     console.log(msg);
-    app.ports.syncMsg.send(msg);
+    app.ports.syncData.send(msg);
   })
 
   channel.on('done', function () {
-    app.ports.syncMsg.send({msg: 'done', percentage: 100});
+    app.ports.syncData.send({msg: 'done', percentage: 100});
 
     channel.leave()
       .receive('ok', function (resp) { console.log('Left successfully'); })
