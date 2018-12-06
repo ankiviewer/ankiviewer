@@ -16,6 +16,10 @@ var app = Elm.Main.init({
   flags: startingColumns
 });
 
+if (!app.ports) {
+  return;
+}
+
 app.ports.startSync.subscribe(function () {
   channel = socket.channel('sync:database', {})
 
