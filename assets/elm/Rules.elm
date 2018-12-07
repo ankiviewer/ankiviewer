@@ -1,4 +1,4 @@
-module Rule exposing
+module Rules exposing
     ( Model
     , Msg
     , init
