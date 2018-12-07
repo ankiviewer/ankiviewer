@@ -3,7 +3,7 @@ language: elixir
 elixir:
   - 1.7
 addons:
-  postgresql: 9.6
+  postgresql: 10.0
 cache:
   directories:
     - _build
