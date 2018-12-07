@@ -6,7 +6,7 @@ import Home
 import Html exposing (Html, a, div, text)
 import Html.Attributes exposing (class, classList, href)
 import Http
-import Rule
+import Rules
 import Search
 import Skeleton
 import Url
@@ -42,7 +42,7 @@ type Page
     = NotFound
     | Home Home.Model
     | Search Search.Model
-    | Rule Rule.Model
+    | Rules Rules.Model
 
 
 type Msg
@@ -51,7 +51,7 @@ type Msg
     | UrlChanged Url.Url
     | HomeMsg Home.Msg
     | SearchMsg Search.Msg
-    | RuleMsg Rule.Msg
+    | RuleMsg Rules.Msg
 
 
 subscriptions : Model -> Sub Msg
@@ -99,8 +99,8 @@ update message model =
 
         RuleMsg msg ->
             case model.page of
-                Rule rule ->
-                    stepRule model (Rule.update msg rule)
+                Rules rule ->
+                    stepRule model (Rules.update msg rule)
 
                 _ ->
                     ( model, Cmd.none )
@@ -113,7 +113,7 @@ stepUrl url model =
             oneOf
                 [ route top (stepHome model Home.init)
                 , route (s "search") (stepSearch model Search.init)
-                , route (s "rules") (stepRule model Rule.init)
+                , route (s "rules") (stepRule model Rules.init)
                 ]
     in
     case Parser.parse parser url of
@@ -145,9 +145,9 @@ stepSearch model ( search, cmds ) =
     )
 
 
-stepRule : Model -> ( Rule.Model, Cmd Rule.Msg ) -> ( Model, Cmd Msg )
+stepRule : Model -> ( Rules.Model, Cmd Rules.Msg ) -> ( Model, Cmd Msg )
 stepRule model ( rule, cmds ) =
-    ( { model | page = Rule rule }
+    ( { model | page = Rules rule }
     , Cmd.map RuleMsg cmds
     )
 
@@ -176,10 +176,10 @@ view model =
                 , nav = nav model
                 }
 
-        Rule rule ->
+        Rules rule ->
             Skeleton.view RuleMsg
                 { title = "Ankiviewer - Rules"
-                , view = Rule.view rule
+                , view = Rules.view rule
                 , nav = nav model
                 }
 
@@ -189,43 +189,37 @@ nav model =
     div
         [ class "nav"
         ]
-        [ a
-            [ href "/"
-            , class "nav-item"
-            , classList <|
-                case model.page of
-                    Home _ ->
-                        [ ( "selected", True ) ]
+        [ navItem "/" "Home" <|
+            case model.page of
+                Home _ ->
+                    True
 
-                    _ ->
-                        []
-            ]
-            [ text "Home"
-            ]
-        , a
-            [ href "/search"
-            , class "nav-item"
-            , classList <|
-                case model.page of
-                    Search _ ->
-                        [ ( "selected", True ) ]
+                _ ->
+                    False
+        , navItem "/search" "Search" <|
+            case model.page of
+                Search _ ->
+                    True
 
-                    _ ->
-                        []
-            ]
-            [ text "Search"
-            ]
-        , a
-            [ href "/rules"
-            , class "nav-item"
-            , classList <|
-                case model.page of
-                    Rule _ ->
-                        [ ( "selected", True ) ]
+                _ ->
+                    False
+        , navItem "/rules" "Rules" <|
+            case model.page of
+                Rules _ ->
+                    True
 
-                    _ ->
-                        []
-            ]
-            [ text "Rules"
-            ]
+                _ ->
+                    False
+        ]
+
+
+navItem : String -> String -> Bool -> Html Msg
+navItem link t selected =
+    a
+        [ href link
+        , class "nav-item"
+        , classList
+            [ ( "selected", selected ) ]
+        ]
+        [ text t
         ]
