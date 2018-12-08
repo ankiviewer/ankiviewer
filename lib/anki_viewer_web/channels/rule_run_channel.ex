@@ -2,8 +2,6 @@ defmodule AnkiViewerWeb.RuleRunChannel do
   use AnkiViewerWeb, :channel
 
   def join("run:rule", %{"rid" => rid}, socket) do
-    IO.inspect label: "rid" rid
-
     send(self(), {:run, :rule, %{rid: rid}})
 
     {:ok, socket}
@@ -12,13 +10,13 @@ defmodule AnkiViewerWeb.RuleRunChannel do
   def handle_info({:run, :rule, %{rid: rid}}, socket) do
     push(socket, "run:msg", %{msg: "starting run"})
 
-    notes = Repo.all(Note)
+    cards = Repo.all(Card)
     rule = Repo.get(Rule, rid)
 
-    for n <- notes do
-      %NoteRule{nid: n.nid, rid: rid}
+    for c <- cards do
+      %CardRule{cid: c.cid, rid: rid}
       |> Map.merge(
-        case NoteRule.run(notes, n, rule) do
+        case CardRule.run(cards, c, rule) do
           :ok ->
             %{fails: false}
 
@@ -29,7 +27,7 @@ defmodule AnkiViewerWeb.RuleRunChannel do
             %{fails: true, solution: solution}
         end
       )
-      |> NoteRule.insert!()
+      |> CardRule.insert!()
     end
 
     push(socket, "done", %{})
