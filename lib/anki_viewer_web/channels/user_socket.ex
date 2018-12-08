@@ -3,6 +3,7 @@ defmodule AnkiViewerWeb.UserSocket do
 
   ## Channels
   channel("sync:*", AnkiViewerWeb.SyncChannel)
+  channel("rule_run:*", AnkiViewerWeb.RuleRunChannel)
 
   ## Transports
   transport(:websocket, Phoenix.Transports.WebSocket, timeout: 45000)
