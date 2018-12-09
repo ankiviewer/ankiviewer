@@ -8,12 +8,21 @@ defmodule AnkiViewerWeb.RuleRunChannel do
   end
 
   def handle_info({:run, :rule, %{rid: rid}}, socket) do
-    push(socket, "run:msg", %{msg: "starting run"})
+    CardRule
+    |> where([cr], cr.rid == ^rid)
+    |> Repo.delete_all()
+
+    push(socket, "run:msg", %{msg: "starting run", percentage: 0})
 
     cards = Repo.all(Card)
     rule = Repo.get(Rule, rid)
 
-    for c <- cards do
+    for {c, i} <- Enum.with_index(cards) do
+      push(socket, "run:msg", %{
+        msg: "running rule #{i}/#{length(cards)}",
+        percentage: round(i / length(cards) * 100)
+      })
+
       %CardRule{cid: c.cid, rid: rid}
       |> Map.merge(
         case CardRule.run(cards, c, rule) do

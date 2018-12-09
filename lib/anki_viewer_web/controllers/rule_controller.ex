@@ -28,6 +28,10 @@ defmodule AnkiViewerWeb.RuleController do
   def delete(conn, %{"rid" => rid}) do
     Repo.delete!(%Rule{rid: String.to_integer(rid)})
 
+    CardRule
+    |> where([cr], cr.rid == ^rid)
+    |> Repo.delete_all()
+
     json(conn, %{rules: Rule.all()})
   end
 end

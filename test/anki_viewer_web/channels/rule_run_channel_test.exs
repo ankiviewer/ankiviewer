@@ -52,14 +52,15 @@ defmodule AnkiViewerWeb.RuleRunChannelTest do
       cards = Repo.all(CardRule)
 
       assert length(cards) == 10
-      assert Enum.all?(cards, &(&1.fails))
+      assert Enum.all?(cards, & &1.fails)
     end
 
     test "ensure no duplicates" do
       %{rid: rid} =
         %{
           name: "no duplicate sfld",
-          code: "Enum.any?(cards, fn %{nid: nid, sfld: sfld} -> sfld == card.sfld and card.nid != nid end)",
+          code:
+            "Enum.any?(cards, fn %{nid: nid, sfld: sfld} -> sfld == card.sfld and card.nid != nid end)",
           tests: "[]"
         }
         |> Rule.insert!()
@@ -68,7 +69,7 @@ defmodule AnkiViewerWeb.RuleRunChannelTest do
 
       generous_card = Card |> Repo.all() |> Enum.find(fn %{sfld: sfld} -> sfld == "generous" end)
 
-      Card.insert!(%{ generous_card | cid: generous_card.cid + 1, nid: generous_card.nid + 1 })
+      Card.insert!(%{generous_card | cid: generous_card.cid + 1, nid: generous_card.nid + 1})
 
       {:ok, _, _socket} =
         subscribe_and_join(socket(), RuleRunChannel, "run:rule", %{"rid" => rid})

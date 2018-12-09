@@ -1,8 +1,9 @@
-module Rules exposing
+port module Rules exposing
     ( Model
     , Msg
     , init
     , initialModel
+    , subscriptions
     , update
     , view
     )
@@ -15,6 +16,30 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import List.Extra as List
+
+
+port startRunRule : Encode.Value -> Cmd msg
+
+
+port ruleRunData : (Encode.Value -> msg) -> Sub msg
+
+
+ruleDataDecoder : Decoder RuleData
+ruleDataDecoder =
+    Decode.map2 RuleData
+        (Decode.field "msg" Decode.string)
+        (Decode.field "percentage" Decode.int)
+
+
+type alias RuleData =
+    { message : String
+    , percentage : Int
+    }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    ruleRunData RuleIncomingMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -68,13 +93,6 @@ update msg model =
                         in
                         ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
-        RunRule rid ->
-            let
-                _ =
-                    Debug.todo "handle rule running"
-            in
-            ( model, Cmd.none )
-
         NewRules (Ok rules) ->
             ( { model | rules = rules }, Cmd.none )
 
@@ -111,13 +129,38 @@ update msg model =
         DeleteRule rid ->
             ( { model | input = Rule "" "" "" 0, selected = Nothing }, deleteRule rid )
 
+        RuleIncomingMsg val ->
+            case Decode.decodeValue ruleDataDecoder val of
+                Ok { message, percentage } ->
+                    if message == "done" then
+                        ( { model | syncState = NotSyncing }, Cmd.none )
+
+                    else
+                        ( { model | syncState = Syncing ( message, percentage ) }, Cmd.none )
+
+                Err e ->
+                    let
+                        _ =
+                            Debug.log "e:rule" e
+                    in
+                    ( model, Cmd.none )
+
+        StartRuleRun rid ->
+            ( model, startRunRule (Encode.int rid) )
+
 
 type alias Model =
     { rules : List Rule
     , input : Rule
     , err : Maybe Rule
     , selected : Maybe Int
+    , syncState : SyncState
     }
+
+
+type SyncState
+    = Syncing ( String, Int )
+    | NotSyncing
 
 
 type alias Rule =
@@ -138,13 +181,14 @@ type alias RuleResponse =
 type Msg
     = RuleInput RuleInputType String
     | ToggleRule Int
-    | RunRule Int
     | NewRules (Result Http.Error (List Rule))
     | NewRuleResponse (Result Http.Error RuleResponse)
     | GetRules
     | CreateRule
     | UpdateRule
     | DeleteRule Int
+    | RuleIncomingMsg Encode.Value
+    | StartRuleRun Int
 
 
 type RuleInputType
@@ -164,6 +208,7 @@ initialModel =
     , input = Rule "" "" "" 0
     , err = Nothing
     , selected = Nothing
+    , syncState = NotSyncing
     }
 
 
@@ -314,27 +359,42 @@ view model =
                         ]
 
                 Just ruleId ->
-                    div
-                        []
-                        [ button
-                            [ onClick UpdateRule
-                            , id "rules-update_rule"
-                            ]
-                            [ text "Update Rule"
-                            ]
-                        , button
-                            [ onClick <| DeleteRule ruleId
-                            , id "rules-delete_rule"
-                            ]
-                            [ text "Delete Rule"
-                            ]
-                        , button
-                            [ onClick <| RunRule ruleId
-                            , id "rules-run_rule"
-                            ]
-                            [ text "Run Rule"
-                            ]
-                        ]
+                    case model.syncState of
+                        NotSyncing ->
+                            div
+                                []
+                                [ button
+                                    [ onClick UpdateRule
+                                    , id "rules-update_rule"
+                                    ]
+                                    [ text "Update Rule"
+                                    ]
+                                , button
+                                    [ onClick <| DeleteRule ruleId
+                                    , id "rules-delete_rule"
+                                    ]
+                                    [ text "Delete Rule"
+                                    ]
+                                , button
+                                    [ onClick <| StartRuleRun ruleId
+                                    , id "rules-run_rule"
+                                    ]
+                                    [ text "Run Rule"
+                                    ]
+                                ]
+
+                        Syncing ( message, percentage ) ->
+                            div
+                                []
+                                [ div
+                                    []
+                                    [ text message
+                                    ]
+                                , div
+                                    []
+                                    [ text (String.fromInt percentage)
+                                    ]
+                                ]
             ]
         , div
             [ class "w-20 dib mv4 mr2"
