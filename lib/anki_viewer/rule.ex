@@ -79,17 +79,17 @@ defmodule AnkiViewer.Rule do
   def run_tests(%Rule{} = rule) do
     {tests, []} = Code.eval_string(rule.tests)
 
-    Enum.find(tests, :ok, fn %{fine: fine, card: card, deck: deck} ->
-      {eval_fine, _} = Code.eval_string(rule.code, card: card, deck: deck)
+    Enum.find(tests, :ok, fn %{fine: fine, card: card, cards: cards} ->
+      {eval_fine, _} = Code.eval_string(rule.code, card: card, cards: cards)
       eval_fine != fine
     end)
     |> case do
       :ok ->
         :ok
 
-      %{fine: fine, card: card, deck: deck} ->
+      %{fine: fine, card: card, cards: cards} ->
         {:error,
-         "card: #{inspect(card)} and deck: #{inspect(deck)} were expected to be #{status(fine)}, but were actually #{
+         "card: #{inspect(card)} and cards: #{inspect(cards)} were expected to be #{status(fine)}, but were actually #{
            status(not fine)
          } for rule: #{rule.name}"}
     end
@@ -103,7 +103,7 @@ defmodule AnkiViewer.Rule do
   """
   def validate(code) when is_binary(code) do
     try do
-      Code.eval_string(code, card: %Card{}, deck: [%Card{}])
+      Code.eval_string(code, card: %Card{}, cards: [%Card{}])
 
       :ok
     rescue

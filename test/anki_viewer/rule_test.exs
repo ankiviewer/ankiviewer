@@ -10,12 +10,12 @@ defmodule AnkiViewer.RuleTest do
     %{
       card: %{sfld: "h"},
       fine: true,
-      deck: nil
+      cards: nil
     },
     %{
       card: %{sfld: ""},
       fine: false,
-      deck: nil
+      cards: nil
     }
   ]
   """
@@ -38,14 +38,14 @@ defmodule AnkiViewer.RuleTest do
         %{
           name: "no duplicate front",
           code: """
-          not Enum.any?(deck, fn n ->
+          not Enum.any?(cards, fn n ->
             n.sfld == card.sfld and n.nid != card.nid
           end)
           """,
           tests: """
             [
               %{
-                deck: [
+                cards: [
                   %{nid: 0, sfld: "h"},
                   %{nid: 1, sfld: "hi"}
                 ],
@@ -53,7 +53,7 @@ defmodule AnkiViewer.RuleTest do
                 fine: true
               },
               %{
-                deck: [
+                cards: [
                   %{nid: 0, sfld: "h"},
                   %{nid: 1, sfld: "h"}
                 ],
@@ -76,17 +76,17 @@ defmodule AnkiViewer.RuleTest do
             [
               %{
                 card: %{tags: ["noun"], sfld: "h"},
-                deck: nil,
+                cards: nil,
                 fine: false
               },
               %{
                 card: %{tags: [], sfld: "h"},
-                deck: nil,
+                cards: nil,
                 fine: true
               },
               %{
                 card: %{tags: ["noun"], sfld: "the h"},
-                deck: nil,
+                cards: nil,
                 fine: true
               }
             ]
@@ -113,7 +113,7 @@ defmodule AnkiViewer.RuleTest do
       {:error, error} = Rule.run_tests(error_rule)
 
       assert error ==
-               ~s(card: %{nid: 0, sfld: "h"} and deck: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were expected to be ok, but were actually not ok for rule: no duplicate front)
+               ~s(card: %{nid: 0, sfld: "h"} and cards: [%{nid: 0, sfld: "h"}, %{nid: 1, sfld: "h"}] were expected to be ok, but were actually not ok for rule: no duplicate front)
     end
   end
 
@@ -150,12 +150,12 @@ defmodule AnkiViewer.RuleTest do
           %{
             card: %{sfld: "h"},
             fine: true,
-            deck: nil
+            cards: nil
           },
           %{
             card: %{sfld: ""},
             fine: false,
-            deck: nil
+            cards: nil
           }
       """
 
@@ -175,12 +175,12 @@ defmodule AnkiViewer.RuleTest do
           %{
             card: %{sfld: "h"},
             fine: true,
-            deck: nil
+            cards: nil
           },
           %{
             card: %{sfld: ""},
             fine: false,
-            deck: nil
+            cards: nil
           }
       """
 
