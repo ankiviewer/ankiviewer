@@ -18,7 +18,11 @@ defmodule AnkiViewer.SingleEntry do
             |> Repo.insert!()
           end
         else
-          __MODULE__ |> struct() |> Map.merge(attrs) |> changeset() |> Repo.insert!()
+          __MODULE__
+          |> struct()
+          |> Map.merge(attrs)
+          |> changeset()
+          |> Repo.insert!()
         end
       end
 

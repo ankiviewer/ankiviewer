@@ -60,6 +60,7 @@ defmodule AnkiViewerWeb do
     quote do
       use Phoenix.Channel
       import AnkiViewerWeb.Gettext
+      import Ecto.Query
       alias AnkiViewer.{Collection, Model, Deck, Repo, Card, CardRule, Rule}
     end
   end
