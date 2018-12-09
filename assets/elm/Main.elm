@@ -60,6 +60,9 @@ subscriptions model =
         Home home ->
             Sub.map HomeMsg (Home.subscriptions home)
 
+        Rules rule ->
+            Sub.map RuleMsg (Rules.subscriptions rule)
+
         _ ->
             Sub.none
 
