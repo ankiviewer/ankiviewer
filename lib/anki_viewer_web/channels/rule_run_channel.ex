@@ -32,8 +32,9 @@ defmodule AnkiViewerWeb.RuleRunChannel do
           {:error, ""} ->
             %{fails: true}
 
-          {:error, solution} ->
-            %{fails: true, solution: solution}
+            # TODO: pass solution along
+            # {:error, solution} ->
+            #   %{fails: true, solution: solution}
         end
       )
       |> CardRule.insert!()
