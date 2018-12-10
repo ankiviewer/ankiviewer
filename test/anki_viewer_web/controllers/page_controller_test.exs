@@ -85,7 +85,7 @@ defmodule AnkiViewerWeb.PageControllerTest do
 
       conn = get(conn, "/api/cards?" <> params)
 
-      assert json_response(conn, 200) == []
+      assert json_response(conn, 200) == %{"cards" => [], "count" => 0}
     end
 
     test "with cards data", %{conn: conn} do
@@ -95,7 +95,10 @@ defmodule AnkiViewerWeb.PageControllerTest do
 
       conn = get(conn, "/api/cards?" <> params)
 
-      assert json_response(conn, 200) |> length == 10
+      %{"cards" => cards, "count" => count} = json_response(conn, 200)
+
+      assert length(cards) == 10
+      assert count == 10
     end
 
     test "with deck name", %{conn: conn} do
@@ -105,7 +108,10 @@ defmodule AnkiViewerWeb.PageControllerTest do
 
       conn = get(conn, "/api/cards?" <> params)
 
-      assert json_response(conn, 200) |> length == 10
+      %{"cards" => cards, "count" => count} = json_response(conn, 200)
+
+      assert length(cards) == 10
+      assert count == 10
     end
 
     test "with model name", %{conn: conn} do
@@ -115,7 +121,10 @@ defmodule AnkiViewerWeb.PageControllerTest do
 
       conn = get(conn, "/api/cards?" <> params)
 
-      assert json_response(conn, 200) |> length == 10
+      %{"cards" => cards, "count" => count} = json_response(conn, 200)
+
+      assert length(cards) == 10
+      assert count == 10
     end
 
     test "with search", %{conn: conn} do
@@ -162,7 +171,10 @@ defmodule AnkiViewerWeb.PageControllerTest do
 
       conn = get(conn, "/api/cards?" <> params)
 
-      assert json_response(conn, 200) == cards
+      %{"cards" => cards_resp, "count" => count} = json_response(conn, 200)
+
+      assert cards_resp == cards
+      assert count == 2
     end
   end
 end
