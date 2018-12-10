@@ -49,7 +49,7 @@ app.ports.startRunRule.subscribe(function (rid) {
   });
 
   channel.on('done', function () {
-    app.ports.ruleRunData.send({msg: 'done', percentage: 100});
+    app.ports.ruleRunData.send({msg: 'done', percentage: 100, seconds: 0});
 
     channel.leave()
       .receive('ok', function (resp) { console.log('Left successfully'); })

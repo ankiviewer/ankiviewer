@@ -1,8 +1,10 @@
 port module Rules exposing
     ( Model
     , Msg
+    , Rule
     , init
     , initialModel
+    , rulesDecoder
     , subscriptions
     , update
     , view
@@ -26,14 +28,16 @@ port ruleRunData : (Encode.Value -> msg) -> Sub msg
 
 ruleDataDecoder : Decoder RuleData
 ruleDataDecoder =
-    Decode.map2 RuleData
+    Decode.map3 RuleData
         (Decode.field "msg" Decode.string)
         (Decode.field "percentage" Decode.int)
+        (Decode.field "seconds" Decode.int)
 
 
 type alias RuleData =
     { message : String
     , percentage : Int
+    , seconds : Int
     }
 
 
@@ -73,13 +77,13 @@ update msg model =
                                     rid == ruleId
                                 )
                                 model.rules
-                                |> Maybe.withDefault (Rule "" "" "" 0)
+                                |> Maybe.withDefault (Rule "" "" "" 0 False)
                     in
                     ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
                 Just oldSelectedRuleId ->
                     if ruleId == oldSelectedRuleId then
-                        ( { model | selected = Nothing, input = Rule "" "" "" 0 }, Cmd.none )
+                        ( { model | selected = Nothing, input = Rule "" "" "" 0 False }, Cmd.none )
 
                     else
                         let
@@ -89,7 +93,7 @@ update msg model =
                                         rid == ruleId
                                     )
                                     model.rules
-                                    |> Maybe.withDefault (Rule "" "" "" 0)
+                                    |> Maybe.withDefault (Rule "" "" "" 0 False)
                         in
                         ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
@@ -108,7 +112,7 @@ update msg model =
                 ( { model | err = Just ruleErr }, Cmd.none )
 
             else
-                ( { model | rules = rules, err = Nothing, input = Rule "" "" "" 0 }, Cmd.none )
+                ( { model | rules = rules, err = Nothing, input = Rule "" "" "" 0 False }, Cmd.none )
 
         NewRuleResponse (Err err) ->
             let
@@ -127,16 +131,16 @@ update msg model =
             ( model, updateRule model.input )
 
         DeleteRule rid ->
-            ( { model | input = Rule "" "" "" 0, selected = Nothing }, deleteRule rid )
+            ( { model | input = Rule "" "" "" 0 False, selected = Nothing }, deleteRule rid )
 
         RuleIncomingMsg val ->
             case Decode.decodeValue ruleDataDecoder val of
-                Ok { message, percentage } ->
+                Ok { message, percentage, seconds } ->
                     if message == "done" then
-                        ( { model | syncState = NotSyncing }, Cmd.none )
+                        ( { model | syncState = NotSyncing }, getRules )
 
                     else
-                        ( { model | syncState = Syncing ( message, percentage ) }, Cmd.none )
+                        ( { model | syncState = Syncing ( message, percentage, seconds ) }, Cmd.none )
 
                 Err e ->
                     let
@@ -159,7 +163,7 @@ type alias Model =
 
 
 type SyncState
-    = Syncing ( String, Int )
+    = Syncing ( String, Int, Int )
     | NotSyncing
 
 
@@ -168,6 +172,7 @@ type alias Rule =
     , code : String
     , tests : String
     , rid : Int
+    , run : Bool
     }
 
 
@@ -205,7 +210,7 @@ init =
 initialModel : Model
 initialModel =
     { rules = []
-    , input = Rule "" "" "" 0
+    , input = Rule "" "" "" 0 False
     , err = Nothing
     , selected = Nothing
     , syncState = NotSyncing
@@ -276,6 +281,7 @@ ruleDecoder =
         |> required "code" Decode.string
         |> required "tests" Decode.string
         |> required "rid" Decode.int
+        |> required "run" Decode.bool
 
 
 ruleErrDecoder : Decoder Rule
@@ -285,6 +291,7 @@ ruleErrDecoder =
         |> optional "code" Decode.string ""
         |> optional "tests" Decode.string ""
         |> hardcoded 0
+        |> hardcoded False
 
 
 ruleResponseDecoder : Decoder RuleResponse
@@ -302,7 +309,7 @@ ruleResponseDecoder =
                     Decode.succeed RuleResponse
                         |> hardcoded err
                         |> required "params" (Decode.list ruleDecoder)
-                        |> hardcoded (Rule "" "" "" 0)
+                        |> hardcoded (Rule "" "" "" 0 False)
             )
 
 
@@ -383,7 +390,7 @@ view model =
                                     ]
                                 ]
 
-                        Syncing ( message, percentage ) ->
+                        Syncing ( message, percentage, seconds ) ->
                             div
                                 []
                                 [ div
@@ -392,7 +399,11 @@ view model =
                                     ]
                                 , div
                                     []
-                                    [ text (String.fromInt percentage)
+                                    [ text (String.fromInt percentage ++ "%")
+                                    ]
+                                , div
+                                    []
+                                    [ text (String.fromInt (seconds // 60) ++ "m " ++ String.fromInt (modBy 60 seconds) ++ "s")
                                     ]
                                 ]
             ]
@@ -410,6 +421,11 @@ view model =
                         , onClick <| ToggleRule rule.rid
                         ]
                         [ text rule.name
+                        , if rule.run then
+                            text ":run"
+
+                          else
+                            text ":not run"
                         ]
                 )
                 model.rules
