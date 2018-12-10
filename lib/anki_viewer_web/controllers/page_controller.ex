@@ -27,8 +27,9 @@ defmodule AnkiViewerWeb.PageController do
         query
         |> join(:inner, [n, m, d], cr in CardRule, n.cid == cr.cid)
         |> where([n, m, d, cr], cr.rid == ^int and cr.fails)
+
       _ ->
-        IO.puts "error parsing int: #{rule}"
+        IO.puts("error parsing int: #{rule}")
         query
     end
   end
@@ -65,7 +66,7 @@ defmodule AnkiViewerWeb.PageController do
       |> model_query(model)
       |> Repo.all()
 
-      json(conn, %{cards: cards |> extra_fields |> Enum.take(10), count: length(cards)})
+    json(conn, %{cards: cards |> extra_fields |> Enum.take(10), count: length(cards)})
   end
 
   def cards(conn, _params) do
