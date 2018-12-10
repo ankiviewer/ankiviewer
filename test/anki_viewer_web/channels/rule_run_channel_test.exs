@@ -2,7 +2,7 @@ defmodule AnkiViewerWeb.RuleRunChannelTest do
   use AnkiViewerWeb.ChannelCase, async: false
   alias AnkiViewerWeb.RuleRunChannel
 
-  describe "run:rule" do
+  describe "rule:run" do
     test "with no failing cards" do
       %{rid: rid} =
         %{
@@ -17,9 +17,9 @@ defmodule AnkiViewerWeb.RuleRunChannelTest do
       assert Repo.all(CardRule) == []
 
       {:ok, _, _socket} =
-        subscribe_and_join(socket(), RuleRunChannel, "run:rule", %{"rid" => rid})
+        subscribe_and_join(socket(), RuleRunChannel, "rule:run", %{"rid" => rid})
 
-      assert_push("run:msg", %{msg: "starting run"})
+      assert_push("rule:msg", %{msg: "starting run"})
 
       assert_push("done", %{})
 
@@ -43,9 +43,9 @@ defmodule AnkiViewerWeb.RuleRunChannelTest do
       assert Repo.all(CardRule) == []
 
       {:ok, _, _socket} =
-        subscribe_and_join(socket(), RuleRunChannel, "run:rule", %{"rid" => rid})
+        subscribe_and_join(socket(), RuleRunChannel, "rule:run", %{"rid" => rid})
 
-      assert_push("run:msg", %{msg: "starting run"})
+      assert_push("rule:msg", %{msg: "starting run"})
 
       assert_push("done", %{})
 
@@ -72,9 +72,9 @@ defmodule AnkiViewerWeb.RuleRunChannelTest do
       Card.insert!(%{generous_card | cid: generous_card.cid + 1, nid: generous_card.nid + 1})
 
       {:ok, _, _socket} =
-        subscribe_and_join(socket(), RuleRunChannel, "run:rule", %{"rid" => rid})
+        subscribe_and_join(socket(), RuleRunChannel, "rule:run", %{"rid" => rid})
 
-      assert_push("run:msg", %{msg: "starting run"})
+      assert_push("rule:msg", %{msg: "starting run"})
 
       assert_push("done", %{})
 
