@@ -1,18 +1,18 @@
 defmodule AnkiViewerWeb.RuleRunChannel do
   use AnkiViewerWeb, :channel
 
-  def join("run:rule", %{"rid" => rid}, socket) do
-    send(self(), {:run, :rule, %{rid: rid}})
+  def join("rule:run", %{"rid" => rid}, socket) do
+    send(self(), {:rule, :run, %{rid: rid}})
 
     {:ok, socket}
   end
 
-  def handle_info({:run, :rule, %{rid: rid}}, socket) do
+  def handle_info({:rule, :run, %{rid: rid}}, socket) do
     CardRule
     |> where([cr], cr.rid == ^rid)
     |> Repo.delete_all()
 
-    push(socket, "run:msg", %{msg: "starting run", percentage: 0, seconds: 0})
+    push(socket, "rule:msg", %{msg: "starting run", percentage: 0, seconds: 0})
 
     cards = Repo.all(Card)
     rule = Repo.get(Rule, rid)
@@ -31,7 +31,7 @@ defmodule AnkiViewerWeb.RuleRunChannel do
       new_diff =
         Integer.floor_div((i + 1) * diff + DateTime.diff(now, timestamp, :microsecond), i + 2)
 
-      push(socket, "run:msg", %{
+      push(socket, "rule:msg", %{
         msg: "running rule #{i}/#{length(cards)}",
         percentage: round(i / length(cards) * 100),
         seconds: Integer.floor_div((cards_length - i) * new_diff, 1_000_000)

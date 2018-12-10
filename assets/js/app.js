@@ -38,13 +38,13 @@ app.ports.startSync.subscribe(function () {
 });
 
 app.ports.startRunRule.subscribe(function (rid) {
-  channel = socket.channel('run:rule', {rid: rid});
+  channel = socket.channel('rule:run', {rid: rid});
 
   channel.join()
     .receive('ok', function (resp) { console.log('Joined successfully'); })
     .receive('error', function (resp) { console.log('Unable to join'); });
 
-  channel.on('run:msg', function (msg) {
+  channel.on('rule:msg', function (msg) {
     app.ports.ruleRunData.send(msg);
   });
 
