@@ -12,20 +12,34 @@ defmodule AnkiViewerWeb.RuleRunChannel do
     |> where([cr], cr.rid == ^rid)
     |> Repo.delete_all()
 
-    push(socket, "run:msg", %{msg: "starting run", percentage: 0})
+    push(socket, "run:msg", %{msg: "starting run", percentage: 0, seconds: 0})
 
     cards = Repo.all(Card)
     rule = Repo.get(Rule, rid)
 
-    for {c, i} <- Enum.with_index(cards) do
+    cards_length = length(cards)
+
+    cards
+    |> Enum.with_index()
+    |> Enum.reduce(%{timestamp: DateTime.utc_now(), diff: 0}, fn {card, i},
+                                                                 %{
+                                                                   timestamp: timestamp,
+                                                                   diff: diff
+                                                                 } ->
+      now = DateTime.utc_now()
+
+      new_diff =
+        Integer.floor_div((i + 1) * diff + DateTime.diff(now, timestamp, :microsecond), i + 2)
+
       push(socket, "run:msg", %{
         msg: "running rule #{i}/#{length(cards)}",
-        percentage: round(i / length(cards) * 100)
+        percentage: round(i / length(cards) * 100),
+        seconds: Integer.floor_div((cards_length - i) * new_diff, 1_000_000)
       })
 
-      %CardRule{cid: c.cid, rid: rid}
+      %CardRule{cid: card.cid, rid: rid}
       |> Map.merge(
-        case CardRule.run(cards, c, rule) do
+        case CardRule.run(cards, card, rule) do
           :ok ->
             %{fails: false}
 
@@ -38,7 +52,9 @@ defmodule AnkiViewerWeb.RuleRunChannel do
         end
       )
       |> CardRule.insert!()
-    end
+
+      %{timestamp: now, diff: new_diff}
+    end)
 
     push(socket, "done", %{})
 

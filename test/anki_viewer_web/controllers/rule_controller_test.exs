@@ -38,13 +38,13 @@ defmodule AnkiViewerWeb.RuleControllerTest do
            end)
 
     assert simplify_struct(rules) == [
-             %{"name" => @name, "code" => @code, "tests" => @tests}
+             %{"name" => @name, "code" => @code, "tests" => @tests, "run" => true}
            ]
   end
 
   describe "POST /api/rules" do
     test "valid params", %{conn: conn} do
-      params = %{"code" => @code, "name" => @name, "tests" => @tests}
+      params = %{"code" => @code, "name" => @name, "tests" => @tests, "run" => true}
       conn = post(conn, "/api/rules", params)
 
       %{"err" => false, "params" => actual} = json_response(conn, 200)
