@@ -19,11 +19,25 @@ defmodule AnkiViewerWeb.PageController do
     end
   end
 
+  defp join_rules(query, ""), do: query
+
+  defp join_rules(query, rule) do
+    case Integer.parse(rule) do
+      {int, ""} ->
+        query
+        |> join(:inner, [n, m, d], cr in CardRule, n.cid == cr.cid)
+        |> where([n, m, d, cr], cr.rid == ^int and cr.fails)
+      _ ->
+        IO.puts "error parsing int: #{rule}"
+        query
+    end
+  end
+
   def cards(conn, %{
         "deck" => deck,
         "model" => model,
         "modelorder" => _modelorder,
-        "rule" => _rule,
+        "rule" => rule,
         "search" => search,
         "tags" => _tags
       }) do
@@ -31,6 +45,7 @@ defmodule AnkiViewerWeb.PageController do
       Card
       |> join(:inner, [n], m in Model, n.mid == m.mid)
       |> join(:inner, [n, m], d in Deck, n.did == d.did)
+      |> join_rules(rule)
       |> select([n, m, d], %{
         model: m.name,
         tags: n.tags,
@@ -49,10 +64,8 @@ defmodule AnkiViewerWeb.PageController do
       |> deck_query(deck)
       |> model_query(model)
       |> Repo.all()
-      |> extra_fields()
-      |> Enum.take(10)
 
-    json(conn, cards)
+      json(conn, %{cards: cards |> extra_fields |> Enum.take(10), count: length(cards)})
   end
 
   def cards(conn, _params) do

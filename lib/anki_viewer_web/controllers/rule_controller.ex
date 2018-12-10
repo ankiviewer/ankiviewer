@@ -1,14 +1,27 @@
 defmodule AnkiViewerWeb.RuleController do
   use AnkiViewerWeb, :controller
 
+  defp rule_all() do
+    Rule.all()
+    |> Enum.map(fn rule ->
+      run =
+        CardRule
+        |> where([cr], cr.rid == ^rule.rid)
+        |> Repo.all()
+        |> length()
+        |> Kernel.==(Card |> Repo.all() |> length())
+      Map.merge(rule, %{run: run})
+    end)
+  end
+
   def index(conn, _params) do
-    json(conn, %{rules: Rule.all()})
+    json(conn, %{rules: rule_all()})
   end
 
   def create(conn, %{"code" => code, "tests" => tests, "name" => name}) do
     case Rule.insert(%{code: code, tests: tests, name: name}) do
       {:ok, _rule} ->
-        json(conn, %{err: false, params: Rule.all()})
+        json(conn, %{err: false, params: rule_all()})
 
       {:error, rule_errors} ->
         json(conn, %{err: true, params: rule_errors})
@@ -18,7 +31,11 @@ defmodule AnkiViewerWeb.RuleController do
   def update(conn, %{"code" => code, "tests" => tests, "name" => name, "rid" => rid}) do
     case Rule.update(%{code: code, tests: tests, name: name, rid: String.to_integer(rid)}) do
       {:ok, _rule} ->
-        json(conn, %{err: false, params: Rule.all()})
+        CardRule
+        |> where([cr], cr.rid == ^rid)
+        |> Repo.delete_all()
+
+        json(conn, %{err: false, params: rule_all()})
 
       {:error, rule_errors} ->
         json(conn, %{err: true, params: rule_errors})
@@ -32,6 +49,6 @@ defmodule AnkiViewerWeb.RuleController do
     |> where([cr], cr.rid == ^rid)
     |> Repo.delete_all()
 
-    json(conn, %{rules: Rule.all()})
+    json(conn, %{rules: rule_all()})
   end
 end

@@ -16,6 +16,7 @@ import Json.Decode.Pipeline exposing (required)
 import Set exposing (Set)
 import Url
 import Url.Builder as Url
+import Rules exposing (Rule)
 
 
 cardColumns : List String
@@ -69,8 +70,26 @@ view model =
                     , id "search-input"
                     ]
                     []
+                , div
+                    []
+                    (List.filter
+                        (\rule -> rule.run)
+                        model.rules
+                        |> List.map
+                            (\{name, rid, run} ->
+                                div
+                                    [ class "pointer dib"
+                                    , classList
+                                        [ ( "bg-primary", Maybe.withDefault 0 model.selectedRule == rid )
+                                        ]
+                                    , onClick (ToggleRule rid)
+                                    ]
+                                    [ text name
+                                    ]
+                            )
+                    )
                 ]
-            , if model.search == "" then
+            , if model.search == "" && model.selectedRule == Nothing then
                 div
                     []
                     [ button
@@ -85,6 +104,10 @@ view model =
                 div
                     []
                     [ div
+                        []
+                        [ text ("Card count: " ++ String.fromInt model.count)
+                        ]
+                    , div
                         [ id "search-column_headers" ]
                         (let
                             columns =
@@ -187,8 +210,8 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewCards (Ok cards) ->
-            ( { model | cards = cards }, Cmd.none )
+        NewCards (Ok {cards, count}) ->
+            ( { model | cards = cards, count = count }, Cmd.none )
 
         NewCards (Err err) ->
             let
@@ -198,7 +221,7 @@ update msg model =
             ( model, Cmd.none )
 
         SearchInput search ->
-            ( { model | search = search }, getCards search )
+            ( { model | search = search }, getCards { search = search, rule = model.selectedRule } )
 
         ToggleShowColumns ->
             ( { model | showColumns = not model.showColumns }, Cmd.none )
@@ -214,12 +237,34 @@ update msg model =
             in
             ( { model | excludedColumns = excludedColumns }, Cmd.none )
 
+        NewRules (Ok rules) ->
+            ( { model | rules = rules }, Cmd.none )
+
+        NewRules (Err err) ->
+            let
+                _ = Debug.log "err" err
+            in
+                ( model, Cmd.none )
+
+        ToggleRule rid ->
+            case model.selectedRule of
+                Just selectedRid ->
+                    if selectedRid == rid then
+                        ( { model | selectedRule = Nothing }, Cmd.none )
+                    else
+                        ( { model | selectedRule = Just rid }, getCards { search = model.search, rule = Just rid } )
+
+                Nothing ->
+                    ( { model | selectedRule = Just rid }, getCards { search = model.search, rule = Just rid } )
+
 
 type Msg
-    = NewCards (Result Http.Error (List Card))
+    = NewCards (Result Http.Error CardsResponse)
+    | NewRules (Result Http.Error (List Rule))
     | SearchInput String
     | ToggleShowColumns
     | ToggleColumn String
+    | ToggleRule Int
 
 
 type alias Model =
@@ -227,6 +272,9 @@ type alias Model =
     , excludedColumns : Set String
     , search : String
     , cards : List Card
+    , count : Int
+    , rules : List Rule
+    , selectedRule : Maybe Int
     }
 
 
@@ -246,22 +294,39 @@ type alias Card =
     }
 
 
+type alias Search =
+    { search : String
+    , rule : Maybe Int
+    }
+
+
 initialModel : Model
 initialModel =
     { showColumns = False
     , excludedColumns = Set.empty
     , search = ""
     , cards = []
+    , count = 0
+    , rules = []
+    , selectedRule = Nothing
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialModel, Cmd.none )
+    ( initialModel, getRules )
 
 
-getCards : String -> Cmd Msg
-getCards search =
+getRules : Cmd Msg
+getRules =
+    Http.get
+        { url = "/api/rules"
+        , expect = Http.expectJson NewRules Rules.rulesDecoder
+        }
+
+
+getCards : Search -> Cmd Msg
+getCards {search, rule} =
     let
         url =
             Url.absolute
@@ -271,13 +336,26 @@ getCards search =
                 , Url.string "deck" ""
                 , Url.string "tags" ""
                 , Url.string "modelorder" ""
-                , Url.string "rule" ""
+                , Url.string "rule" (Maybe.map String.fromInt rule |> Maybe.withDefault "")
                 ]
     in
     Http.get
         { url = url
-        , expect = Http.expectJson NewCards (Decode.list cardsDecoder)
+        , expect = Http.expectJson NewCards cardsResponseDecoder
         }
+
+
+type alias CardsResponse =
+    { cards : List Card
+    , count : Int
+    }
+
+
+cardsResponseDecoder : Decoder CardsResponse
+cardsResponseDecoder =
+    Decode.succeed CardsResponse
+        |> required "cards" (Decode.list cardsDecoder)
+        |> required "count" Decode.int
 
 
 cardsDecoder : Decoder Card
