@@ -10,6 +10,7 @@ defmodule AnkiViewerWeb.RuleController do
         |> Repo.all()
         |> length()
         |> Kernel.==(Card |> Repo.all() |> length())
+
       Map.merge(rule, %{run: run})
     end)
   end

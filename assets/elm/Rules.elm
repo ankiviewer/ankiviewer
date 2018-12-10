@@ -4,10 +4,10 @@ port module Rules exposing
     , Rule
     , init
     , initialModel
+    , rulesDecoder
     , subscriptions
     , update
     , view
-    , rulesDecoder
     )
 
 import Html exposing (Html, button, div, input, label, text, textarea)
@@ -422,9 +422,10 @@ view model =
                         ]
                         [ text rule.name
                         , if rule.run then
-                             text ":run"
-                         else
-                             text ":not run"
+                            text ":run"
+
+                          else
+                            text ":not run"
                         ]
                 )
                 model.rules

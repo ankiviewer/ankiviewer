@@ -21,14 +21,20 @@ defmodule AnkiViewerWeb.RuleRunChannel do
 
     cards
     |> Enum.with_index()
-    |> Enum.reduce(%{timestamp: DateTime.utc_now(), diff: 0}, fn {card, i}, %{timestamp: timestamp, diff: diff} ->
+    |> Enum.reduce(%{timestamp: DateTime.utc_now(), diff: 0}, fn {card, i},
+                                                                 %{
+                                                                   timestamp: timestamp,
+                                                                   diff: diff
+                                                                 } ->
       now = DateTime.utc_now()
-      new_diff = Integer.floor_div(((i + 1) * diff) + DateTime.diff(now, timestamp, :microsecond), i + 2)
+
+      new_diff =
+        Integer.floor_div((i + 1) * diff + DateTime.diff(now, timestamp, :microsecond), i + 2)
 
       push(socket, "run:msg", %{
         msg: "running rule #{i}/#{length(cards)}",
         percentage: round(i / length(cards) * 100),
-        seconds: Integer.floor_div((cards_length - i) * new_diff, 1000000)
+        seconds: Integer.floor_div((cards_length - i) * new_diff, 1_000_000)
       })
 
       %CardRule{cid: card.cid, rid: rid}

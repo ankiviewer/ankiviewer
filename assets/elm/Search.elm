@@ -13,10 +13,10 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
+import Rules exposing (Rule)
 import Set exposing (Set)
 import Url
 import Url.Builder as Url
-import Rules exposing (Rule)
 
 
 cardColumns : List String
@@ -39,7 +39,7 @@ view model =
                 (List.map
                     (\col ->
                         div
-                            [ class "dib ma1 pointer red"
+                            [ class "dib pa1 pointer red"
                             , classList
                                 [ ( "green", not (Set.member col model.excludedColumns) )
                                 ]
@@ -76,9 +76,9 @@ view model =
                         (\rule -> rule.run)
                         model.rules
                         |> List.map
-                            (\{name, rid, run} ->
+                            (\{ name, rid, run } ->
                                 div
-                                    [ class "pointer dib"
+                                    [ class "pointer dib pa2"
                                     , classList
                                         [ ( "bg-primary", Maybe.withDefault 0 model.selectedRule == rid )
                                         ]
@@ -120,7 +120,7 @@ view model =
                          List.map
                             (\col ->
                                 div
-                                    [ class "dib ma1"
+                                    [ class "dib pa1"
                                     , style "width" <| String.fromInt (100 // List.length columns) ++ "%"
                                     ]
                                     [ text col
@@ -189,11 +189,11 @@ view model =
                             |> List.map
                                 (\cards ->
                                     div
-                                        [ class "ma1" ]
+                                        [ class "pa1" ]
                                         (List.map
                                             (\card ->
                                                 div
-                                                    [ class "ma1 dib overflow-hidden"
+                                                    [ class "pa1 dib overflow-hidden"
                                                     , style "width" <| String.fromInt (100 // List.length cards) ++ "%"
                                                     ]
                                                     [ text card
@@ -210,7 +210,7 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewCards (Ok {cards, count}) ->
+        NewCards (Ok { cards, count }) ->
             ( { model | cards = cards, count = count }, Cmd.none )
 
         NewCards (Err err) ->
@@ -242,15 +242,17 @@ update msg model =
 
         NewRules (Err err) ->
             let
-                _ = Debug.log "err" err
+                _ =
+                    Debug.log "err" err
             in
-                ( model, Cmd.none )
+            ( model, Cmd.none )
 
         ToggleRule rid ->
             case model.selectedRule of
                 Just selectedRid ->
                     if selectedRid == rid then
                         ( { model | selectedRule = Nothing }, Cmd.none )
+
                     else
                         ( { model | selectedRule = Just rid }, getCards { search = model.search, rule = Just rid } )
 
@@ -326,7 +328,7 @@ getRules =
 
 
 getCards : Search -> Cmd Msg
-getCards {search, rule} =
+getCards { search, rule } =
     let
         url =
             Url.absolute
