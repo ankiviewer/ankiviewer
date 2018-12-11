@@ -1,6 +1,7 @@
 var {Socket} = require('phoenix');
 var {Elm} = require('./elm.js');
 
+// taken from: https://stackoverflow.com/questions/27078285/simple-throttle-in-js/27078401#27078401
 function throttle(func, wait, options) {
   var context, args, result;
   var timeout = null;
@@ -74,7 +75,6 @@ app.ports.startRunRule.subscribe(function (rid) {
 });
 
 app.ports.stopRunRule.subscribe(function () {
-  console.log('------------stopping');
   channel.push('rule:stop')
     .receive('ok', function (resp) { console.log('Joined successfully'); })
     .receive('error', function (resp) { console.log('Unable to join'); });
