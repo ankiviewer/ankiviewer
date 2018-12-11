@@ -21,6 +21,7 @@ defmodule AnkiViewerWeb.ChannelCase do
       use Phoenix.ChannelTest
       import AnkiViewer.TestHelpers
       alias AnkiViewer.{Collection, Deck, Model, Repo, Card, CardRule, Rule}
+      alias AnkiViewerWeb.{SyncChannel, AnkiSocket}
 
       # The default endpoint for testing
       @endpoint AnkiViewerWeb.Endpoint

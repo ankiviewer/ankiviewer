@@ -107,7 +107,7 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     already_run_cids =
       Card
-      |> join(:inner, [c], cr in CardRule, c.cid == cr.cid)
+      |> join(:inner, [c], cr in CardRule, on: c.cid == cr.cid)
       |> where([c, cr], cr.rid == ^rid)
       |> select([c, cr], c.cid)
       |> Repo.all()

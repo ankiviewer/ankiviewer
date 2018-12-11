@@ -1,5 +1,5 @@
 defmodule AnkiViewer.Repo do
-  use Ecto.Repo, otp_app: :anki_viewer
+  use Ecto.Repo, otp_app: :anki_viewer, adapter: Ecto.Adapters.Postgres
 
   @doc """
   Dynamically loads the repository url from the
