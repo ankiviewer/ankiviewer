@@ -69,6 +69,10 @@ defmodule AnkiViewerWeb.SyncChannel do
       })
 
       Repo.delete!(card)
+
+      CardRule
+      |> where([cr], cr.cid == ^card.cid)
+      |> Repo.delete_all()
     end)
 
     cards_data_to_update
@@ -82,6 +86,10 @@ defmodule AnkiViewerWeb.SyncChannel do
       card
       |> Map.take(~w(cid nid cmod nmod flds sfld)a)
       |> Card.update!()
+
+      CardRule
+      |> where([cr], cr.cid == ^card.cid)
+      |> Repo.delete_all()
     end)
 
     push(socket, "sync:msg", %{msg: "updated cards", percentage: 100})
@@ -92,14 +100,17 @@ defmodule AnkiViewerWeb.SyncChannel do
   end
 
   def handle_in("rule:run", %{"rid" => rid}, socket) do
-    CardRule
-    |> where([cr], cr.rid == ^rid)
-    |> Repo.delete_all()
-
     push(socket, "rule:msg", %{msg: "starting run", percentage: 0, seconds: 0})
 
     cards = Repo.all(Card)
     rule = Repo.get(Rule, rid)
+
+    already_run_cids =
+      Card
+      |> join(:inner, [c], cr in CardRule, c.cid == cr.cid)
+      |> where([c, cr], cr.rid == ^rid)
+      |> select([c, cr], c.cid)
+      |> Repo.all()
 
     cards_length = length(cards)
 
@@ -107,6 +118,9 @@ defmodule AnkiViewerWeb.SyncChannel do
       spawn(fn ->
         cards
         |> Enum.with_index()
+        |> Enum.filter(fn {card, _i} ->
+          card.cid not in already_run_cids
+        end)
         |> Enum.reduce(%{timestamp: DateTime.utc_now(), diff: 0}, fn {card, i},
                                                                      %{
                                                                        timestamp: timestamp,
