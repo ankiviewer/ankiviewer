@@ -113,11 +113,12 @@ defmodule AnkiViewerWeb.SyncChannel do
       |> Repo.all()
 
     cards_length = length(cards)
+    already_run_cids_length = length(already_run_cids)
 
     pid =
       spawn(fn ->
         cards
-        |> Enum.with_index()
+        |> Enum.with_index(1)
         |> Enum.filter(fn {card, _i} ->
           card.cid not in already_run_cids
         end)
@@ -129,7 +130,10 @@ defmodule AnkiViewerWeb.SyncChannel do
           now = DateTime.utc_now()
 
           new_diff =
-            Integer.floor_div((i + 1) * diff + DateTime.diff(now, timestamp, :microsecond), i + 2)
+            Integer.floor_div(
+              (i - already_run_cids_length) * diff + DateTime.diff(now, timestamp, :microsecond),
+              i - already_run_cids_length + 1
+            )
 
           push(socket, "rule:msg", %{
             msg: "running rule #{i}/#{length(cards)}",
