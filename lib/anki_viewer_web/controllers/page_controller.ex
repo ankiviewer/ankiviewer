@@ -25,7 +25,7 @@ defmodule AnkiViewerWeb.PageController do
     case Integer.parse(rule) do
       {int, ""} ->
         query
-        |> join(:inner, [n, m, d], cr in CardRule, n.cid == cr.cid)
+        |> join(:inner, [n, m, d], cr in CardRule, on: n.cid == cr.cid)
         |> where([n, m, d, cr], cr.rid == ^int and cr.fails)
 
       _ ->
@@ -44,8 +44,8 @@ defmodule AnkiViewerWeb.PageController do
       }) do
     cards =
       Card
-      |> join(:inner, [n], m in Model, n.mid == m.mid)
-      |> join(:inner, [n, m], d in Deck, n.did == d.did)
+      |> join(:inner, [n], m in Model, on: n.mid == m.mid)
+      |> join(:inner, [n, m], d in Deck, on: n.did == d.did)
       |> join_rules(rule)
       |> select([n, m, d], %{
         model: m.name,

@@ -1,10 +1,9 @@
 defmodule AnkiViewerWeb.SyncChannelTest do
   use AnkiViewerWeb.ChannelCase, async: false
-  alias AnkiViewerWeb.SyncChannel
 
   describe "sync:database - from empty" do
     setup do
-      {:ok, _, socket} = subscribe_and_join(socket(), SyncChannel, "ankiviewer:join")
+      {:ok, _, socket} = subscribe_and_join(socket(AnkiSocket), SyncChannel, "ankiviewer:join")
 
       push(socket, "sync:database", %{})
 
@@ -74,7 +73,7 @@ defmodule AnkiViewerWeb.SyncChannelTest do
     setup do
       load_collection!()
 
-      {:ok, _, socket} = subscribe_and_join(socket(), SyncChannel, "ankiviewer:join")
+      {:ok, _, socket} = subscribe_and_join(socket(AnkiSocket), SyncChannel, "ankiviewer:join")
 
       {:ok, socket: socket}
     end
@@ -156,7 +155,7 @@ defmodule AnkiViewerWeb.SyncChannelTest do
 
   describe "rule:run" do
     setup do
-      {:ok, _, socket} = subscribe_and_join(socket(), SyncChannel, "ankiviewer:join")
+      {:ok, _, socket} = subscribe_and_join(socket(AnkiSocket), SyncChannel, "ankiviewer:join")
 
       {:ok, socket: socket}
     end
