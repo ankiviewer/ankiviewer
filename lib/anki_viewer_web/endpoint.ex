@@ -1,7 +1,7 @@
 defmodule AnkiViewerWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :anki_viewer
 
-  socket("/socket", AnkiViewerWeb.AnkiSocket)
+  socket("/socket", AnkiViewerWeb.AnkiSocket, websocket: true)
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -30,7 +30,7 @@ defmodule AnkiViewerWeb.Endpoint do
     Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Poison
+    json_decoder: Jason
   )
 
   plug(Plug.MethodOverride)

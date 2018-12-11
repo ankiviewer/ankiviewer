@@ -9,7 +9,6 @@ config :anki_viewer, anki_db_path: "#{System.get_env("TMP_DIR") || "/tmp"}/anki_
 config :logger, level: :warn
 
 config :anki_viewer, AnkiViewer.Repo,
-  adapter: Ecto.Adapters.Postgres,
   username: "postgres",
   password: "postgres",
   database: "anki_viewer_test",
