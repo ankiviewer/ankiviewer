@@ -1,13 +1,11 @@
 defmodule AnkiViewerWeb.SyncChannel do
   use AnkiViewerWeb, :channel
 
-  def join("sync:database", _payload, socket) do
-    send(self(), {:sync, :database})
-
+  def join("ankiviewer:join", _payload, socket) do
     {:ok, socket}
   end
 
-  def handle_info({:sync, :database}, socket) do
+  def handle_in("sync:database", _params, socket) do
     push(socket, "sync:msg", %{msg: "starting sync", percentage: 0})
 
     collection_data = AnkiViewer.collection_data!()
@@ -88,7 +86,61 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     push(socket, "sync:msg", %{msg: "updated cards", percentage: 100})
 
-    push(socket, "done", %{})
+    push(socket, "sync:done", %{})
+
+    {:noreply, socket}
+  end
+
+  def handle_in("rule:run", %{"rid" => rid}, socket) do
+    CardRule
+    |> where([cr], cr.rid == ^rid)
+    |> Repo.delete_all()
+
+    push(socket, "rule:msg", %{msg: "starting run", percentage: 0, seconds: 0})
+
+    cards = Repo.all(Card)
+    rule = Repo.get(Rule, rid)
+
+    cards_length = length(cards)
+
+    cards
+    |> Enum.with_index()
+    |> Enum.reduce(%{timestamp: DateTime.utc_now(), diff: 0}, fn {card, i},
+                                                                 %{
+                                                                   timestamp: timestamp,
+                                                                   diff: diff
+                                                                 } ->
+      now = DateTime.utc_now()
+
+      new_diff =
+        Integer.floor_div((i + 1) * diff + DateTime.diff(now, timestamp, :microsecond), i + 2)
+
+      push(socket, "rule:msg", %{
+        msg: "running rule #{i}/#{length(cards)}",
+        percentage: round(i / length(cards) * 100),
+        seconds: Integer.floor_div((cards_length - i) * new_diff, 1_000_000)
+      })
+
+      %CardRule{cid: card.cid, rid: rid}
+      |> Map.merge(
+        case CardRule.run(cards, card, rule) do
+          :ok ->
+            %{fails: false}
+
+          {:error, ""} ->
+            %{fails: true}
+
+            # TODO: pass solution along
+            # {:error, solution} ->
+            #   %{fails: true, solution: solution}
+        end
+      )
+      |> CardRule.insert!()
+
+      %{timestamp: now, diff: new_diff}
+    end)
+
+    push(socket, "rule:done", %{})
 
     {:noreply, socket}
   end
