@@ -26,6 +26,9 @@ port startRunRule : Encode.Value -> Cmd msg
 port ruleRunData : (Encode.Value -> msg) -> Sub msg
 
 
+port stopRunRule : Encode.Value -> Cmd msg
+
+
 ruleDataDecoder : Decoder RuleData
 ruleDataDecoder =
     Decode.map3 RuleData
@@ -152,6 +155,9 @@ update msg model =
         StartRuleRun rid ->
             ( model, startRunRule (Encode.int rid) )
 
+        StopRuleRun ->
+            ( { model | syncState = NotSyncing }, stopRunRule Encode.null )
+
 
 type alias Model =
     { rules : List Rule
@@ -194,6 +200,7 @@ type Msg
     | DeleteRule Int
     | RuleIncomingMsg Encode.Value
     | StartRuleRun Int
+    | StopRuleRun
 
 
 type RuleInputType
@@ -404,6 +411,14 @@ view model =
                                 , div
                                     []
                                     [ text (String.fromInt (seconds // 60) ++ "m " ++ String.fromInt (modBy 60 seconds) ++ "s")
+                                    ]
+                                , div
+                                    []
+                                    [ button
+                                        [ onClick StopRuleRun
+                                        ]
+                                        [ text "Stop Run"
+                                        ]
                                     ]
                                 ]
             ]

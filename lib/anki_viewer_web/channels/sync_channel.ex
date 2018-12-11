@@ -1,13 +1,11 @@
 defmodule AnkiViewerWeb.SyncChannel do
   use AnkiViewerWeb, :channel
 
-  def join("sync:database", _payload, socket) do
-    send(self(), {:sync, :database})
-
+  def join("ankiviewer:join", _payload, socket) do
     {:ok, socket}
   end
 
-  def handle_info({:sync, :database}, socket) do
+  def handle_in("sync:database", _params, socket) do
     push(socket, "sync:msg", %{msg: "starting sync", percentage: 0})
 
     collection_data = AnkiViewer.collection_data!()
@@ -71,6 +69,10 @@ defmodule AnkiViewerWeb.SyncChannel do
       })
 
       Repo.delete!(card)
+
+      CardRule
+      |> where([cr], cr.cid == ^card.cid)
+      |> Repo.delete_all()
     end)
 
     cards_data_to_update
@@ -84,11 +86,92 @@ defmodule AnkiViewerWeb.SyncChannel do
       card
       |> Map.take(~w(cid nid cmod nmod flds sfld)a)
       |> Card.update!()
+
+      CardRule
+      |> where([cr], cr.cid == ^card.cid)
+      |> Repo.delete_all()
     end)
 
     push(socket, "sync:msg", %{msg: "updated cards", percentage: 100})
 
-    push(socket, "done", %{})
+    push(socket, "sync:done", %{})
+
+    {:noreply, socket}
+  end
+
+  def handle_in("rule:run", %{"rid" => rid}, socket) do
+    push(socket, "rule:msg", %{msg: "starting run", percentage: 0, seconds: 0})
+
+    cards = Repo.all(Card)
+    rule = Repo.get(Rule, rid)
+
+    already_run_cids =
+      Card
+      |> join(:inner, [c], cr in CardRule, c.cid == cr.cid)
+      |> where([c, cr], cr.rid == ^rid)
+      |> select([c, cr], c.cid)
+      |> Repo.all()
+
+    cards_length = length(cards)
+
+    pid =
+      spawn(fn ->
+        cards
+        |> Enum.with_index()
+        |> Enum.filter(fn {card, _i} ->
+          card.cid not in already_run_cids
+        end)
+        |> Enum.reduce(%{timestamp: DateTime.utc_now(), diff: 0}, fn {card, i},
+                                                                     %{
+                                                                       timestamp: timestamp,
+                                                                       diff: diff
+                                                                     } ->
+          now = DateTime.utc_now()
+
+          new_diff =
+            Integer.floor_div((i + 1) * diff + DateTime.diff(now, timestamp, :microsecond), i + 2)
+
+          push(socket, "rule:msg", %{
+            msg: "running rule #{i}/#{length(cards)}",
+            percentage: round(i / length(cards) * 100),
+            seconds: Integer.floor_div((cards_length - i) * new_diff, 1_000_000)
+          })
+
+          %CardRule{cid: card.cid, rid: rid}
+          |> Map.merge(
+            case CardRule.run(cards, card, rule) do
+              :ok ->
+                %{fails: false}
+
+              {:error, ""} ->
+                %{fails: true}
+
+                # TODO: pass solution along
+                # {:error, solution} ->
+                #   %{fails: true, solution: solution}
+            end
+          )
+          |> CardRule.insert!()
+
+          %{timestamp: now, diff: new_diff}
+        end)
+
+        push(socket, "rule:done", %{})
+      end)
+
+    socket = assign(socket, :pid, pid)
+
+    {:noreply, socket}
+  end
+
+  def handle_in("rule:stop", _params, socket) do
+    pid = socket.assigns[:pid]
+
+    if pid && Process.alive?(pid) do
+      Process.exit(pid, :kill)
+
+      assign(socket, :pid, nil)
+    end
 
     {:noreply, socket}
   end
