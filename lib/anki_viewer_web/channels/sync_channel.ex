@@ -103,44 +103,61 @@ defmodule AnkiViewerWeb.SyncChannel do
 
     cards_length = length(cards)
 
-    cards
-    |> Enum.with_index()
-    |> Enum.reduce(%{timestamp: DateTime.utc_now(), diff: 0}, fn {card, i},
-                                                                 %{
-                                                                   timestamp: timestamp,
-                                                                   diff: diff
-                                                                 } ->
-      now = DateTime.utc_now()
+    pid =
+      spawn(fn ->
+        cards
+        |> Enum.with_index()
+        |> Enum.reduce(%{timestamp: DateTime.utc_now(), diff: 0}, fn {card, i},
+                                                                     %{
+                                                                       timestamp: timestamp,
+                                                                       diff: diff
+                                                                     } ->
+          now = DateTime.utc_now()
 
-      new_diff =
-        Integer.floor_div((i + 1) * diff + DateTime.diff(now, timestamp, :microsecond), i + 2)
+          new_diff =
+            Integer.floor_div((i + 1) * diff + DateTime.diff(now, timestamp, :microsecond), i + 2)
 
-      push(socket, "rule:msg", %{
-        msg: "running rule #{i}/#{length(cards)}",
-        percentage: round(i / length(cards) * 100),
-        seconds: Integer.floor_div((cards_length - i) * new_diff, 1_000_000)
-      })
+          push(socket, "rule:msg", %{
+            msg: "running rule #{i}/#{length(cards)}",
+            percentage: round(i / length(cards) * 100),
+            seconds: Integer.floor_div((cards_length - i) * new_diff, 1_000_000)
+          })
 
-      %CardRule{cid: card.cid, rid: rid}
-      |> Map.merge(
-        case CardRule.run(cards, card, rule) do
-          :ok ->
-            %{fails: false}
+          %CardRule{cid: card.cid, rid: rid}
+          |> Map.merge(
+            case CardRule.run(cards, card, rule) do
+              :ok ->
+                %{fails: false}
 
-          {:error, ""} ->
-            %{fails: true}
+              {:error, ""} ->
+                %{fails: true}
 
-            # TODO: pass solution along
-            # {:error, solution} ->
-            #   %{fails: true, solution: solution}
-        end
-      )
-      |> CardRule.insert!()
+                # TODO: pass solution along
+                # {:error, solution} ->
+                #   %{fails: true, solution: solution}
+            end
+          )
+          |> CardRule.insert!()
 
-      %{timestamp: now, diff: new_diff}
-    end)
+          %{timestamp: now, diff: new_diff}
+        end)
 
-    push(socket, "rule:done", %{})
+        push(socket, "rule:done", %{})
+      end)
+
+    socket = assign(socket, :pid, pid)
+
+    {:noreply, socket}
+  end
+
+  def handle_in("rule:stop", _params, socket) do
+    pid = socket.assigns[:pid]
+
+    if pid && Process.alive?(pid) do
+      Process.exit(pid, :kill)
+
+      assign(socket, :pid, nil)
+    end
 
     {:noreply, socket}
   end
