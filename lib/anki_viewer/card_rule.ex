@@ -1,7 +1,7 @@
 defmodule AnkiViewer.CardRule do
   use Ecto.Schema
   import Ecto.Changeset
-  alias AnkiViewer.{Card, Rule, CardRule, Repo}
+  alias AnkiViewer.{CardRule, Repo}
 
   schema "card_rules" do
     field(:comment, :string)
@@ -23,7 +23,7 @@ defmodule AnkiViewer.CardRule do
     |> validate_required(@required_params)
   end
 
-  def run(cards, %Card{} = card, %Rule{code: code}) do
+  def run(cards, card, code) do
     case Code.eval_string(code, card: card, cards: cards) do
       {true, _} ->
         :ok

@@ -30,13 +30,13 @@ defmodule AnkiViewer.CardRuleTest do
   test "run a card through a passing rule", %{passing_rule: passing_rule} do
     cards = [card | _] = Repo.all(Card)
 
-    assert CardRule.run(cards, card, passing_rule) == :ok
+    assert CardRule.run(cards, card, passing_rule.code) == :ok
   end
 
   test "run a card through a failing rule", %{failing_rule: failing_rule} do
     cards = [card | _] = Repo.all(Card)
 
-    assert CardRule.run(cards, card, failing_rule) == {:error, ""}
+    assert CardRule.run(cards, card, failing_rule.code) == {:error, ""}
   end
 
   test "insert a CardRule" do
