@@ -69,7 +69,8 @@ defmodule AnkiViewer.Mixfile do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate", "test"],
       cover: ["coveralls.html"],
-      "cover.json": ["coveralls.json"]
+      "cover.json": ["coveralls.json"],
+      format: ["format", "npm format"]
     ]
   end
 end
