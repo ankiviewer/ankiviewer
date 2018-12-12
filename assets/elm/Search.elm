@@ -1,4 +1,4 @@
-module Search exposing
+port module Search exposing
     ( Model
     , Msg
     , init
@@ -13,10 +13,14 @@ import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
+import Json.Encode as Encode
 import Rules exposing (Rule)
 import Set exposing (Set)
 import Url
 import Url.Builder as Url
+
+
+port setColumns : Encode.Value -> Cmd msg
 
 
 cardColumns : List String
@@ -235,7 +239,7 @@ update msg model =
                     else
                         Set.insert col model.excludedColumns
             in
-            ( { model | excludedColumns = excludedColumns }, Cmd.none )
+            ( { model | excludedColumns = excludedColumns }, setColumns (Encode.set Encode.string excludedColumns) )
 
         NewRules (Ok rules) ->
             ( { model | rules = rules }, Cmd.none )
