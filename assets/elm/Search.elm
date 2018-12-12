@@ -17,6 +17,7 @@ import Json.Encode as Encode
 import Rules exposing (Rule)
 import Session exposing (Session)
 import Set exposing (Set)
+import Set.Extra as Set
 import Url
 import Url.Builder as Url
 
@@ -241,11 +242,7 @@ update msg model =
         ToggleColumn col ->
             let
                 excludedColumns =
-                    if Set.member col model.excludedColumns then
-                        Set.remove col model.excludedColumns
-
-                    else
-                        Set.insert col model.excludedColumns
+                    Set.toggle col model.excludedColumns
             in
             ( { model | excludedColumns = excludedColumns }, setColumns (encodeColumns excludedColumns) )
 
