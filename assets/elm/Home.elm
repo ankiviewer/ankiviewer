@@ -16,6 +16,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import Process
+import Session exposing (Session)
 import Task
 import Time
 import Time.Format as Time
@@ -46,7 +47,8 @@ type alias SyncData =
 
 
 type alias Model =
-    { collection : Collection
+    { session : Session
+    , collection : Collection
     , syncState : SyncState
     }
 
@@ -179,16 +181,17 @@ update msg model =
             ( model, Cmd.none )
 
 
-initialModel : Model
-initialModel =
-    { collection = Collection 0 0 [] []
+initialModel : Session -> Model
+initialModel session =
+    { session = session
+    , collection = Collection 0 0 [] []
     , syncState = NotSyncing
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( initialModel
+init : Session -> ( Model, Cmd Msg )
+init session =
+    ( initialModel session
     , getCollection
     )
 

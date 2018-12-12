@@ -15,6 +15,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Rules exposing (Rule)
+import Session exposing (Session)
 import Set exposing (Set)
 import Url
 import Url.Builder as Url
@@ -211,6 +212,13 @@ view model =
             ]
 
 
+encodeColumns : Set String -> Encode.Value
+encodeColumns excludedColumns =
+    Encode.object
+        [ ( "excludedColumns", Encode.set Encode.string excludedColumns )
+        ]
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -239,7 +247,7 @@ update msg model =
                     else
                         Set.insert col model.excludedColumns
             in
-            ( { model | excludedColumns = excludedColumns }, setColumns (Encode.set Encode.string excludedColumns) )
+            ( { model | excludedColumns = excludedColumns }, setColumns (encodeColumns excludedColumns) )
 
         NewRules (Ok rules) ->
             ( { model | rules = rules }, Cmd.none )
@@ -274,7 +282,8 @@ type Msg
 
 
 type alias Model =
-    { showColumns : Bool
+    { session : Session
+    , showColumns : Bool
     , excludedColumns : Set String
     , search : String
     , cards : List Card
@@ -306,10 +315,11 @@ type alias Search =
     }
 
 
-initialModel : Model
-initialModel =
-    { showColumns = False
-    , excludedColumns = Set.empty
+initialModel : Session -> Model
+initialModel session =
+    { session = session
+    , showColumns = False
+    , excludedColumns = session.excludedColumns
     , search = ""
     , cards = []
     , count = 0
@@ -318,9 +328,9 @@ initialModel =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( initialModel, getRules )
+init : Session -> ( Model, Cmd Msg )
+init session =
+    ( initialModel session, getRules )
 
 
 getRules : Cmd Msg
