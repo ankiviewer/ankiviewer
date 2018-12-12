@@ -102,7 +102,11 @@ defmodule AnkiViewerWeb.SyncChannel do
   def handle_in("rule:run", %{"rid" => rid}, socket) do
     push(socket, "rule:msg", %{msg: "starting run", percentage: 0, seconds: 0})
 
-    cards = Repo.all(Card)
+    cards =
+      Card
+      |> Repo.all()
+      |> Enum.map(&Map.take(&1, ~w(cid did flds mid nid sfld tags type)a))
+
     rule = Repo.get(Rule, rid)
 
     already_run_cids =
@@ -143,7 +147,7 @@ defmodule AnkiViewerWeb.SyncChannel do
 
           %CardRule{cid: card.cid, rid: rid}
           |> Map.merge(
-            case CardRule.run(cards, card, rule) do
+            case CardRule.run(cards, card, rule.code) do
               :ok ->
                 %{fails: false}
 
