@@ -8,6 +8,7 @@ import Html.Attributes exposing (class, classList, href)
 import Http
 import Rules
 import Search
+import Session exposing (Flags, Session)
 import Skeleton
 import Url
 import Url.Parser as Parser exposing (Parser, oneOf, s, top)
@@ -30,16 +31,17 @@ type alias Model =
     }
 
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url key =
-    stepUrl url
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+    stepUrl flags
+        url
         { key = key
-        , page = NotFound
+        , page = NotFound Session.empty
         }
 
 
 type Page
-    = NotFound
+    = NotFound Session
     | Home Home.Model
     | Search Search.Model
     | Rules Rules.Model
@@ -82,7 +84,7 @@ update message model =
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            stepUrl url model
+            stepUrl Nothing url model
 
         HomeMsg msg ->
             case model.page of
@@ -109,14 +111,38 @@ update message model =
                     ( model, Cmd.none )
 
 
-stepUrl : Url.Url -> Model -> ( Model, Cmd Msg )
-stepUrl url model =
+exit : Model -> Session
+exit model =
+    case model.page of
+        NotFound session ->
+            session
+
+        Home m ->
+            m.session
+
+        Search m ->
+            m.session
+
+        Rules m ->
+            m.session
+
+
+stepUrl : Flags -> Url.Url -> Model -> ( Model, Cmd Msg )
+stepUrl flags url model =
     let
+        session =
+            case flags of
+                Nothing ->
+                    exit model
+
+                _ ->
+                    Session.fromFlags flags
+
         parser =
             oneOf
-                [ route top (stepHome model Home.init)
-                , route (s "search") (stepSearch model Search.init)
-                , route (s "rules") (stepRule model Rules.init)
+                [ route top (stepHome model (Home.init session))
+                , route (s "search") (stepSearch model (Search.init session))
+                , route (s "rules") (stepRule model (Rules.init session))
                 ]
     in
     case Parser.parse parser url of
@@ -124,7 +150,7 @@ stepUrl url model =
             answer
 
         Nothing ->
-            ( { model | page = NotFound }
+            ( { model | page = NotFound Session.empty }
             , Cmd.none
             )
 
@@ -158,7 +184,7 @@ stepRule model ( rule, cmds ) =
 view : Model -> Browser.Document Msg
 view model =
     case model.page of
-        NotFound ->
+        NotFound _ ->
             Skeleton.view never
                 { title = "Ankiviewer - Not Found"
                 , view = text "404 - Not Found"

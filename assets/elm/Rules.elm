@@ -18,6 +18,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import List.Extra as List
+import Session exposing (Session)
 
 
 port startRunRule : Encode.Value -> Cmd msg
@@ -160,7 +161,8 @@ update msg model =
 
 
 type alias Model =
-    { rules : List Rule
+    { session : Session
+    , rules : List Rule
     , input : Rule
     , err : Maybe Rule
     , selected : Maybe Int
@@ -209,14 +211,15 @@ type RuleInputType
     | RuleTests
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( initialModel, getRules )
+init : Session -> ( Model, Cmd Msg )
+init session =
+    ( initialModel session, getRules )
 
 
-initialModel : Model
-initialModel =
-    { rules = []
+initialModel : Session -> Model
+initialModel session =
+    { session = session
+    , rules = []
     , input = Rule "" "" "" 0 False
     , err = Nothing
     , selected = Nothing

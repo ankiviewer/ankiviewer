@@ -92,6 +92,6 @@ channel.on('rule:done', function () {
     .receive('error', function (resp) { console.log('Unable to leave'); });
 });
 
-// app.ports.setColumns.subscribe(function(state) {
-//   localStorage.setItem('ankiviewer-columns-save', JSON.stringify(state));
-// });
+app.ports.setColumns.subscribe(function(state) {
+  localStorage.setItem('ankiviewer-columns-save', JSON.stringify(state));
+});
