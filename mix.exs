@@ -70,7 +70,8 @@ defmodule AnkiViewer.Mixfile do
       test: ["ecto.create --quiet", "ecto.migrate", "test"],
       cover: ["coveralls.html"],
       "cover.json": ["coveralls.json"],
-      format: ["format", "npm format"]
+      format: ["format", "npm format"],
+      "phx.server": ["kill_elm_live", "phx.server"]
     ]
   end
 end
