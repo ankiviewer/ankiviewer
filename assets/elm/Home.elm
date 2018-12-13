@@ -1,6 +1,6 @@
 port module Home exposing
     ( Model
-    , Msg
+    , Msg(..)
     , init
     , initialModel
     , subscriptions
@@ -48,7 +48,6 @@ type alias SyncData =
 
 type alias Model =
     { session : Session
-    , collection : Collection
     , syncState : SyncState
     }
 
@@ -58,37 +57,18 @@ type SyncState
     | NotSyncing
 
 
-type alias Collection =
-    { mod : Int
-    , cards : Int
-    , models : List M
-    , decks : List D
-    }
-
-
-type alias M =
-    { name : String
-    , mid : Int
-    , flds : List String
-    , did : Int
-    }
-
-
-type alias D =
-    { name : String
-    , did : Int
-    }
-
-
 type Msg
     = StartSync
     | StopSync
     | SyncIncomingMsg Encode.Value
-    | NewCollection (Result Http.Error Collection)
 
 
 view : Model -> Html Msg
-view { collection, syncState } =
+view { session, syncState } =
+    let
+        collection =
+            session.collection
+    in
     case syncState of
         Syncing ( message, percentage ) ->
             div
@@ -145,7 +125,7 @@ update msg model =
             ( model, startSync Encode.null )
 
         StopSync ->
-            ( { model | syncState = NotSyncing }, getCollection )
+            ( { model | syncState = NotSyncing }, Cmd.none )
 
         SyncIncomingMsg val ->
             case Decode.decodeValue syncDataDecoder val of
@@ -170,21 +150,10 @@ update msg model =
                     in
                     ( model, Cmd.none )
 
-        NewCollection (Ok collection) ->
-            ( { model | collection = collection }, Cmd.none )
-
-        NewCollection (Err e) ->
-            let
-                _ =
-                    Debug.log "e" e
-            in
-            ( model, Cmd.none )
-
 
 initialModel : Session -> Model
 initialModel session =
     { session = session
-    , collection = Collection 0 0 [] []
     , syncState = NotSyncing
     }
 
@@ -192,42 +161,5 @@ initialModel session =
 init : Session -> ( Model, Cmd Msg )
 init session =
     ( initialModel session
-    , getCollection
+    , Cmd.none
     )
-
-
-getCollection : Cmd Msg
-getCollection =
-    Http.get
-        { url = "/api/collection"
-        , expect = Http.expectJson NewCollection collectionDecoder
-        }
-
-
-collectionDecoder : Decoder Collection
-collectionDecoder =
-    Decode.succeed Collection
-        |> required "mod" Decode.int
-        |> required "cards" Decode.int
-        |> required "models" modelsDecoder
-        |> required "decks" decksDecoder
-
-
-decksDecoder : Decoder (List D)
-decksDecoder =
-    Decode.list
-        (Decode.succeed D
-            |> required "name" Decode.string
-            |> required "did" Decode.int
-        )
-
-
-modelsDecoder : Decoder (List M)
-modelsDecoder =
-    Decode.list
-        (Decode.succeed M
-            |> required "name" Decode.string
-            |> required "mid" Decode.int
-            |> required "flds" (Decode.list Decode.string)
-            |> required "did" Decode.int
-        )
