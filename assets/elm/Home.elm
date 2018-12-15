@@ -11,9 +11,7 @@ port module Home exposing
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
-import Http
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import Process
 import Session exposing (Session)

@@ -133,6 +133,11 @@ update message model =
             ( model, Cmd.none )
 
 
+updateSessionCollection_ : Session -> Collection -> Session
+updateSessionCollection_ session collection =
+    { session | collection = collection }
+
+
 updateSessionCollection : Page -> Collection -> Page
 updateSessionCollection page collection =
     case page of
@@ -140,34 +145,13 @@ updateSessionCollection page collection =
             NotFound { session | collection = collection }
 
         Home model ->
-            let
-                oldSession =
-                    model.session
-
-                session =
-                    { oldSession | collection = collection }
-            in
-            Home { model | session = session }
+            Home { model | session = updateSessionCollection_ model.session collection }
 
         Search model ->
-            let
-                oldSession =
-                    model.session
-
-                session =
-                    { oldSession | collection = collection }
-            in
-            Search { model | session = session }
+            Search { model | session = updateSessionCollection_ model.session collection }
 
         Rules model ->
-            let
-                oldSession =
-                    model.session
-
-                session =
-                    { oldSession | collection = collection }
-            in
-            Rules { model | session = session }
+            Rules { model | session = updateSessionCollection_ model.session collection }
 
 
 getCollection : Cmd Msg
