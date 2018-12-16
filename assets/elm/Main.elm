@@ -7,6 +7,7 @@ import Home
 import Html exposing (Html, a, div, text)
 import Html.Attributes exposing (class, classList, href)
 import Http
+import Page exposing (Page(..))
 import Rules
 import Rules.Rule exposing (Rule)
 import Search
@@ -40,13 +41,6 @@ init flags url key =
         { key = key
         , page = NotFound Session.empty
         }
-
-
-type Page
-    = NotFound Session
-    | Home Home.Model
-    | Search Search.Model
-    | Rules Rules.Model
 
 
 type Msg
@@ -130,7 +124,9 @@ update message model =
                     ( model, Cmd.none )
 
         NewCollection (Ok collection) ->
-            ( { model | page = updateSessionCollection model.page collection }, Cmd.none )
+            ( { model | page = Page.sessionMap (Session.updateCollection collection) model.page }
+            , Cmd.none
+            )
 
         NewCollection (Err e) ->
             let
@@ -140,7 +136,9 @@ update message model =
             ( model, Cmd.none )
 
         NewRules (Ok rules) ->
-            ( { model | page = updateSessionRules model.page rules }, Cmd.none )
+            ( { model | page = Page.sessionMap (Session.updateRules rules) model.page }
+            , Cmd.none
+            )
 
         NewRules (Err e) ->
             let
@@ -148,38 +146,6 @@ update message model =
                     Debug.log "e" e
             in
             ( model, Cmd.none )
-
-
-updateSessionRules : Page -> List Rule -> Page
-updateSessionRules page rules =
-    case page of
-        NotFound session ->
-            NotFound { session | rules = rules }
-
-        Home model ->
-            Home { model | session = Session.updateRules model.session rules }
-
-        Search model ->
-            Search { model | session = Session.updateRules model.session rules }
-
-        Rules model ->
-            Rules { model | session = Session.updateRules model.session rules }
-
-
-updateSessionCollection : Page -> Collection -> Page
-updateSessionCollection page collection =
-    case page of
-        NotFound session ->
-            NotFound { session | collection = collection }
-
-        Home model ->
-            Home { model | session = Session.updateCollection model.session collection }
-
-        Search model ->
-            Search { model | session = Session.updateCollection model.session collection }
-
-        Rules model ->
-            Rules { model | session = Session.updateCollection model.session collection }
 
 
 getCollection : Cmd Msg
@@ -198,29 +164,13 @@ getRules =
         }
 
 
-exit : Model -> Session
-exit model =
-    case model.page of
-        NotFound session ->
-            session
-
-        Home m ->
-            m.session
-
-        Search m ->
-            m.session
-
-        Rules m ->
-            m.session
-
-
 stepUrl : Flags -> Url.Url -> Model -> ( Model, Cmd Msg )
 stepUrl flags url model =
     let
         session =
             case flags of
                 Nothing ->
-                    exit model
+                    Page.session model.page
 
                 _ ->
                     Session.fromFlags flags
