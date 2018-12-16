@@ -7,11 +7,13 @@ module Session exposing
 
 import Collection exposing (Collection)
 import Set exposing (Set)
+import Rules.Rule exposing (Rule)
 
 
 type alias Session =
     { excludedColumns : Set String
     , collection : Collection
+    , rules : List Rule
     }
 
 
@@ -38,4 +40,5 @@ empty : Session
 empty =
     { excludedColumns = Set.empty
     , collection = Collection 0 0 [] []
+    , rules = []
     }

@@ -1,7 +1,6 @@
 port module Rules exposing
     ( Model
     , Msg
-    , Rule
     , init
     , initialModel
     , rulesDecoder
@@ -19,6 +18,7 @@ import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import List.Extra as List
 import Session exposing (Session)
+import Rules.Rule as Rule exposing (Rule)
 
 
 port startRunRule : Encode.Value -> Cmd msg
@@ -81,13 +81,13 @@ update msg model =
                                     rid == ruleId
                                 )
                                 model.rules
-                                |> Maybe.withDefault (Rule "" "" "" 0 False)
+                                |> Maybe.withDefault (Rule.empty)
                     in
                     ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
                 Just oldSelectedRuleId ->
                     if ruleId == oldSelectedRuleId then
-                        ( { model | selected = Nothing, input = Rule "" "" "" 0 False }, Cmd.none )
+                        ( { model | selected = Nothing, input = Rule.empty }, Cmd.none )
 
                     else
                         let
@@ -97,7 +97,7 @@ update msg model =
                                         rid == ruleId
                                     )
                                     model.rules
-                                    |> Maybe.withDefault (Rule "" "" "" 0 False)
+                                    |> Maybe.withDefault Rule.empty
                         in
                         ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
@@ -116,7 +116,7 @@ update msg model =
                 ( { model | err = Just ruleErr }, Cmd.none )
 
             else
-                ( { model | rules = rules, err = Nothing, input = Rule "" "" "" 0 False }, Cmd.none )
+                ( { model | rules = rules, err = Nothing, input = Rule.empty }, Cmd.none )
 
         NewRuleResponse (Err err) ->
             let
@@ -135,7 +135,7 @@ update msg model =
             ( model, updateRule model.input )
 
         DeleteRule rid ->
-            ( { model | input = Rule "" "" "" 0 False, selected = Nothing }, deleteRule rid )
+            ( { model | input = Rule.empty, selected = Nothing }, deleteRule rid )
 
         RuleIncomingMsg val ->
             case Decode.decodeValue ruleDataDecoder val of
@@ -175,15 +175,6 @@ type SyncState
     | NotSyncing
 
 
-type alias Rule =
-    { name : String
-    , code : String
-    , tests : String
-    , rid : Int
-    , run : Bool
-    }
-
-
 type alias RuleResponse =
     { err : Bool
     , rules : List Rule
@@ -220,7 +211,7 @@ initialModel : Session -> Model
 initialModel session =
     { session = session
     , rules = []
-    , input = Rule "" "" "" 0 False
+    , input = Rule.empty
     , err = Nothing
     , selected = Nothing
     , syncState = NotSyncing
@@ -319,7 +310,7 @@ ruleResponseDecoder =
                     Decode.succeed RuleResponse
                         |> hardcoded err
                         |> required "params" (Decode.list ruleDecoder)
-                        |> hardcoded (Rule "" "" "" 0 False)
+                        |> hardcoded Rule.empty
             )
 
 
