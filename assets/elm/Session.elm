@@ -3,15 +3,19 @@ module Session exposing
     , Session
     , empty
     , fromFlags
+    , updateCollection
+    , updateRules
     )
 
 import Collection exposing (Collection)
+import Rules.Rule exposing (Rule)
 import Set exposing (Set)
 
 
 type alias Session =
     { excludedColumns : Set String
     , collection : Collection
+    , rules : List Rule
     }
 
 
@@ -38,4 +42,15 @@ empty : Session
 empty =
     { excludedColumns = Set.empty
     , collection = Collection 0 0 [] []
+    , rules = []
     }
+
+
+updateCollection : Collection -> Session -> Session
+updateCollection collection session =
+    { session | collection = collection }
+
+
+updateRules : List Rule -> Session -> Session
+updateRules rules session =
+    { session | rules = rules }
