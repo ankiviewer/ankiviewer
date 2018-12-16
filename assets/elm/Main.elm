@@ -8,6 +8,7 @@ import Html exposing (Html, a, div, text)
 import Html.Attributes exposing (class, classList, href)
 import Http
 import Rules
+import Rules.Rule exposing (Rule)
 import Search
 import Session exposing (Flags, Session)
 import Skeleton
@@ -56,6 +57,7 @@ type Msg
     | SearchMsg Search.Msg
     | RuleMsg Rules.Msg
     | NewCollection (Result Http.Error Collection)
+    | NewRules (Result Http.Error (List Rule))
 
 
 subscriptions : Model -> Sub Msg
@@ -74,6 +76,11 @@ subscriptions model =
 withCmd : Cmd Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 withCmd newCmd ( model, cmd ) =
     ( model, Cmd.batch [ newCmd, cmd ] )
+
+
+withCmds : List (Cmd Msg) -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+withCmds newCmds ( model, cmd ) =
+    ( model, Cmd.batch (cmd :: newCmds) )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -132,10 +139,31 @@ update message model =
             in
             ( model, Cmd.none )
 
+        NewRules (Ok rules) ->
+            ( { model | page = updateSessionRules model.page rules }, Cmd.none )
 
-updateSessionCollection_ : Session -> Collection -> Session
-updateSessionCollection_ session collection =
-    { session | collection = collection }
+        NewRules (Err e) ->
+            let
+                _ =
+                    Debug.log "e" e
+            in
+            ( model, Cmd.none )
+
+
+updateSessionRules : Page -> List Rule -> Page
+updateSessionRules page rules =
+    case page of
+        NotFound session ->
+            NotFound { session | rules = rules }
+
+        Home model ->
+            Home { model | session = Session.updateRules model.session rules }
+
+        Search model ->
+            Search { model | session = Session.updateRules model.session rules }
+
+        Rules model ->
+            Rules { model | session = Session.updateRules model.session rules }
 
 
 updateSessionCollection : Page -> Collection -> Page
@@ -145,13 +173,13 @@ updateSessionCollection page collection =
             NotFound { session | collection = collection }
 
         Home model ->
-            Home { model | session = updateSessionCollection_ model.session collection }
+            Home { model | session = Session.updateCollection model.session collection }
 
         Search model ->
-            Search { model | session = updateSessionCollection_ model.session collection }
+            Search { model | session = Session.updateCollection model.session collection }
 
         Rules model ->
-            Rules { model | session = updateSessionCollection_ model.session collection }
+            Rules { model | session = Session.updateCollection model.session collection }
 
 
 getCollection : Cmd Msg
@@ -159,6 +187,14 @@ getCollection =
     Http.get
         { url = "/api/collection"
         , expect = Http.expectJson NewCollection Collection.collectionDecoder
+        }
+
+
+getRules : Cmd Msg
+getRules =
+    Http.get
+        { url = "/api/rules"
+        , expect = Http.expectJson NewRules Rules.rulesDecoder
         }
 
 
@@ -198,7 +234,7 @@ stepUrl flags url model =
     in
     case Parser.parse parser url of
         Just answer ->
-            withCmd getCollection answer
+            withCmds [ getCollection, getRules ] answer
 
         Nothing ->
             ( { model | page = NotFound Session.empty }

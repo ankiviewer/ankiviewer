@@ -17,8 +17,8 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import List.Extra as List
-import Session exposing (Session)
 import Rules.Rule as Rule exposing (Rule)
+import Session exposing (Session)
 
 
 port startRunRule : Encode.Value -> Cmd msg
@@ -81,7 +81,7 @@ update msg model =
                                     rid == ruleId
                                 )
                                 model.rules
-                                |> Maybe.withDefault (Rule.empty)
+                                |> Maybe.withDefault Rule.empty
                     in
                     ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
