@@ -80,7 +80,7 @@ update msg model =
                                 (\{ rid } ->
                                     rid == ruleId
                                 )
-                                model.rules
+                                model.session.rules
                                 |> Maybe.withDefault Rule.empty
                     in
                     ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
@@ -96,13 +96,13 @@ update msg model =
                                     (\{ rid } ->
                                         rid == ruleId
                                     )
-                                    model.rules
+                                    model.session.rules
                                     |> Maybe.withDefault Rule.empty
                         in
                         ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
         NewRules (Ok rules) ->
-            ( { model | rules = rules }, Cmd.none )
+            ( { model | session = Session.updateRules rules model.session }, Cmd.none )
 
         NewRules (Err err) ->
             let
@@ -116,7 +116,13 @@ update msg model =
                 ( { model | err = Just ruleErr }, Cmd.none )
 
             else
-                ( { model | rules = rules, err = Nothing, input = Rule.empty }, Cmd.none )
+                ( { model
+                    | session = Session.updateRules rules model.session
+                    , err = Nothing
+                    , input = Rule.empty
+                  }
+                , Cmd.none
+                )
 
         NewRuleResponse (Err err) ->
             let
@@ -162,7 +168,6 @@ update msg model =
 
 type alias Model =
     { session : Session
-    , rules : List Rule
     , input : Rule
     , err : Maybe Rule
     , selected : Maybe Int
@@ -210,7 +215,6 @@ init session =
 initialModel : Session -> Model
 initialModel session =
     { session = session
-    , rules = []
     , input = Rule.empty
     , err = Nothing
     , selected = Nothing
@@ -437,6 +441,6 @@ view model =
                             text ":not run"
                         ]
                 )
-                model.rules
+                model.session.rules
             )
         ]
