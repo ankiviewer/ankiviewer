@@ -8,9 +8,11 @@ port module Home exposing
     , view
     )
 
+import Collection exposing (Collection)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
+import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Process
@@ -18,8 +20,6 @@ import Session exposing (Session)
 import Task
 import Time
 import Time.Format as Time
-import Collection exposing (Collection)
-import Http
 
 
 port startSync : Encode.Value -> Cmd msg
@@ -150,6 +150,7 @@ update msg model =
                             Debug.log "ee" e
                     in
                     ( model, Cmd.none )
+
         NewCollection (Ok collection) ->
             ( { model | session = Session.updateCollection collection model.session }
             , Cmd.none

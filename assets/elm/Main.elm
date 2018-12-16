@@ -67,16 +67,6 @@ subscriptions model =
             Sub.none
 
 
-withCmd : Cmd Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-withCmd newCmd ( model, cmd ) =
-    ( model, Cmd.batch [ newCmd, cmd ] )
-
-
-withCmds : List (Cmd Msg) -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-withCmds newCmds ( model, cmd ) =
-    ( model, Cmd.batch (cmd :: newCmds) )
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
@@ -179,7 +169,11 @@ stepUrl flags url model =
     in
     case Parser.parse parser url of
         Just answer ->
-            withCmds [ getCollection, getRules ] answer
+            let
+                ( mdl, cmd ) =
+                    answer
+            in
+            ( mdl, Cmd.batch [ cmd, getCollection, getRules ] )
 
         Nothing ->
             ( { model | page = NotFound Session.empty }
