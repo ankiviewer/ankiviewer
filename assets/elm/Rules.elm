@@ -1,7 +1,6 @@
 port module Rules exposing
     ( Model
     , Msg
-    , Rule
     , init
     , initialModel
     , rulesDecoder
@@ -18,6 +17,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Json.Encode as Encode
 import List.Extra as List
+import Rules.Rule as Rule exposing (Rule)
 import Session exposing (Session)
 
 
@@ -80,14 +80,14 @@ update msg model =
                                 (\{ rid } ->
                                     rid == ruleId
                                 )
-                                model.rules
-                                |> Maybe.withDefault (Rule "" "" "" 0 False)
+                                model.session.rules
+                                |> Maybe.withDefault Rule.empty
                     in
                     ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
                 Just oldSelectedRuleId ->
                     if ruleId == oldSelectedRuleId then
-                        ( { model | selected = Nothing, input = Rule "" "" "" 0 False }, Cmd.none )
+                        ( { model | selected = Nothing, input = Rule.empty }, Cmd.none )
 
                     else
                         let
@@ -96,13 +96,13 @@ update msg model =
                                     (\{ rid } ->
                                         rid == ruleId
                                     )
-                                    model.rules
-                                    |> Maybe.withDefault (Rule "" "" "" 0 False)
+                                    model.session.rules
+                                    |> Maybe.withDefault Rule.empty
                         in
                         ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
         NewRules (Ok rules) ->
-            ( { model | rules = rules }, Cmd.none )
+            ( { model | session = Session.updateRules rules model.session }, Cmd.none )
 
         NewRules (Err err) ->
             let
@@ -116,7 +116,13 @@ update msg model =
                 ( { model | err = Just ruleErr }, Cmd.none )
 
             else
-                ( { model | rules = rules, err = Nothing, input = Rule "" "" "" 0 False }, Cmd.none )
+                ( { model
+                    | session = Session.updateRules rules model.session
+                    , err = Nothing
+                    , input = Rule.empty
+                  }
+                , Cmd.none
+                )
 
         NewRuleResponse (Err err) ->
             let
@@ -135,7 +141,7 @@ update msg model =
             ( model, updateRule model.input )
 
         DeleteRule rid ->
-            ( { model | input = Rule "" "" "" 0 False, selected = Nothing }, deleteRule rid )
+            ( { model | input = Rule.empty, selected = Nothing }, deleteRule rid )
 
         RuleIncomingMsg val ->
             case Decode.decodeValue ruleDataDecoder val of
@@ -162,7 +168,6 @@ update msg model =
 
 type alias Model =
     { session : Session
-    , rules : List Rule
     , input : Rule
     , err : Maybe Rule
     , selected : Maybe Int
@@ -173,15 +178,6 @@ type alias Model =
 type SyncState
     = Syncing ( String, Int, Int )
     | NotSyncing
-
-
-type alias Rule =
-    { name : String
-    , code : String
-    , tests : String
-    , rid : Int
-    , run : Bool
-    }
 
 
 type alias RuleResponse =
@@ -219,8 +215,7 @@ init session =
 initialModel : Session -> Model
 initialModel session =
     { session = session
-    , rules = []
-    , input = Rule "" "" "" 0 False
+    , input = Rule.empty
     , err = Nothing
     , selected = Nothing
     , syncState = NotSyncing
@@ -319,7 +314,7 @@ ruleResponseDecoder =
                     Decode.succeed RuleResponse
                         |> hardcoded err
                         |> required "params" (Decode.list ruleDecoder)
-                        |> hardcoded (Rule "" "" "" 0 False)
+                        |> hardcoded Rule.empty
             )
 
 
@@ -446,6 +441,6 @@ view model =
                             text ":not run"
                         ]
                 )
-                model.rules
+                model.session.rules
             )
         ]
