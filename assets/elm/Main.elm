@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
+import Collection exposing (Collection)
 import Home
 import Html exposing (Html, a, div, text)
 import Html.Attributes exposing (class, classList, href)
@@ -54,6 +55,7 @@ type Msg
     | HomeMsg Home.Msg
     | SearchMsg Search.Msg
     | RuleMsg Rules.Msg
+    | NewCollection (Result Http.Error Collection)
 
 
 subscriptions : Model -> Sub Msg
@@ -69,6 +71,11 @@ subscriptions model =
             Sub.none
 
 
+withCmd : Cmd Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+withCmd newCmd ( model, cmd ) =
+    ( model, Cmd.batch [ newCmd, cmd ] )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
@@ -78,10 +85,10 @@ update message model =
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Nav.pushUrl model.key (Url.toString url) )
+                    ( model, Cmd.batch [ Nav.pushUrl model.key (Url.toString url), getCollection ] )
 
                 Browser.External href ->
-                    ( model, Nav.load href )
+                    ( model, Cmd.batch [ Nav.load href, getCollection ] )
 
         UrlChanged url ->
             stepUrl Nothing url model
@@ -89,7 +96,12 @@ update message model =
         HomeMsg msg ->
             case model.page of
                 Home home ->
-                    stepHome model (Home.update msg home)
+                    case msg of
+                        Home.StopSync ->
+                            withCmd getCollection (stepHome model (Home.update Home.StopSync home))
+
+                        _ ->
+                            stepHome model (Home.update msg home)
 
                 _ ->
                     ( model, Cmd.none )
@@ -109,6 +121,45 @@ update message model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        NewCollection (Ok collection) ->
+            ( { model | page = updateSessionCollection model.page collection }, Cmd.none )
+
+        NewCollection (Err e) ->
+            let
+                _ =
+                    Debug.log "e" e
+            in
+            ( model, Cmd.none )
+
+
+updateSessionCollection_ : Session -> Collection -> Session
+updateSessionCollection_ session collection =
+    { session | collection = collection }
+
+
+updateSessionCollection : Page -> Collection -> Page
+updateSessionCollection page collection =
+    case page of
+        NotFound session ->
+            NotFound { session | collection = collection }
+
+        Home model ->
+            Home { model | session = updateSessionCollection_ model.session collection }
+
+        Search model ->
+            Search { model | session = updateSessionCollection_ model.session collection }
+
+        Rules model ->
+            Rules { model | session = updateSessionCollection_ model.session collection }
+
+
+getCollection : Cmd Msg
+getCollection =
+    Http.get
+        { url = "/api/collection"
+        , expect = Http.expectJson NewCollection Collection.collectionDecoder
+        }
 
 
 exit : Model -> Session
@@ -147,7 +198,7 @@ stepUrl flags url model =
     in
     case Parser.parse parser url of
         Just answer ->
-            answer
+            withCmd getCollection answer
 
         Nothing ->
             ( { model | page = NotFound Session.empty }

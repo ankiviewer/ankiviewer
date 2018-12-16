@@ -5,11 +5,13 @@ module Session exposing
     , fromFlags
     )
 
+import Collection exposing (Collection)
 import Set exposing (Set)
 
 
 type alias Session =
     { excludedColumns : Set String
+    , collection : Collection
     }
 
 
@@ -26,7 +28,7 @@ fromFlags : Flags -> Session
 fromFlags flags =
     case flags of
         Just { excludedColumns } ->
-            Session (Set.fromList excludedColumns)
+            { empty | excludedColumns = Set.fromList excludedColumns }
 
         Nothing ->
             empty
@@ -35,4 +37,5 @@ fromFlags flags =
 empty : Session
 empty =
     { excludedColumns = Set.empty
+    , collection = Collection 0 0 [] []
     }
