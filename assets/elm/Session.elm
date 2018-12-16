@@ -46,11 +46,11 @@ empty =
     }
 
 
-updateCollection : Session -> Collection -> Session
-updateCollection session collection =
+updateCollection : Collection -> Session -> Session
+updateCollection collection session =
     { session | collection = collection }
 
 
-updateRules : Session -> List Rule -> Session
-updateRules session rules =
+updateRules : List Rule -> Session -> Session
+updateRules rules session =
     { session | rules = rules }
