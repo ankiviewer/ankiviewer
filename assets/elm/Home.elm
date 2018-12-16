@@ -8,9 +8,11 @@ port module Home exposing
     , view
     )
 
+import Collection exposing (Collection)
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
+import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Process
@@ -59,6 +61,7 @@ type Msg
     = StartSync
     | StopSync
     | SyncIncomingMsg Encode.Value
+    | NewCollection (Result Http.Error Collection)
 
 
 view : Model -> Html Msg
@@ -123,7 +126,7 @@ update msg model =
             ( model, startSync Encode.null )
 
         StopSync ->
-            ( { model | syncState = NotSyncing }, Cmd.none )
+            ( { model | syncState = NotSyncing }, getCollection )
 
         SyncIncomingMsg val ->
             case Decode.decodeValue syncDataDecoder val of
@@ -147,6 +150,26 @@ update msg model =
                             Debug.log "ee" e
                     in
                     ( model, Cmd.none )
+
+        NewCollection (Ok collection) ->
+            ( { model | session = Session.updateCollection collection model.session }
+            , Cmd.none
+            )
+
+        NewCollection (Err e) ->
+            let
+                _ =
+                    Debug.log "e" e
+            in
+            ( model, Cmd.none )
+
+
+getCollection : Cmd Msg
+getCollection =
+    Http.get
+        { url = "/api/collection"
+        , expect = Http.expectJson NewCollection Collection.collectionDecoder
+        }
 
 
 initialModel : Session -> Model

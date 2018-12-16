@@ -67,16 +67,6 @@ subscriptions model =
             Sub.none
 
 
-withCmd : Cmd Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-withCmd newCmd ( model, cmd ) =
-    ( model, Cmd.batch [ newCmd, cmd ] )
-
-
-withCmds : List (Cmd Msg) -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-withCmds newCmds ( model, cmd ) =
-    ( model, Cmd.batch (cmd :: newCmds) )
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
@@ -86,10 +76,10 @@ update message model =
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Cmd.batch [ Nav.pushUrl model.key (Url.toString url), getCollection ] )
+                    ( model, Cmd.batch [ Nav.pushUrl model.key (Url.toString url), getCollection, getRules ] )
 
                 Browser.External href ->
-                    ( model, Cmd.batch [ Nav.load href, getCollection ] )
+                    ( model, Cmd.batch [ Nav.load href, getCollection, getRules ] )
 
         UrlChanged url ->
             stepUrl Nothing url model
@@ -97,12 +87,7 @@ update message model =
         HomeMsg msg ->
             case model.page of
                 Home home ->
-                    case msg of
-                        Home.StopSync ->
-                            withCmd getCollection (stepHome model (Home.update Home.StopSync home))
-
-                        _ ->
-                            stepHome model (Home.update msg home)
+                    stepHome model (Home.update msg home)
 
                 _ ->
                     ( model, Cmd.none )
@@ -184,7 +169,11 @@ stepUrl flags url model =
     in
     case Parser.parse parser url of
         Just answer ->
-            withCmds [ getCollection, getRules ] answer
+            let
+                ( mdl, cmd ) =
+                    answer
+            in
+            ( mdl, Cmd.batch [ cmd, getCollection, getRules ] )
 
         Nothing ->
             ( { model | page = NotFound Session.empty }
