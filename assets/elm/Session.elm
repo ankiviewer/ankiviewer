@@ -3,11 +3,13 @@ module Session exposing
     , Session
     , empty
     , fromFlags
+    , updateCollection
+    , updateRules
     )
 
 import Collection exposing (Collection)
-import Set exposing (Set)
 import Rules.Rule exposing (Rule)
+import Set exposing (Set)
 
 
 type alias Session =
@@ -42,3 +44,13 @@ empty =
     , collection = Collection 0 0 [] []
     , rules = []
     }
+
+
+updateCollection : Session -> Collection -> Session
+updateCollection session collection =
+    { session | collection = collection }
+
+
+updateRules : Session -> List Rule -> Session
+updateRules session rules =
+    { session | rules = rules }

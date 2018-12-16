@@ -14,8 +14,8 @@ import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
-import Rules.Rule exposing (Rule)
 import Rules
+import Rules.Rule exposing (Rule)
 import Session exposing (Session)
 import Set exposing (Set)
 import Set.Extra as Set
