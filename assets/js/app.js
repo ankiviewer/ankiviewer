@@ -38,13 +38,16 @@ var socket = new Socket('/socket', {params: {token: window.userToken}});
 
 socket.connect();
 
-var storedColumns = localStorage.getItem('ankiviewer-columns-save');
-var startingColumns = storedColumns ? JSON.parse(storedColumns) : null;
+var storedFlags = localStorage.getItem('ankiviewer-flags');
+var flags = storedFlags ? JSON.parse(storedFlags) : null;
+flags = (Object.keys(flags || {})).indexOf('collection') ? flags : null;
+flags = (Object.keys(flags || {})).indexOf('rules') ? flags : null;
+flags = (Object.keys(flags || {})).indexOf('excludedColumns') ? flags : null;
 
 var app_node = document.querySelector('#app');
 var app = Elm.Main.init({
   node: app_node,
-  flags: startingColumns
+  flags: flags
 });
 
 var channel = socket.channel('ankiviewer:join', {});
@@ -68,8 +71,8 @@ channel.on('sync:done', function () {
   app.ports.syncData.send({msg: 'done', percentage: 100});
 });
 
-app.ports.startRunRule.subscribe(function (rid) {
-  channel.push('rule:run', {rid: rid})
+app.ports.startRunRule.subscribe(function (opts) {
+  channel.push('rule:run', opts)
     .receive('ok', function (resp) { console.log('Joined successfully'); })
     .receive('error', function (resp) { console.log('Unable to join'); });
 });
@@ -92,6 +95,21 @@ channel.on('rule:done', function () {
     .receive('error', function (resp) { console.log('Unable to leave'); });
 });
 
+function updateLocalStorage(obj) {
+  var avFlags = localStorage.getItem('ankiviewer-flags');
+  var newState = avFlags ? Object.assign({excludedColumns: []}, JSON.parse(avFlags), obj) : obj;
+
+  localStorage.setItem('ankiviewer-flags', JSON.stringify(newState));
+}
+
 app.ports.setColumns.subscribe(function(state) {
-  localStorage.setItem('ankiviewer-columns-save', JSON.stringify(state));
+  updateLocalStorage(state);
+});
+
+app.ports.setCollection.subscribe(function(state) {
+  updateLocalStorage(state);
+});
+
+app.ports.setRules.subscribe(function(state) {
+  updateLocalStorage(state);
 });

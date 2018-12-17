@@ -1,10 +1,52 @@
-module Collection exposing
+port module Collection exposing
     ( Collection
     , collectionDecoder
+    , encoder
+    , setCollection
     )
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
+import Json.Encode as Encode
+
+
+port setCollection : Encode.Value -> Cmd msg
+
+
+encoder : Collection -> Encode.Value
+encoder collection =
+    Encode.object
+        [ ( "mod", Encode.int collection.mod )
+        , ( "cards", Encode.int collection.cards )
+        , ( "models", modelsEncoder collection.models )
+        , ( "decks", decksEncoder collection.decks )
+        ]
+
+
+modelsEncoder : List M -> Encode.Value
+modelsEncoder ms =
+    Encode.list
+        (\m ->
+            Encode.object
+                [ ( "name", Encode.string m.name )
+                , ( "mid", Encode.int m.mid )
+                , ( "flds", Encode.list Encode.string m.flds )
+                , ( "did", Encode.int m.did )
+                ]
+        )
+        ms
+
+
+decksEncoder : List D -> Encode.Value
+decksEncoder ds =
+    Encode.list
+        (\d ->
+            Encode.object
+                [ ( "name", Encode.string d.name )
+                , ( "did", Encode.int d.did )
+                ]
+        )
+        ds
 
 
 collectionDecoder : Decoder Collection

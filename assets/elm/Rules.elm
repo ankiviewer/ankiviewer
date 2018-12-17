@@ -3,14 +3,16 @@ port module Rules exposing
     , Msg
     , init
     , initialModel
+    , ruleEncoder
     , rulesDecoder
+    , setRules
     , subscriptions
     , update
     , view
     )
 
 import Html exposing (Html, button, div, input, label, text, textarea)
-import Html.Attributes exposing (class, classList, id, value)
+import Html.Attributes exposing (checked, class, classList, id, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -19,6 +21,8 @@ import Json.Encode as Encode
 import List.Extra as List
 import Rules.Rule as Rule exposing (Rule)
 import Session exposing (Session)
+import Set exposing (Set)
+import Set.Extra as Set
 
 
 port startRunRule : Encode.Value -> Cmd msg
@@ -28,6 +32,9 @@ port ruleRunData : (Encode.Value -> msg) -> Sub msg
 
 
 port stopRunRule : Encode.Value -> Cmd msg
+
+
+port setRules : Encode.Value -> Cmd msg
 
 
 ruleDataDecoder : Decoder RuleData
@@ -51,7 +58,7 @@ subscriptions model =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ session } as model) =
     case msg of
         RuleInput ruleInputType s ->
             let
@@ -80,14 +87,14 @@ update msg model =
                                 (\{ rid } ->
                                     rid == ruleId
                                 )
-                                model.session.rules
-                                |> Maybe.withDefault Rule.empty
+                                session.rules
+                                |> Maybe.withDefault (emptyRule session)
                     in
                     ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
                 Just oldSelectedRuleId ->
                     if ruleId == oldSelectedRuleId then
-                        ( { model | selected = Nothing, input = Rule.empty }, Cmd.none )
+                        ( { model | selected = Nothing, input = emptyRule session }, Cmd.none )
 
                     else
                         let
@@ -96,8 +103,8 @@ update msg model =
                                     (\{ rid } ->
                                         rid == ruleId
                                     )
-                                    model.session.rules
-                                    |> Maybe.withDefault Rule.empty
+                                    session.rules
+                                    |> Maybe.withDefault (emptyRule session)
                         in
                         ( { model | selected = Just ruleId, input = ruleInput }, Cmd.none )
 
@@ -119,7 +126,7 @@ update msg model =
                 ( { model
                     | session = Session.updateRules rules model.session
                     , err = Nothing
-                    , input = Rule.empty
+                    , input = emptyRule session
                   }
                 , Cmd.none
                 )
@@ -141,7 +148,7 @@ update msg model =
             ( model, updateRule model.input )
 
         DeleteRule rid ->
-            ( { model | input = Rule.empty, selected = Nothing }, deleteRule rid )
+            ( { model | input = emptyRule session, selected = Nothing }, deleteRule rid )
 
         RuleIncomingMsg val ->
             case Decode.decodeValue ruleDataDecoder val of
@@ -160,10 +167,30 @@ update msg model =
                     ( model, Cmd.none )
 
         StartRuleRun rid ->
-            ( model, startRunRule (Encode.int rid) )
+            ( model, startRunRule (Encode.object [ ( "rid", Encode.int rid ), ( "dids", didsEncoder model ) ]) )
 
         StopRuleRun ->
             ( { model | syncState = NotSyncing }, stopRunRule Encode.null )
+
+        ToggleDid did ->
+            let
+                oldInput =
+                    model.input
+
+                newInput =
+                    { oldInput | dids = Set.toggle did model.input.dids }
+            in
+            ( { model | input = newInput }, Cmd.none )
+
+
+didsEncoder : Model -> Encode.Value
+didsEncoder model =
+    Encode.set Encode.int model.input.dids
+
+
+emptyRule : Session -> Rule
+emptyRule session =
+    Rule.empty (List.map .did session.collection.decks)
 
 
 type alias Model =
@@ -199,6 +226,7 @@ type Msg
     | RuleIncomingMsg Encode.Value
     | StartRuleRun Int
     | StopRuleRun
+    | ToggleDid Int
 
 
 type RuleInputType
@@ -215,7 +243,7 @@ init session =
 initialModel : Session -> Model
 initialModel session =
     { session = session
-    , input = Rule.empty
+    , input = emptyRule session
     , err = Nothing
     , selected = Nothing
     , syncState = NotSyncing
@@ -271,6 +299,9 @@ ruleEncoder rule =
         [ ( "name", Encode.string rule.name )
         , ( "code", Encode.string rule.code )
         , ( "tests", Encode.string rule.tests )
+        , ( "rid", Encode.int rule.rid )
+        , ( "run", Encode.bool rule.run )
+        , ( "dids", Encode.set Encode.int rule.dids )
         ]
 
 
@@ -287,6 +318,7 @@ ruleDecoder =
         |> required "tests" Decode.string
         |> required "rid" Decode.int
         |> required "run" Decode.bool
+        |> required "dids" (Decode.map Set.fromList (Decode.list Decode.int))
 
 
 ruleErrDecoder : Decoder Rule
@@ -297,6 +329,7 @@ ruleErrDecoder =
         |> optional "tests" Decode.string ""
         |> hardcoded 0
         |> hardcoded False
+        |> hardcoded Set.empty
 
 
 ruleResponseDecoder : Decoder RuleResponse
@@ -314,7 +347,7 @@ ruleResponseDecoder =
                     Decode.succeed RuleResponse
                         |> hardcoded err
                         |> required "params" (Decode.list ruleDecoder)
-                        |> hardcoded Rule.empty
+                        |> hardcoded (Rule.empty [])
             )
 
 
@@ -349,6 +382,14 @@ ruleInputItem model ruleKey labelText inputType ruleInputType heightClass inputI
         ]
 
 
+checkbox : Msg -> String -> Bool -> Html Msg
+checkbox msg name checked_ =
+    label []
+        [ input [ type_ "checkbox", onClick msg, checked checked_ ] []
+        , text name
+        ]
+
+
 view : Model -> Html Msg
 view model =
     div
@@ -358,6 +399,18 @@ view model =
             [ ruleInputItem model .name "Name:" input RuleName "h2" "rules-input_name"
             , ruleInputItem model .code "Code:" textarea RuleCode "h4" "rules-input_code"
             , ruleInputItem model .tests "Tests:" textarea RuleTests "h4" "rules-input_tests"
+            , div
+                []
+                (List.map
+                    (\{ name, did } ->
+                        let
+                            checked_ =
+                                Set.member did model.input.dids
+                        in
+                        checkbox (ToggleDid did) name checked_
+                    )
+                    model.session.collection.decks
+                )
             , case model.selected of
                 Nothing ->
                     div

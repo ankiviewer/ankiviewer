@@ -8,12 +8,13 @@ defmodule AnkiViewer.Rule do
     field(:code, :string)
     field(:tests, :string)
     field(:name, :string)
+    field(:dids, {:array, :integer}, default: [])
 
     timestamps()
   end
 
   @optional_attrs ~w()a
-  @required_attrs ~w(code name tests)a
+  @required_attrs ~w(code name tests dids)a
   def changeset(%Rule{} = rule, attrs \\ %{}) do
     rule
     |> cast(attrs, @optional_attrs ++ @required_attrs)

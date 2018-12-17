@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
@@ -7,6 +7,7 @@ import Home
 import Html exposing (Html, a, div, text)
 import Html.Attributes exposing (class, classList, href)
 import Http
+import Json.Encode as Encode
 import Page exposing (Page(..))
 import Rules
 import Rules.Rule exposing (Rule)
@@ -110,7 +111,7 @@ update message model =
 
         NewCollection (Ok collection) ->
             ( { model | page = Page.sessionMap (Session.updateCollection collection) model.page }
-            , Cmd.none
+            , Collection.setCollection (Encode.object [ ( "collection", Collection.encoder collection ) ])
             )
 
         NewCollection (Err e) ->
@@ -122,7 +123,7 @@ update message model =
 
         NewRules (Ok rules) ->
             ( { model | page = Page.sessionMap (Session.updateRules rules) model.page }
-            , Cmd.none
+            , Rules.setRules (Encode.object [ ( "rules", Encode.list Rules.ruleEncoder rules ) ])
             )
 
         NewRules (Err e) ->

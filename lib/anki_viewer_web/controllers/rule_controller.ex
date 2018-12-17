@@ -9,7 +9,7 @@ defmodule AnkiViewerWeb.RuleController do
         |> where([cr], cr.rid == ^rule.rid)
         |> Repo.all()
         |> length()
-        |> Kernel.==(Card |> Repo.all() |> length())
+        |> Kernel.==(Card |> where([c], c.did in ^rule.dids) |> Repo.all() |> length())
 
       Map.merge(rule, %{run: run})
     end)
@@ -19,8 +19,8 @@ defmodule AnkiViewerWeb.RuleController do
     json(conn, %{rules: rule_all()})
   end
 
-  def create(conn, %{"code" => code, "tests" => tests, "name" => name}) do
-    case Rule.insert(%{code: code, tests: tests, name: name}) do
+  def create(conn, %{"code" => code, "tests" => tests, "name" => name, "dids" => dids}) do
+    case Rule.insert(%{code: code, tests: tests, name: name, dids: dids}) do
       {:ok, _rule} ->
         json(conn, %{err: false, params: rule_all()})
 
@@ -29,8 +29,20 @@ defmodule AnkiViewerWeb.RuleController do
     end
   end
 
-  def update(conn, %{"code" => code, "tests" => tests, "name" => name, "rid" => rid}) do
-    case Rule.update(%{code: code, tests: tests, name: name, rid: String.to_integer(rid)}) do
+  def update(conn, %{
+        "code" => code,
+        "tests" => tests,
+        "name" => name,
+        "rid" => rid,
+        "dids" => dids
+      }) do
+    case Rule.update(%{
+           code: code,
+           tests: tests,
+           name: name,
+           rid: String.to_integer(rid),
+           dids: dids
+         }) do
       {:ok, _rule} ->
         CardRule
         |> where([cr], cr.rid == ^rid)

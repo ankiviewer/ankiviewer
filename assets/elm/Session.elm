@@ -8,7 +8,7 @@ module Session exposing
     )
 
 import Collection exposing (Collection)
-import Rules.Rule exposing (Rule)
+import Rules.Rule as Rule exposing (Rule, SafeRule)
 import Set exposing (Set)
 
 
@@ -25,14 +25,20 @@ type alias Flags =
 
 type alias FlagData =
     { excludedColumns : List String
+    , collection : Collection
+    , rules : List SafeRule
     }
 
 
 fromFlags : Flags -> Session
 fromFlags flags =
     case flags of
-        Just { excludedColumns } ->
-            { empty | excludedColumns = Set.fromList excludedColumns }
+        Just { excludedColumns, collection, rules } ->
+            { empty
+                | excludedColumns = Set.fromList excludedColumns
+                , collection = collection
+                , rules = List.map Rule.fromSafeRule rules
+            }
 
         Nothing ->
             empty
