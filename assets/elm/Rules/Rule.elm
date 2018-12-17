@@ -13,7 +13,7 @@ type alias Rule =
     , code : String
     , tests : String
     , rid : Int
-    , run : Bool
+    , percentage : Int
     , dids : Set Int
     }
 
@@ -24,7 +24,7 @@ fromSafeRule safeRule =
     , code = safeRule.code
     , tests = safeRule.tests
     , rid = safeRule.rid
-    , run = safeRule.run
+    , percentage = safeRule.percentage
     , dids = Set.fromList safeRule.dids
     }
 
@@ -34,7 +34,7 @@ type alias SafeRule =
     , code : String
     , tests : String
     , rid : Int
-    , run : Bool
+    , percentage : Int
     , dids : List Int
     }
 
@@ -45,6 +45,6 @@ empty dids =
     , code = ""
     , tests = ""
     , rid = 0
-    , run = False
+    , percentage = 0
     , dids = Set.fromList dids
     }
