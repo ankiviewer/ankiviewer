@@ -53,6 +53,7 @@ defmodule AnkiViewer.Repo.Migrations.CreateDatabase do
       add(:name, :string)
       add(:code, :text)
       add(:tests, :text)
+      add(:dids, {:array, :bigint})
 
       timestamps()
     end

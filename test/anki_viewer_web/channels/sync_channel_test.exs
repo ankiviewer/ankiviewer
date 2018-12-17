@@ -170,10 +170,11 @@ defmodule AnkiViewerWeb.SyncChannelTest do
         |> Rule.insert!()
 
       load_collection!()
+      dids = Deck |> Repo.all() |> Enum.map(&Map.get(&1, :did))
 
       assert Repo.all(CardRule) == []
 
-      push(socket, "rule:run", %{"rid" => rid})
+      push(socket, "rule:run", %{"rid" => rid, "dids" => dids})
 
       assert_push("rule:msg", %{msg: "starting run"})
 
@@ -195,10 +196,11 @@ defmodule AnkiViewerWeb.SyncChannelTest do
         |> Rule.insert!()
 
       load_collection!()
+      dids = Deck |> Repo.all() |> Enum.map(&Map.get(&1, :did))
 
       assert Repo.all(CardRule) == []
 
-      push(socket, "rule:run", %{"rid" => rid})
+      push(socket, "rule:run", %{"rid" => rid, "dids" => dids})
 
       assert_push("rule:msg", %{msg: "starting run"})
 
@@ -221,12 +223,13 @@ defmodule AnkiViewerWeb.SyncChannelTest do
         |> Rule.insert!()
 
       load_collection!()
+      dids = Deck |> Repo.all() |> Enum.map(&Map.get(&1, :did))
 
       generous_card = Card |> Repo.all() |> Enum.find(fn %{sfld: sfld} -> sfld == "generous" end)
 
       Card.insert!(%{generous_card | cid: generous_card.cid + 1, nid: generous_card.nid + 1})
 
-      push(socket, "rule:run", %{"rid" => rid})
+      push(socket, "rule:run", %{"rid" => rid, "dids" => dids})
 
       assert_push("rule:msg", %{msg: "starting run"})
 

@@ -26,7 +26,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
 
     assert json_response(conn, 200) == %{"rules" => []}
 
-    %Rule{name: @name, code: @code, tests: @tests}
+    %Rule{name: @name, code: @code, tests: @tests, dids: [1]}
     |> Repo.insert!()
 
     conn = get(conn, "/api/rules")
@@ -38,13 +38,20 @@ defmodule AnkiViewerWeb.RuleControllerTest do
            end)
 
     assert simplify_struct(rules) == [
-             %{"name" => @name, "code" => @code, "tests" => @tests, "run" => true}
+             %{"name" => @name, "code" => @code, "tests" => @tests, "run" => true, "dids" => [1]}
            ]
   end
 
   describe "POST /api/rules" do
     test "valid params", %{conn: conn} do
-      params = %{"code" => @code, "name" => @name, "tests" => @tests, "run" => true}
+      params = %{
+        "code" => @code,
+        "name" => @name,
+        "tests" => @tests,
+        "run" => true,
+        "dids" => [1]
+      }
+
       conn = post(conn, "/api/rules", params)
 
       %{"err" => false, "params" => actual} = json_response(conn, 200)
@@ -58,7 +65,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
         |> Utils.parseable_fields()
         |> Enum.map(&Map.drop(&1, ~w(inserted_at updated_at)a))
 
-      expected = [%{code: @code, name: @name, tests: @tests, rid: rid}]
+      expected = [%{code: @code, name: @name, tests: @tests, rid: rid, dids: [1]}]
 
       assert actual == expected
     end
@@ -68,7 +75,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
         card.sfld != "
       """
 
-      params = %{"code" => code, "name" => @name, "tests" => @tests}
+      params = %{"code" => code, "name" => @name, "tests" => @tests, "dids" => [1]}
       conn = post(conn, "/api/rules", params)
 
       %{"err" => true, "params" => actual} = json_response(conn, 200)
@@ -80,7 +87,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
     end
 
     test "empty non name params", %{conn: conn} do
-      params = %{"code" => "", "name" => "sam", "tests" => ""}
+      params = %{"code" => "", "name" => "sam", "tests" => "", "dids" => []}
       conn = post(conn, "/api/rules", params)
 
       %{"err" => true, "params" => actual} = json_response(conn, 200)
@@ -94,9 +101,9 @@ defmodule AnkiViewerWeb.RuleControllerTest do
 
   describe "PUT /api/rules/:rid" do
     test "valid params", %{conn: conn} do
-      params = %{"name" => @name, "code" => @code, "tests" => @tests}
+      params = %{"name" => @name, "code" => @code, "tests" => @tests, "dids" => [1]}
 
-      %{rid: rid} = %Rule{} |> Map.merge(params) |> Repo.insert!()
+      %{rid: rid} = Repo.insert!(%Rule{name: @name, code: @code, tests: @tests, dids: [1]})
 
       new_params = %{params | "name" => "new name"}
 
@@ -105,11 +112,11 @@ defmodule AnkiViewerWeb.RuleControllerTest do
       %{"err" => false, "params" => params} = json_response(conn, 200)
       [%{"rid" => ^rid}] = params
 
-      assert params |> List.first() |> Map.take(~w(code name tests)) == new_params
+      assert params |> List.first() |> Map.take(~w(code name tests dids)) == new_params
 
       %{name: name, code: code, tests: tests} = Repo.one(Rule)
 
-      assert %{"name" => name, "code" => code, "tests" => tests} == new_params
+      assert %{"name" => name, "code" => code, "tests" => tests, "dids" => [1]} == new_params
     end
 
     test "invalid params", %{conn: conn} do
@@ -117,9 +124,9 @@ defmodule AnkiViewerWeb.RuleControllerTest do
         card.sfld != "
       """
 
-      params = %{"name" => @name, "code" => @code, "tests" => @tests}
+      params = %{"name" => @name, "code" => @code, "tests" => @tests, "dids" => []}
 
-      %{rid: rid} = Repo.insert!(%Rule{name: @name, code: @code, tests: @tests})
+      %{rid: rid} = Repo.insert!(%Rule{name: @name, code: @code, tests: @tests, dids: []})
 
       new_params = %{params | "name" => "new name", "code" => code}
 
@@ -129,9 +136,9 @@ defmodule AnkiViewerWeb.RuleControllerTest do
 
       assert code_error == "missing terminator: \" (for string starting at line 1)"
 
-      %{name: name, code: code, tests: tests} = Repo.one(Rule)
+      %{name: name, code: code, tests: tests, dids: dids} = Repo.one(Rule)
 
-      assert %{"name" => name, "code" => code, "tests" => tests} == params
+      assert %{"name" => name, "code" => code, "tests" => tests, "dids" => dids} == params
     end
   end
 

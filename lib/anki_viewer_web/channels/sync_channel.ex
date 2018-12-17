@@ -99,11 +99,12 @@ defmodule AnkiViewerWeb.SyncChannel do
     {:noreply, socket}
   end
 
-  def handle_in("rule:run", %{"rid" => rid}, socket) do
+  def handle_in("rule:run", %{"rid" => rid, "dids" => dids}, socket) do
     push(socket, "rule:msg", %{msg: "starting run", percentage: 0, seconds: 0})
 
     cards =
       Card
+      |> where([c], c.did in ^dids)
       |> Repo.all()
       |> Enum.map(&Map.take(&1, ~w(cid did flds mid nid sfld tags type)a))
 

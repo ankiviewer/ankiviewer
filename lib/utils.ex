@@ -35,4 +35,8 @@ defmodule Utils do
   def parseable_fields(list) when is_list(list) do
     Enum.map(list, &parseable_fields/1)
   end
+
+  def parseable_fields(int)
+      when is_integer(int),
+      do: int
 end
