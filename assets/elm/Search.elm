@@ -79,21 +79,19 @@ view model =
                     []
                 , div
                     []
-                    (List.filter
-                        (\rule -> rule.run)
+                    (List.map
+                        (\{ name, rid, percentage } ->
+                            div
+                                [ class "pointer dib pa2"
+                                , classList
+                                    [ ( "bg-primary", Maybe.withDefault 0 model.selectedRule == rid )
+                                    ]
+                                , onClick (ToggleRule rid)
+                                ]
+                                [ text (name ++ ":" ++ String.fromInt percentage ++ "%")
+                                ]
+                        )
                         model.rules
-                        |> List.map
-                            (\{ name, rid, run } ->
-                                div
-                                    [ class "pointer dib pa2"
-                                    , classList
-                                        [ ( "bg-primary", Maybe.withDefault 0 model.selectedRule == rid )
-                                        ]
-                                    , onClick (ToggleRule rid)
-                                    ]
-                                    [ text name
-                                    ]
-                            )
                     )
                 , div
                     []

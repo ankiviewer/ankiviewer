@@ -300,7 +300,7 @@ ruleEncoder rule =
         , ( "code", Encode.string rule.code )
         , ( "tests", Encode.string rule.tests )
         , ( "rid", Encode.int rule.rid )
-        , ( "run", Encode.bool rule.run )
+        , ( "percentage", Encode.int rule.percentage )
         , ( "dids", Encode.set Encode.int rule.dids )
         ]
 
@@ -317,7 +317,7 @@ ruleDecoder =
         |> required "code" Decode.string
         |> required "tests" Decode.string
         |> required "rid" Decode.int
-        |> required "run" Decode.bool
+        |> required "percentage" Decode.int
         |> required "dids" (Decode.map Set.fromList (Decode.list Decode.int))
 
 
@@ -328,7 +328,7 @@ ruleErrDecoder =
         |> optional "code" Decode.string ""
         |> optional "tests" Decode.string ""
         |> hardcoded 0
-        |> hardcoded False
+        |> hardcoded 0
         |> hardcoded Set.empty
 
 
@@ -486,12 +486,7 @@ view model =
                         , class "pa1 pointer"
                         , onClick <| ToggleRule rule.rid
                         ]
-                        [ text rule.name
-                        , if rule.run then
-                            text ":run"
-
-                          else
-                            text ":not run"
+                        [ text (rule.name ++ ":" ++ String.fromInt rule.percentage)
                         ]
                 )
                 model.session.rules

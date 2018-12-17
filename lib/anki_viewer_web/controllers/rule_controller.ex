@@ -4,14 +4,25 @@ defmodule AnkiViewerWeb.RuleController do
   defp rule_all() do
     Rule.all()
     |> Enum.map(fn rule ->
-      run =
+      card_rules = 
         CardRule
         |> where([cr], cr.rid == ^rule.rid)
         |> Repo.all()
-        |> length()
-        |> Kernel.==(Card |> where([c], c.did in ^rule.dids) |> Repo.all() |> length())
 
-      Map.merge(rule, %{run: run})
+      cards =
+        Card
+        |> where([c], c.did in ^rule.dids)
+        |> Repo.all()
+
+      percentage =
+        try do
+          Integer.floor_div(length(card_rules) * 100, length(cards))
+        rescue
+          _e in ArithmeticError ->
+            0
+        end
+
+      Map.merge(rule, %{percentage: percentage})
     end)
   end
 

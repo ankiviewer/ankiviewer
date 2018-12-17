@@ -38,7 +38,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
            end)
 
     assert simplify_struct(rules) == [
-             %{"name" => @name, "code" => @code, "tests" => @tests, "run" => true, "dids" => [1]}
+             %{"name" => @name, "code" => @code, "tests" => @tests, "percentage" => 0, "dids" => [1]}
            ]
   end
 
@@ -48,7 +48,7 @@ defmodule AnkiViewerWeb.RuleControllerTest do
         "code" => @code,
         "name" => @name,
         "tests" => @tests,
-        "run" => true,
+        "percentage" => 0,
         "dids" => [1]
       }
 
