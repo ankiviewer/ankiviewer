@@ -95,6 +95,25 @@ view model =
                                     ]
                             )
                     )
+                , div
+                    []
+                    [ div
+                        []
+                        (List.map
+                            (\{ name } ->
+                                div
+                                    [ class "pointer dib pa2"
+                                    , classList
+                                        [ ( "bg-primary", Maybe.withDefault "" model.deck == name )
+                                        ]
+                                    , onClick (ToggleDeck name)
+                                    ]
+                                    [ text name
+                                    ]
+                            )
+                            model.session.collection.decks
+                        )
+                    ]
                 ]
             , if model.search == "" && model.selectedRule == Nothing then
                 div
@@ -235,7 +254,7 @@ update msg model =
             ( model, Cmd.none )
 
         SearchInput search ->
-            ( { model | search = search }, getCards { search = search, rule = model.selectedRule } )
+            ( { model | search = search }, getCards { search = search, rule = model.selectedRule, deck = model.deck } )
 
         ToggleShowColumns ->
             ( { model | showColumns = not model.showColumns }, Cmd.none )
@@ -264,10 +283,22 @@ update msg model =
                         ( { model | selectedRule = Nothing }, Cmd.none )
 
                     else
-                        ( { model | selectedRule = Just rid }, getCards { search = model.search, rule = Just rid } )
+                        ( { model | selectedRule = Just rid }, getCards { search = model.search, rule = Just rid, deck = model.deck } )
 
                 Nothing ->
-                    ( { model | selectedRule = Just rid }, getCards { search = model.search, rule = Just rid } )
+                    ( { model | selectedRule = Just rid }, getCards { search = model.search, rule = Just rid, deck = model.deck } )
+
+        ToggleDeck deck ->
+            case model.deck of
+                Just d ->
+                    if deck == d then
+                        ( { model | deck = Nothing }, Cmd.none )
+
+                    else
+                        ( { model | deck = Just deck }, Cmd.none )
+
+                Nothing ->
+                    ( { model | deck = Just deck }, Cmd.none )
 
 
 type Msg
@@ -277,6 +308,7 @@ type Msg
     | ToggleShowColumns
     | ToggleColumn String
     | ToggleRule Int
+    | ToggleDeck String
 
 
 type alias Model =
@@ -288,6 +320,7 @@ type alias Model =
     , count : Int
     , rules : List Rule
     , selectedRule : Maybe Int
+    , deck : Maybe String
     }
 
 
@@ -310,6 +343,7 @@ type alias Card =
 type alias Search =
     { search : String
     , rule : Maybe Int
+    , deck : Maybe String
     }
 
 
@@ -323,6 +357,7 @@ initialModel session =
     , count = 0
     , rules = []
     , selectedRule = Nothing
+    , deck = Nothing
     }
 
 
@@ -340,14 +375,14 @@ getRules =
 
 
 getCards : Search -> Cmd Msg
-getCards { search, rule } =
+getCards { search, rule, deck } =
     let
         url =
             Url.absolute
                 [ "api", "cards" ]
                 [ Url.string "search" search
                 , Url.string "model" ""
-                , Url.string "deck" ""
+                , Url.string "deck" (Maybe.withDefault "" deck)
                 , Url.string "tags" ""
                 , Url.string "modelorder" ""
                 , Url.string "rule" (Maybe.map String.fromInt rule |> Maybe.withDefault "")
